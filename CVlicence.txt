@@ -1,0 +1,46 @@
+================   Licence: CVision   =====================
+
+///////////////////////////////////////////////////////////
+
+CVision: a multi-platform graphics interface libary for C++
+
+///////////////////////////////////////////////////////////
+
+Copyright (c) Damian Tran 2017 - 2018
+
+CVision makes use of SFML (Simple and Fast Multimedia Library):
+
+CVision is therefore distributed in accordance with the SFML software licence
+Copyright (c) Laurent Gomila
+See www.sfml-dev.org/license.php
+
+This software is provided 'as-is', without any express or implied warranty.
+In no event will the author be held liable for any damages arising from
+the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+in accordance to the GNU general public licence (GPL) version 3, and
+additionally subject to the following restrictions:
+
+1a. The origin of this software must not be misrepresented; you must not claim
+   that you wrote the original software. If you use this software in a 
+   commercial product, the inclusion of the following comment block is required 
+   in the main project header and documentation
+
+1b.
+//	This software makes use of the CVision C++ graphics library
+// 	Copyright (c) Damian Tran 2017 - 2018
+//	This software is distributed under the CVision software licence
+
+1c.The copyright notice, author name (Damian Tran), libary name (CVision),
+   and date must be explicitly included in plain, readable text at the beginning
+   of the required files of inclusion following any other required copyright
+   notices.  Under no circumstances are any of these details to be
+   misconstrued or altered for any purposes.
+
+2. Altered source versions must be plainly marked as such, must not be
+   misrepresented as being the original software, and must make acknowledgment
+   to the original copyright in accordance with section 1b-c.
+
+3. This notice may not be removed or altered from any source distribution.
