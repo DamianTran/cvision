@@ -1,4 +1,4 @@
-# cvision
+# CVision
 CVision: The open source C++ library for graphical user interfaces
 (c) Damian Tran 2017-2018
 See included LICENCE file for GPL 3.0 terms and conditions of use and redistribution
