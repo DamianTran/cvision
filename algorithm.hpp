@@ -1,3 +1,16 @@
+//
+// AIALG - Simplifying C++
+//
+// Inspired for AI programming
+//
+//////////////////////////////////////////////////////////////
+//
+// Copyright (c) 2017 - 2018 Damian Tran
+//
+// Redistribution of the AIALG header library is permitted
+// under accordance with  the GNU general public licence (GPL)
+// version 3.0 and the terms and conditions specified in CVlicence.txt
+
 #pragma once
 
 #ifndef BIOALGORITHM_HPP
