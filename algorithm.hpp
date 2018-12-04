@@ -21,9 +21,26 @@
 #include <sstream>
 #include <cstdarg>
 #include <exception>
+#include <random>
+#include <array>
+#include <map>
 
-#include <mingw.thread.h>
-#include <mingw.mutex.h>
+#if defined WIN32 || defined _WIN32
+#include <thread>
+#include <mutex>
+#else
+#include <thread>
+#include <mutex>
+#endif
+
+#define ALPHABET        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define DIGITS          "0123456789"
+#define PUNCTUATION     ".,;\"'()!&\\/-?"
+#define CODE_CHAR       "<>[]{}"
+#define OPERATOR_CHAR   "-+/\\*"
+#define HASH_CHAR       "@#$%"
+#define MISC_CHAR       "^`"
+
 #include <boost/math/distributions/students_t.hpp>
 #include <boost/predef.h>
 
@@ -95,18 +112,29 @@ inline constexpr unsigned char operator"" _BYTE(unsigned long long uint){
 #define CMP_STR_CASE_INSENSITIVE 0b1
 #define CMP_STR_SIZE_INSENSITIVE 0b10
 #define CMP_STR_SMALL_DISCRETE   0b100
+#define CMP_STR_SW               0b1000
 
-#define DELIM_NONE                      ""
-#define DELIM_BASIC                     " ,:;\t\n"
-#define DELIM_STANDARD                  " ,.?\\\"/\t\n!:;&=#"
-#define DELIM_CODE                      "\"\t\n.;:&$+=#<>{}[]"
-#define DELIM_ALL                       " ,.?\\\"\'/+-=\t\n*~!_:;&#()[]{}<>"
+#define CMP_STR_DEFAULT 0b111
 
-#define CMP_STR_DEFAULT 0b11111111
+#define SW_PTR_DIAG                     0
+#define SW_PTR_LEFT                     1
+#define SW_PTR_UP                       2
+#define SW_PTR_NONE                     3
 
-#define PI                          3.14159265358979323846264338327950288419716939937510
+#define STATS_TWO_TAILED        0_BIT
+#define STATS_UPPER_TAIL        1_BIT
+#define STATS_LOWER_TAIL        2_BIT
+
+const static std::string DELIM_NONE                    =  "";
+const static std::string DELIM_BASIC                   =  " ,:;\t\n\r";
+const static std::string DELIM_STANDARD                =  " ,.?\\\"/\t\n\r!:;&=#";
+const static std::string DELIM_STANDARD_MISC           =  ",.?\\\"/\t\n\r!:;&=#";
+const static std::string DELIM_CODE                    =  "\"\t\n\r.;:&$+=#<>{}[]";
+const static std::string DELIM_ALL                     =  " ,.?\"'/+-=\t\n\r*~!_:;^\\&#()[]{}<>";
+
+#define PI                          acos(-1.0L)
 #define MIN_PRECISION               1e-16f
-#define SQRT2                       1.4142135623730950f
+#define SQRT2                       1.4142135623730950
 
 // Typedefs
 
@@ -127,6 +155,9 @@ template<class T> using c_itr = typename std::vector<T>::const_iterator;
 typedef std::vector<std::string> StringVector;
 typedef std::vector<std::vector<std::string>> StringMatrix;
 
+typedef vMatrix<float> numVector;
+typedef vMatrix<float> numMatrix;
+
 template<typename T> std::ostream& operator<<(std::ostream& output, const std::vector<T>& V){
     size_t L = V.size();
     output << '[';
@@ -134,7 +165,19 @@ template<typename T> std::ostream& operator<<(std::ostream& output, const std::v
         output << V[i];
         if((L > 1) & (i < L - 1)) output << ',';
     }
-    std::cout << ']';
+    output << ']';
+    return output;
+}
+
+template<typename T1, typename T2> std::ostream& operator<<(std::ostream& output, const std::map<T1, T2>& M){
+
+    if(!M.empty()){
+        auto endIT = M.end();
+        for(auto IT = M.begin(); IT != endIT; ++IT){
+            output << IT->first << ": " << IT->second << '\n';
+        }
+    }
+
     return output;
 }
 
@@ -142,7 +185,7 @@ template<typename T> std::ostream& operator<<(std::ostream& output, const std::v
 
 template<typename T> void vwrite(const std::vector<T>& V, FILE* outFile){
     size_t vSIZE = V.size();
-    fwrite(&vSIZE, sizeof(unsigned int), 1, outFile);
+    fwrite(&vSIZE, sizeof(size_t), 1, outFile);
     fwrite(V.data(), vSIZE, sizeof(T), outFile);
 }
 
@@ -154,7 +197,7 @@ inline void fwrite(const std::string& s, FILE* outFILE){
 
 inline void vwrite(const StringVector& V, FILE* outFILE){
     size_t vSIZE = V.size();
-    fwrite(&vSIZE, 1, sizeof(unsigned int), outFILE);
+    fwrite(&vSIZE, 1, sizeof(size_t), outFILE);
     for(auto& str : V){
         fwrite(str, outFILE);
     }
@@ -168,12 +211,12 @@ inline void fread(std::string& s, FILE* inFILE){
     char* newChar = new char[sSIZE];
     fread(newChar, sSIZE, sizeof(char), inFILE);
     s = newChar;
-    delete(newChar);
+    delete[] newChar;
 }
 
 template<typename T> void vread(std::vector<T>& output, FILE* inFile){
     size_t vSIZE;
-    fread(&vSIZE, sizeof(unsigned int), 1, inFile);
+    fread(&vSIZE, sizeof(size_t), 1, inFile);
     output.clear();
     if(vSIZE < 1) return;
 
@@ -181,13 +224,13 @@ template<typename T> void vread(std::vector<T>& output, FILE* inFile){
     T* tmp = new T[vSIZE];
     fread(tmp, vSIZE, sizeof(T), inFile);
     output.assign(tmp, tmp + vSIZE);
-    delete(tmp);
+    delete[] tmp;
 }
 
 inline void vread(StringVector& output, FILE* inFILE){
     size_t vSIZE;
     output.clear();
-    fread(&vSIZE, 1, sizeof(unsigned int), inFILE);
+    fread(&vSIZE, 1, sizeof(size_t), inFILE);
 
     for(size_t i = 0; i < vSIZE; ++i){
         output.emplace_back();
@@ -198,18 +241,38 @@ inline void vread(StringVector& output, FILE* inFILE){
 template<typename T> void writeData(const T& data, FILE* output){
     fwrite(&data, 1, sizeof(T), output);
 }
+
 template<typename T> void writeVector(const std::vector<T>& V, FILE* output){
     writeData(V.size(), output);
     fwrite(V.data(), V.size(), sizeof(T), output);
 }
+
+template<typename T> void writeMatrix(const std::vector<T>& M, FILE* output){
+    size_t L = M.size();
+    fwrite(&L, 1, sizeof(size_t), output);
+    for(auto& V : M){
+        writeVector(V, output);
+    }
+}
+
 inline void writeString(const std::string& s, FILE* output){
     writeData(s.size(), output);
     fwrite(s.c_str(), 1, s.size(), output);
 }
 
+template<> inline void writeData<std::string>(const std::string& data, FILE* output){
+    writeString(data, output);
+}
+
+template<typename T>
+void writeData(const std::vector<T>& data, FILE* output){
+    writeVector(data, output);
+}
+
 template<typename T> void readData(T& inputVar, FILE* inputFile){
     fread(&inputVar, 1, sizeof(T), inputFile);
 }
+
 template<typename T> void readVector(std::vector<T>& output, FILE* inputFile){
     size_t inSIZE; readData(inSIZE, inputFile);
     T* inputData = new T[inSIZE];
@@ -218,24 +281,47 @@ template<typename T> void readVector(std::vector<T>& output, FILE* inputFile){
     for(size_t i = 0; i < inSIZE; ++i){
         output.push_back(inputData[i]);
     }
-    delete(inputData);
+    delete[] inputData;
 }
 
+
+
 inline void readString(std::string& output, FILE* inFILE){
+    output.clear();
     size_t inSIZE; readData(inSIZE, inFILE);
     char* inputData = new char[inSIZE+1];
     inputData[inSIZE] = '\0';
     fread(inputData, 1, inSIZE, inFILE);
     output = inputData;
-    delete(inputData);
+    delete[] inputData;
+}
+
+template<> inline void readData<std::string>(std::string& inputVar, FILE* inputFile){
+    readString(inputVar, inputFile);
+}
+
+template<typename T>
+void readData(std::vector<T>& inputVar, FILE* inputFILE){
+    readVector(inputVar, inputFILE);
 }
 
 inline void readVector(std::vector<std::string>& output, FILE* inFILE){
+    output.clear();
     size_t inSIZE; readData(inSIZE, inFILE);
     output.reserve(output.size() + inSIZE);
     for(size_t i = 0; i < inSIZE; ++i){
         output.emplace_back();
         readString(output.back(), inFILE);
+    }
+}
+
+template<typename T>
+void readMatrix(std::vector<std::vector<T>>& M, FILE* inFILE){
+    size_t L;
+    fread(&L, 1, sizeof(size_t), inFILE);
+    M.resize(L);
+    for(auto& V : M){
+        readVector(V, inFILE);
     }
 }
 
@@ -245,6 +331,89 @@ inline void writeVector(const std::vector<std::string>& V, FILE* output){
     for(c_itr<std::string> it = V.begin(); it != itEND; ++it){
         writeString(*it, output);
     }
+}
+
+template<typename key_t, typename value_t> void writeMap(const std::map<key_t, value_t>& M, FILE* outFILE){
+
+    size_t L = M.size();
+    fwrite(&L, sizeof(size_t), 1, outFILE);
+    if(L == 0) return;
+
+    auto endIT = M.end();
+    for(auto IT = M.begin(); IT != endIT; ++IT){
+
+        writeData(IT->first, outFILE);
+        writeData(IT->second, outFILE);
+
+    }
+}
+
+template<typename key_t, typename value_t> void readMap(std::map<key_t, value_t>& M, FILE* inFILE){
+
+    size_t L;
+    fread(&L, sizeof(size_t), 1, inFILE);
+
+    if(L == 0) return;
+
+    M.clear();
+
+    key_t tmp_key;
+    value_t tmp_value;
+
+    for(size_t i = 0; i < L; ++i){
+        readData(tmp_key, inFILE);
+        readData(tmp_value, inFILE);
+
+        M.emplace(tmp_key, tmp_value);
+    }
+
+}
+
+// File manipulation
+
+inline size_t file_size(FILE* file){
+    fpos_t pos;
+    fgetpos(file, &pos);
+
+    fseek(file, 0, SEEK_END);
+    size_t output = ftell(file);
+    fsetpos(file, &pos);
+
+    return output;
+}
+
+inline bool check_hash(FILE* file, const std::string& hash){
+    if(hash.empty()) return true;
+
+    // Checks the hash code and sets the stream pointer to the position following
+    size_t fileSIZE = file_size(file);
+    if(fileSIZE < (2*hash.size())){
+        return false;
+    }
+
+    char newHash[hash.size() + 1];
+    newHash[hash.size()] = '\0';
+    fread(newHash, sizeof(char), hash.size(), file);
+    if(std::string(newHash) != hash){
+        fclose(file);
+        return false;
+    }
+
+    fpos_t initPos, newPos;
+    fgetpos(file, &initPos);
+
+    fseek(file, 0, SEEK_END);
+    fseek(file, hash.size(), SEEK_SET);
+
+    fread(newHash, sizeof(char), hash.size(), file);
+    if(std::string(newHash) != hash){
+        fclose(file);
+        return false;
+    }
+
+    fsetpos(file, &initPos);
+
+    return true;
 }
 
 // Classes
@@ -346,7 +515,7 @@ struct GenDataVar{
         clear();
         dataClass = other.dataClass;
         dataSize = other.dataSize;
-        if(dataClass = getTypeID<char>()){
+        if(dataClass == getTypeID<char>()){
             char* newStr = new char[dataSize];
             memcpy(newStr, other.data, dataSize);
             data = (void*)newStr;
@@ -374,7 +543,7 @@ struct GenDataVar{
         return *this;
     }
 
-    inline void write(FILE* outFILE){
+    inline void write(FILE* outFILE) const{
         fwrite(&dataClass, 1, sizeof(char), outFILE);
         fwrite(&dataSize, 1, sizeof(uint16_t), outFILE);
         if(dataSize > 0){
@@ -432,11 +601,11 @@ struct GenDataVar{
     }
 
     inline std::string getString() const{ return std::string((char*)data); } // MUST use for strings
-    template<typename T> constexpr T getValue() const{
+    template<typename T> inline T getValue() const{
         if(dataSize < 1) return T();
         return *((T*)data);
     }
-    template<typename T> constexpr void putValue(T& item){
+    template<typename T> inline void putValue(T& item){
         item = getValue<T>();
     }
 
@@ -478,6 +647,13 @@ struct GenDataVar{
 std::string capitalized(std::string s);
 std::string non_capitalized(std::string s);
 
+template<typename T, typename N> bool anyEqual(const T& item, const std::vector<N> &V){
+    for(auto& x : V){
+        if(x == item) return true;
+    }
+    return false;
+}
+
 class GenDataStruct{
 protected:
 
@@ -487,11 +663,16 @@ protected:
 public:
 
     template<typename T> void addEntry(const std::string& tag, const T& newData){
-        tags.push_back(tag);
-        data.emplace_back();
-        data.back() = newData;
+        if(anyEqual(tag, tags)){
+            (*this)[tag] = newData;
+        }
+        else{
+            tags.push_back(tag);
+            data.emplace_back();
+            data.back() = newData;
+        }
     }
-    inline bool entryExists(const std::string& tag){
+    inline bool entryExists(const std::string& tag) const{
         for(auto& t : tags){
             if(t == tag) return true;
         }
@@ -503,32 +684,50 @@ public:
         data.resize(entries.size());
     }
 
-    inline bool save(const std::string& filename){
-        if(!access(filename.c_str(), X_OK)){
+    inline bool save(const std::string& filename, const std::string& hash = "") const{
+        if(!access(filename.c_str(), F_OK)){
             if(access(filename.c_str(), W_OK)) return false;
         }
 
         FILE* outFILE = fopen(filename.c_str(), "wb");
+
+        if(!hash.empty()){
+            fwrite(hash.c_str(), hash.size(), sizeof(char), outFILE);
+        }
+
         write(outFILE);
+
+        if(!hash.empty()){
+            fwrite(hash.c_str(), hash.size(), sizeof(char), outFILE);
+        }
+
         fclose(outFILE);
 
         return true;
     }
 
-    inline void write(FILE* outFILE){
+    inline void write(FILE* outFILE) const{
         size_t L = data.size();
-        fwrite(&L, 1, sizeof(unsigned int), outFILE);
+        fwrite(&L, 1, sizeof(size_t), outFILE);
         for(size_t i = 0; i < L; ++i){
             fwrite(tags[i], outFILE);
             data[i].write(outFILE);
         }
     }
 
-    bool load(const std::string& filename){
-        if(access(filename.c_str(), X_OK | R_OK)) return false;
+    bool load(const std::string& filename, const std::string& hash = ""){
+        if(access(filename.c_str(), F_OK)){
+            std::cout << "Load from " << filename << " failed\n";
+            std::cout << "Error: " << std::strerror(errno) << '\n';
+            return false;
+        }
 
         FILE* inFILE = fopen(filename.c_str(), "rb");
+
+        if(!check_hash(inFILE, hash)) return false;
+
         read(inFILE);
+
         fclose(inFILE);
 
         return true;
@@ -536,7 +735,7 @@ public:
 
     inline void read(FILE* inFILE){
         size_t L, matchIndex, j = 0;
-        fread(&L, 1, sizeof(unsigned int), inFILE);
+        fread(&L, 1, sizeof(size_t), inFILE);
         for(size_t i = 0; i < L; ++i){
             std::string varName;
             fread(varName, inFILE);
@@ -627,56 +826,186 @@ public:
 };
 
 template<class T>
-struct vector2{
+struct Vector2{
     T x, y;
-    friend std::ostream& operator<<(std::ostream& output, const vector2<T>& other){
+
+    friend std::ostream& operator<<(std::ostream& output, const Vector2<T>& other){
         output << other.x << '\t' << other.y;
         return output;
     }
 
-    inline bool operator==(const vector2<T>& other){
+    template<typename T2>
+    inline bool operator==(const Vector2<T2>& other){
         return ((this->x == other.x) && (this->y == other->y));
     }
-    inline bool operator!=(const vector2<T>& other){
-        return ((this->x != other.x) || (this->y != other->y));
+    template<typename T2>
+    inline bool operator!=(const Vector2<T2>& other){
+        return !(this == other);
+    }
+    template<typename T2>
+    inline bool operator<(const Vector2<T2>& other){
+        return (x < other.x) && (y < other.y);
+    }
+    template<typename T2>
+    inline bool operator>(const Vector2<T2>& other){
+        return (x > other.x) && (y > other.y);
+    }
+    template<typename T2>
+    inline bool operator<=(const Vector2<T2>& other){
+        return !(*this > other);
+    }
+    template<typename T2>
+    inline bool operator>=(const Vector2<T2>& other){
+        return !(*this < other);
+    }
+
+    template<typename T2>
+    Vector2<T> operator+(const Vector2<T2>& other) const{
+        return Vector2(x + other.x, y + other.y);
+    }
+    template<typename T2>
+    Vector2<T> operator-(const Vector2<T2>& other) const{
+        return Vector2(x - other.x, y - other.y);
+    }
+    template<typename T2>
+    Vector2<T> operator*(const Vector2<T2>& other) const{
+        return Vector2(x * other.x, y * other.y);
+    }
+    template<typename T2>
+    Vector2<T> operator/(const Vector2<T2>& other) const{
+        return Vector2(x / other.x, y / other.y);
+    }
+
+    template<typename T2>
+    Vector2<T> operator+(const T2& other) const{
+        return Vector2(x + other, y + other);
+    }
+    template<typename T2>
+    Vector2<T> operator-(const T2& other) const{
+        return Vector2(x - other, y - other);
+    }
+    template<typename T2>
+    Vector2<T> operator*(const T2& other) const{
+        return Vector2(x * other, y * other);
+    }
+    template<typename T2>
+    Vector2<T> operator/(const T2& other) const{
+        return Vector2(x / other, y / other);
+    }
+
+    template<typename T2>
+    void operator+=(const Vector2<T2>& other){
+        x += other.x;
+        y += other.y;
+    }
+    template<typename T2>
+    void operator-=(const Vector2<T2>& other){
+        x -= other.x;
+        y -= other.y;
+    }
+    template<typename T2>
+    void operator*=(const Vector2<T2>& other){
+        x *= other.x;
+        y *= other.y;
+    }
+    template<typename T2>
+    void operator/=(const Vector2<T2>& other){
+        x /= other.x;
+        y /= other.y;
+    }
+
+    template<typename T2>
+    void operator+=(const T2& other){
+        x += other;
+        y += other;
+    }
+    template<typename T2>
+    void operator-=(const T2& other){
+        x -= other;
+        y -= other;
+    }
+    template<typename T2>
+    void operator*=(const T2& other){
+        x *= other;
+        y *= other;
+    }
+    template<typename T2>
+    void operator/=(const T2& other){
+        x /= other;
+        y /= other;
+    }
+
+    template <typename T2>
+    Vector2<T>& operator=(const Vector2<T2>& other){
+        x = other.x;
+        y = other.y;
+        return *this;
+    }
+    template <typename T2>
+    Vector2<T>& operator=(const T2& other){
+        x = other;
+        y = other;
+        return *this;
     }
 
     inline T& in() { return x; }
     inline T& out() { return y; }
-    vector2(){ }
-    vector2(T x, T y):x(x), y(y){ }
-    vector2(std::vector<T>& xy): x(xy[0]), y(xy[1]){ }
+
+    Vector2(){ }
+    Vector2(T x, T y):x(x), y(y){ }
+    Vector2(std::vector<T>& xy): x(xy[0]), y(xy[1]){ }
 };
 
-template<typename T> void fwrite(const vector2<T>& coords, FILE* outFILE){
+typedef Vector2<int> Vector2i;
+typedef Vector2<unsigned int> Vector2u;
+typedef Vector2<float> Vector2f;
+
+template<typename T> void fwrite(const Vector2<T>& coords, FILE* outFILE){
     fwrite(&coords.x, 1, sizeof(T), outFILE);
     fwrite(&coords.y, 1, sizeof(T), outFILE);
 }
 
-template<typename T> void fread(const vector2<T>& coords, FILE* inFILE){
+template<typename T> void fread(const Vector2<T>& coords, FILE* inFILE){
     fread(&coords.x, 1, sizeof(T), inFILE);
     fread(&coords.y, 1, sizeof(T), inFILE);
 }
 
 template<class T>
-struct VectorPair{
+class VectorPair{
+public:
+
     std::vector<T> x, y;
-    inline unsigned int size() const{ return x.size() < y.size() ? x.size() : y.size(); }
-    inline void push_back(const vector2<T>& newPair){ x.push_back(newPair.x); y.push_back(newPair.y); }
+
+    inline bool empty() const{
+        return x.empty() || y.empty();
+    }
+
+    inline unsigned int size() const{
+        return x.size() < y.size() ? x.size() : y.size();
+    }
+
+    inline void push_back(const Vector2<T>& newPair){ x.push_back(newPair.x); y.push_back(newPair.y); }
     inline void push_back(const T& newX, const T& newY){ x.push_back(newX); y.push_back(newY); }
-    inline void emplace_back(const vector2<T>& newPair){ x.emplace_back(newPair.x); y.emplace_back(newPair.y); }
+
+    inline void emplace_back(const Vector2<T>& newPair){ x.emplace_back(newPair.x); y.emplace_back(newPair.y); }
     inline void emplace_back(const T& newX, const T& newY){ x.emplace_back(newX); y.emplace_back(newY); }
+
     inline void erase(const unsigned int index){ x.erase(x.begin() + index); y.erase(y.begin() + index); }
-    inline vector2<T> operator[](const unsigned int index) const{ return vector2<T>(x[index], y[index]); }
-    inline vector2<T> back() const{ return vector2<T>(x.back(), y.back()); }
-    inline vector2<T> front() const{ return vector2<T>(x.front(), y.front()); }
-    inline void clear(){ x.clear(); y.clear(); }
+    inline Vector2<T> operator[](const unsigned int index) const{ return Vector2<T>(x[index], y[index]); }
+    inline Vector2<T> back() const{ return Vector2<T>(x.back(), y.back()); }
+    inline Vector2<T> front() const{ return Vector2<T>(x.front(), y.front()); }
+
+    inline void clear(){
+        x.clear();
+        y.clear();
+    }
+
     inline void insert(const unsigned int& index, const T& newX, const T& newY){
         x.insert(x.begin() + index, newX);
         y.insert(y.begin() + index, newY);
     }
 
-    inline void remove(const vector2<T>& ref){
+    inline void remove(const Vector2<T>& ref){
         size_t L = this->size();
         for(size_t i = 0; i < L;){
             if((x[i] == ref.x) && (y[i] == ref.y)){
@@ -689,6 +1018,7 @@ struct VectorPair{
 
     VectorPair(){}
     VectorPair(const std::vector<T>& x, const std::vector<T>& y): x(x), y(y){ }
+
 };
 
 typedef VectorPair<unsigned int> VectorPairU;
@@ -699,375 +1029,40 @@ template<typename T> std::ostream& operator<<(std::ostream& output, const Vector
 }
 
 template<typename T> T rand(T i, T f){
-    return ((T) std::rand()*(f-i) / (RAND_MAX)+i);
+//    srand(time(NULL));
+    return (double(std::rand()) / (RAND_MAX) * (f - i) + i);
+}
+
+//template<typename T> T rand(T i, T f){
+//    std::array<int, std::mt19937::state_size> seed_data;
+//    std::random_device r;
+//
+//    std::generate(seed_data.begin(), seed_data.end(), std::ref(r));
+//    std::seed_seq seq(std::begin(seed_data), std::end(seed_data));
+//    std::mt19937 eng(seq);
+//
+//    std::uniform_real_distribution<> randU(i, f);
+//
+//    return randU(eng);
+//}
+
+inline bool draw(const float& chance){
+    return rand(0.0f, 1.0f) < chance;
 }
 
 inline bool randSwitch(const float& threshold = 0.5f){
-    return rand(0.0f,1.0f) > threshold;
+    return rand(0.0f,1.0f) < threshold;
 }
 
-template<class T1, class T2>
-class VariableMonitor{
-protected:
-    BYTE monitorState; // State of monitoring of response
-    std::thread* monitorThread;
-    float updateLatency;
-
-    bool monitoring;
-
-    vMatrix<float>* recordOutput;
-
-    T1* variable;
-    const T2* response;
-
-    T1 lastVariableValue,
-        variableIncrement,
-        lastVariableIncrement,
-        rangeMin, rangeMax;
-
-    T2 lastResponseValue,
-        lastResponseRate;
-
-public:
-
-    inline void resetVariableStates(){
-        if(variable != nullptr){
-            lastVariableValue = variable;
-            variableIncrement = *variable*0.001f;
-        }
-        else{
-            lastVariableValue = 0.0f;
-            variableIncrement = 0.0f;
-        }
-
-        if(response != nullptr){
-            lastResponseValue = *response;
-        }
-        else{
-            lastResponseValue = 0.0f;
-        }
-
-        lastResponseRate = 0.0f;
-    }
-
-    inline void setMonitorState(const BYTE& newState){ monitorState = newState; }
-    inline void setMonitor(T1& variable, const T2& response, const BYTE& monitorState){
-        this->variable = &variable;
-        this->response = &response;
-        this->monitorState = monitorState;
-        resetVariableStates();
-    }
-
-    inline void setMonitorVariable(T1& newVariable){
-        this->variable = &newVariable;
-        resetVariableStates();
-    }
-    inline void setMonitorVariableRange(const T1& newMin, const T1& newMax);
-    inline void setResponseVariable(T2& newResponse){
-        this->response = &newResponse;
-        resetVariableStates();
-    }
-
-    inline void setVariableIncrement(const T1& newIncrement){ variableIncrement = newIncrement; }
-
-    void update(){
-
-        float responseRate = *response - lastResponseValue;
-
-        if(responseRate == 0.0f){ // No change in response
-            lastResponseRate = 0.0f;
-            return;
-        }
-
-        if(monitorState & MONITOR_STATE_MAX){
-            if(*variable > lastVariableValue){
-                lastVariableValue = *variable;
-                if(responseRate > lastResponseRate){
-                    if(variableIncrement > lastVariableIncrement){ // Update increment by 1% if different than last
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(variableIncrement < lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(monitorState & MONITOR_STATE_ACTIVE){
-                        lastVariableIncrement = variableIncrement;
-                        if(rand(0.0f, 1.0f) > 0.5f){
-                            variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                        }
-                        else{
-                            variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                        }
-                    }
-
-                    *variable += variableIncrement;
-                }
-                else if(responseRate < lastResponseRate){
-                    if(variableIncrement < lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(variableIncrement > lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(monitorState & MONITOR_STATE_ACTIVE){
-                        lastVariableIncrement = variableIncrement;
-                        if(rand(0.0f, 1.0f) > 0.5f){
-                            variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                        }
-                        else{
-                            variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                        }
-                    }
-                    *variable -= variableIncrement;
-                }
-            }
-            else if(*variable < lastVariableValue){
-                lastVariableValue = *variable;
-                if(responseRate < lastResponseRate){
-                    if(variableIncrement > lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(variableIncrement < lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(monitorState & MONITOR_STATE_ACTIVE){
-                        lastVariableIncrement = variableIncrement;
-                        if(rand(0.0f, 1.0f) > 0.5f){
-                            variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                        }
-                        else{
-                            variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                        }
-                    }
-                    *variable += variableIncrement;
-                }
-                else if(responseRate > lastResponseRate){
-                    if(variableIncrement < lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(variableIncrement > lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(monitorState & MONITOR_STATE_ACTIVE){
-                        lastVariableIncrement = variableIncrement;
-                        if(rand(0.0f, 1.0f) > 0.5f){
-                            variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                        }
-                        else{
-                            variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                        }
-                    }
-                    *variable -= variableIncrement;
-                }
-            }
-            else if(monitorState & MONITOR_STATE_ACTIVE){ // Randomly peturb to prevent stagnancy
-                lastVariableValue = *variable;
-                if(rand(0.0f, 1.0f) > 0.5f){
-                    *variable += variableIncrement;
-                }
-                else{
-                    *variable -= variableIncrement;
-                }
-            }
-        }
-        if(monitorState & MONITOR_STATE_MIN){
-            if(*variable < lastVariableValue){
-                lastVariableValue = *variable;
-                if(responseRate > lastResponseRate){
-                    if(variableIncrement > lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(variableIncrement < lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(monitorState & MONITOR_STATE_ACTIVE){
-                        lastVariableIncrement = variableIncrement;
-                        if(rand(0.0f, 1.0f) > 0.5f){
-                            variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                        }
-                        else{
-                            variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                        }
-                    }
-                    if(*variable + variableIncrement < rangeMax)
-                        *variable += variableIncrement;
-                }
-                else if(responseRate < lastResponseRate){
-                    if(variableIncrement < lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(variableIncrement > lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(monitorState & MONITOR_STATE_ACTIVE){
-                        lastVariableIncrement = variableIncrement;
-                        if(rand(0.0f, 1.0f) > 0.5f){
-                            variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                        }
-                        else{
-                            variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                        }
-                    }
-                    if(*variable - variableIncrement > rangeMin)
-                        *variable -= variableIncrement;
-                }
-            }
-            else if(*variable > lastVariableValue){
-                lastVariableValue = *variable;
-                if(responseRate < lastResponseRate){
-                    if(variableIncrement > lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(variableIncrement < lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(monitorState & MONITOR_STATE_ACTIVE){
-                        lastVariableIncrement = variableIncrement;
-                        if(rand(0.0f, 1.0f) > 0.5f){
-                            variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                        }
-                        else{
-                            variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                        }
-                    }
-                    if(*variable + variableIncrement < rangeMax)
-                        *variable += variableIncrement;
-                }
-                else if(responseRate > lastResponseRate){
-                    if(variableIncrement < lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(variableIncrement > lastVariableIncrement){
-                        lastVariableIncrement = variableIncrement;
-                        variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                    }
-                    else if(monitorState & MONITOR_STATE_ACTIVE){
-                        lastVariableIncrement = variableIncrement;
-                        if(rand(0.0f, 1.0f) > 0.5f){
-                            variableIncrement += variableIncrement*abs(responseRate)/(*response);
-                        }
-                        else{
-                            variableIncrement -= variableIncrement*abs(responseRate)/(*response);
-                        }
-                    }
-                    if(*variable - variableIncrement > rangeMin)
-                        *variable -= variableIncrement;
-                }
-            }
-            else if(monitorState & MONITOR_STATE_ACTIVE){
-                lastVariableValue = *variable;
-                if(rand(0.0f, 1.0f) > 0.5f){
-                    if(*variable + variableIncrement < rangeMax){
-                        *variable += variableIncrement;
-                    }
-                }
-                else{
-                    if(*variable - variableIncrement > rangeMin)
-                        *variable -= variableIncrement;
-                }
-            }
-        }
-
-        lastResponseValue = *response;
-        lastResponseRate = responseRate;
-
-    }
-
-    bool beginMonitor(){
-        if((monitorThread == nullptr)
-           && (variable != nullptr)
-            && (response != nullptr)){
-                monitoring = true;
-                monitorThread = new std::thread([&](){
-                    std::chrono::duration<float> latency(updateLatency);
-                    while(monitoring){
-                        update();
-                        std::this_thread::sleep_for(latency);
-                    }
-                });
-                return true;
-        }
-        else{
-            if(monitorState & MONITOR_STATE_VERBOSE)
-                std::cout << ">> Could not begin variable monitoring\n";
-            monitoring = false;
-            return false;
-        }
-    }
-
-    bool stopMonitor(){
-        if(monitorThread != nullptr){
-            monitorThread->join();
-            if(monitorState & MONITOR_STATE_VERBOSE)
-                std::cout << ">> Variable monitor stopped\n";
-            monitoring = false;
-            return true;
-        }
-        else{
-            if(monitorState & MONITOR_STATE_VERBOSE)
-                std::cout << ">> Variable monitor is not active\n";
-            monitoring = false;
-            return false;
-        }
-    }
-
-    VariableMonitor():
-        monitorState(MONITOR_STATE_NONE),
-        monitorThread(nullptr),
-        updateLatency(1.0f),
-        monitoring(false),
-        variable(nullptr),
-        response(nullptr),
-        lastVariableValue(0),
-        variableIncrement(0),
-        lastVariableIncrement(0),
-        lastResponseValue(0),
-        lastResponseRate(0),
-        rangeMin(0),
-        rangeMax(0)
-        { }
-    VariableMonitor(T1& variable, const T2& response,
-                    const T1& rangeMin = -INFINITY, const T1& rangeMax = INFINITY,
-                    const BYTE& monitorState = MONITOR_STATE_NONE,
-                        const float& updateLatency = 1.0f):
-        monitorState(monitorState),
-        monitorThread(nullptr),
-        updateLatency(updateLatency),
-        monitoring(false),
-        variable(&variable),
-        response(&response),
-        lastVariableValue(variable),
-        variableIncrement(abs(0.001f*variable)),
-        lastVariableIncrement(this->variableIncrement),
-        lastResponseValue(response),
-        lastResponseRate(0),
-        rangeMin(-INFINITY),
-        rangeMax(INFINITY){
-            beginMonitor();
-        }
-
-    ~VariableMonitor(){ // Force stop
-        monitoring = false;
-        if(monitorThread != nullptr) monitorThread->join();
-    }
-
-};
-
 // Functions
+
+template<typename T>
+T nround(const T& value){
+    if(value < 0){
+        return nearbyint(value);
+    }
+    return round(value);
+}
 
 inline void timed_sleep(float sleepTime){
     std::this_thread::sleep_for(std::chrono::duration<float>(sleepTime));
@@ -1085,22 +1080,24 @@ template<typename T> void vprint(std::vector<T> &V){
     std::cout << ']';
 }
 
-template<typename T> void printColumn(const std::vector<T>& V, const unsigned int indent = 0){
-    for(auto it : V){
+template<typename T, typename out_type> out_type& printColumn(const std::vector<T>& V, const unsigned int indent = 0,
+                                                         out_type& outstream = std::cout){
+    for(auto& it : V){
         size_t i = 0;
         while(i < indent){
-            std::cout << '\t';
+            outstream << '\t';
             ++i;
         }
-        std::cout << it << '\n';
+        outstream << it << '\n';
     }
+    return outstream;
 }
 
 struct targetList{
     std::vector<std::vector<unsigned int>> targetMatrix;
     std::vector<std::string> tags;
 
-    friend std::ostream& operator<<(std::ostream& output, targetList& item){
+    template<typename T> friend T& operator<<(T& output, targetList& item){
         output << ">> Targets:\n";
         for(size_t i = 0; i < item.targetMatrix.size(); ++i){
             output << "\t* " << item.tags[i] << ": ";
@@ -1300,6 +1297,16 @@ template<typename T1, typename T2> std::vector<T1> vseq(T1 i, T2 f, const unsign
     return output;
 }
 
+template<typename T> std::vector<T> collapse(const std::vector<std::vector<T>>& matrix){
+    std::vector<T> output;
+    for(auto& V : matrix){
+        for(auto& item : V){
+            output.push_back(item);
+        }
+    }
+    return output;
+}
+
 template<typename T> size_t maxSize(const std::vector<std::vector<T>>& matrix){
     size_t L(matrix.size());
     if(L < 1) return 0;
@@ -1322,14 +1329,24 @@ template<typename T> size_t minSize(const std::vector<std::vector<T>>& matrix){
     return minSize;
 }
 
-template<typename T> size_t totalSize(const std::vector<std::vector<T>>& matrix){
-    size_t totalSIZE = 0;
-    if(matrix.size() < 1) return totalSIZE;
-    const typename std::vector<std::vector<T>>::const_iterator itEND = matrix.end();
-    for(typename std::vector<std::vector<T>>::const_iterator it = matrix.begin(); it != itEND; ++it){
-        totalSIZE += it->size();
+template<typename T> size_t validSize(const std::vector<std::vector<T>>& matrix){
+    size_t output = 0;
+    if(matrix.size() < 1) return output;
+    for(auto& y : matrix){
+        for(auto& x : y){
+            if(!isnan(x) && !isinf(x)) ++output;
+        }
     }
-    return totalSIZE;
+    return output;
+}
+
+template<typename T> size_t validSize(const std::vector<T>& V){
+    size_t output = 0;
+    for(auto& x : V){
+        if(!isnan(x) && !isinf(x)) ++output;
+    }
+
+    return output;
 }
 
 template<typename T> std::vector<T> getCrossSection(const unsigned int& index, const std::vector<std::vector<T>>& matrix){
@@ -1368,13 +1385,6 @@ template<typename T1, typename T2> bool operator!=(std::vector<T1>& V1, std::vec
     return !(V1 == V2);
 }
 
-template<typename T, typename N> bool anyEqual(const T& item, const std::vector<N> &V){
-    for(auto x : V){
-        if(x == item) return true;
-    }
-    return false;
-}
-
 template<typename T1, typename T2> unsigned int numEqual(const std::vector<T1>& V1, const std::vector<T2>& V2){
     unsigned int output = 0;
     for(auto& val : V1){
@@ -1386,8 +1396,9 @@ template<typename T1, typename T2> unsigned int numEqual(const std::vector<T1>& 
 }
 
 template<typename T1, typename T2> unsigned int match(const T1& item, const std::vector<T2>& V){
+    if(V.size() < 1) return UINT_MAX;
     unsigned int index = 0;
-    for(auto it : V){
+    for(auto& it : V){
         if(it == item) return index;
         ++index;
     }
@@ -1427,7 +1438,34 @@ template<typename T1, typename T2> void remove(const T1& item, std::vector<T2>& 
     }
 }
 
+// Vector operations
+
+template<typename T1, typename T2>
+std::vector<T2>& coerce(const std::vector<T1>& V1, std::vector<T2>& V2){
+    V2.resize(V1.size());
+    for(size_t i = 0; i < V2.size(); ++i){
+        V2[i] = V1[i];
+    }
+    return V2;
+}
+
 // Vector selection
+
+template<typename T> T& last(const std::vector<T>& V){
+    return V.back();
+}
+
+template<typename T> T& last(const std::vector<std::vector<T>>& M){
+    return M.back().back();
+}
+
+template<typename T> T& first(const std::vector<T>& V){
+    return V.front();
+}
+
+template <typename T> T& first(const std::vector<std::vector<T>>& M){
+    return M.front().front();
+}
 
 template<typename T1, typename T2> bool vExclusive(std::vector<T1>& V, std::vector<T2>& other){
     size_t L1 = V.size(), L2 = other.size();
@@ -1449,6 +1487,16 @@ template<typename T1, typename T2> std::vector<T1> shared(const std::vector<T1>&
                 output.push_back(V1[i]);
                 break; // Add shared entry once only
             }
+        }
+    }
+    return output;
+}
+
+template<typename T1, typename T2> std::vector<T1> without(const std::vector<T1>& V1, const std::vector<T2>& V2){
+    std::vector<T1> output;
+    for(auto& item : V1){
+        if(!anyEqual(item, V2)){
+            output.push_back(item);
         }
     }
     return output;
@@ -1627,7 +1675,7 @@ template<typename T1, typename T2> std::vector<unsigned int> select_subset_idx(c
 // Random vector
 
 template<typename T> void vrand(std::vector<T>& output, T ri, T rf, const unsigned int& length, const bool& repeat){ // No copy
-    output.clear(); output.reserve(length);
+    output.clear(); output.resize(length);
     if(repeat){
         for(size_t i = 0; i < length; ++i){
             output.push_back(rand<T>(ri, rf));
@@ -1635,12 +1683,14 @@ template<typename T> void vrand(std::vector<T>& output, T ri, T rf, const unsign
         return;
     }
 
-    for(size_t i = 0; i < length; ++i){
-        T randValue = rand<T>(ri, rf);
-        while(anyEqual(randValue, output)){
-            randValue = rand<T>(ri, rf);
-        }
-        output.push_back(randValue);
+    std::vector<T> possibilities = vseq(ri, rf);
+    size_t i = 0, randIndex;
+
+    while((i < length) && !possibilities.empty()){
+        randIndex = rand(size_t(0), possibilities.size() - 1);
+        output[i] = possibilities[randIndex];
+        possibilities.erase(possibilities.begin() + randIndex);
+        ++i;
     }
 }
 
@@ -1666,7 +1716,7 @@ template<typename T> std::vector<T> vrand(T ri, T rf, const unsigned int& length
 
 template<typename T> std::vector<T> pickRand(std::vector<T>& output, const std::vector<T>& V, const unsigned int length){
     size_t L = V.size();
-    std::vector<unsigned int> randIndex = vrand(size_t(0), L-1, length, false);
+    std::vector<size_t> randIndex = vrand(size_t(0), L-1, length, false);
     output.clear(); output.reserve(L);
 
     for(size_t i = 0; i < length; ++i){
@@ -1675,9 +1725,31 @@ template<typename T> std::vector<T> pickRand(std::vector<T>& output, const std::
     return output;
 }
 
+inline std::string rand_hash(const unsigned int& length, const std::string& allowed = ""){
+
+    std::string output;
+
+    if(allowed.empty()){
+        std::string allowed = std::string(ALPHABET) + DIGITS + HASH_CHAR;
+        while(output.size() < length){
+            output += allowed[rand(size_t(0),allowed.size()-1)];
+        }
+    }
+    else{
+        while(output.size() < length){
+            output += allowed[rand(size_t(0),allowed.size()-1)];
+        }
+    }
+
+    return output;
+
+}
+
 template<typename T> void randomize(std::vector<T>& V){
     size_t L = V.size();
-    std::vector<unsigned int> newIndex; vrand(newIndex, 0U, L-1, L, false);
+    std::vector<size_t> newIndex;
+    vrand(newIndex, size_t(0), L-1, L, false);
+
     std::vector<T> output(L);
     for(size_t i = 0; i < L; ++i){
         output[i] = V[newIndex[i]];
@@ -1741,7 +1813,7 @@ template<typename T> std::string vstring(std::vector<T> &V){
     return output;
 }
 
-template<typename T> std::ostream vstream(std::ostream& output, std::vector<T> &V){
+template<typename T> std::ostream& vstream(std::ostream& output, std::vector<T> &V){
     for(size_t i = 0; i < V.size(); ++i){
         output << V[i];
         if((V.size() > 1) && (i < V.size() - 1)){
@@ -1752,7 +1824,7 @@ template<typename T> std::ostream vstream(std::ostream& output, std::vector<T> &
     return output;
 }
 
-template<typename T> unsigned int maxSizeIndex(std::vector<std::vector<T>> matrix){
+template<typename T> unsigned int maxSizeIndex(const std::vector<std::vector<T>>& matrix){
     size_t L = matrix.size();
     unsigned int maxInd(0), maxL(0);
     for(size_t i = 0; i < L; ++i){
@@ -1883,6 +1955,14 @@ template<typename T> T median(std::vector<T> V){
     return V[L/2];
 }
 
+template<typename T> T median(const std::vector<std::vector<T>>& M){
+    std::vector<T> V;
+    for(auto& row : M){
+        V.insert(V.end(), row.begin(), row.end());
+    }
+    return median(V);
+}
+
 template<typename T> T Q1(std::vector<T> V){
     order(V);
     size_t L = V.size();
@@ -1908,9 +1988,16 @@ struct DataSummary{
         upperOutlierRange;
 
     DataSummary(){ }
-    DataSummary(std::vector<T> data){
+    DataSummary(std::vector<T> data):
+        lowerOutlierRange(0),
+        Q1(0),
+        median(0),
+        Q3(0),
+        upperOutlierRange(0){
+
         order(data);
         size_t L = data.size();
+
         for(size_t i = 0; i < L;){
             if(isnan(data[i]) || isinf(data[i])){
                 data.erase(data.begin() + i);
@@ -1918,6 +2005,20 @@ struct DataSummary{
             }
             ++i;
         }
+
+        if(!L) return;
+        if(L == 1){
+            Q3 = median = Q1 = data.front();
+            return;
+        }
+        else if(L < 4){
+            Q1 = data.front();
+            Q3 = data.back();
+            if(L == 2) median = average(data);
+            else median = data[1];
+            return;
+        }
+
 
         size_t initL = L;
 
@@ -2017,11 +2118,25 @@ template<typename T> T percentileValue(float percentile, std::vector<T> V, bool 
 }
 
 template<typename T> T sum(const std::vector<T> &V){
-    T output(0);
-    const c_itr<T> itEND = V.end();
-    for(c_itr<T> it = V.begin(); it != itEND; ++it){
-        if(isnan(*it) || isinf(*it)) continue;
-        output += *it;
+    if(V.size() < 1) return NAN;
+    T output(NAN);
+    for(auto& num : V){
+        if(isnan(output)) output = num;
+        else if(isnan(num)) continue;
+        else output += num;
+    }
+    return output;
+}
+
+template<typename T> T sum(const vMatrix<T>& M){
+    if(M.empty()) return NAN;
+    T output(NAN);
+    for(auto& row : M){
+        for(auto& num : row){
+            if(isnan(output)) output = num;
+            else if(isnan(num)) continue;
+            else output += num;
+        }
     }
     return output;
 }
@@ -2202,29 +2317,30 @@ template<typename T> T range(const std::vector<T>& V){
 
 template<typename T> T stdev(const std::vector<T>& V){
     T vMean = average(V);
-    T output = 0;
+    T output(0);
     unsigned int N = 0;
-    typename std::vector<T>::const_iterator itEND = V.end();
-    for(typename std::vector<T>::const_iterator it = V.begin(); it != itEND; ++it){
-        if(isnan(*it) || isinf(*it)) continue;
-        output += pow(*it - vMean, 2);
+    for(const auto& num : V){
+        if(isnan(num) || isinf(num)) continue;
+        output += pow(num - vMean, 2);
         ++N;
     }
-    return output/N;
+    return sqrt(output/N);
 }
 
 template<typename T> T stdev(const std::vector<std::vector<T>>& V){
     T vMean = average(V);
-    T output = 0;
+    T output(0);
+
     unsigned int tSIZE = 0;
-    for(auto& row : V){
-        for(auto& col : row){
-            if(isnan(col)) continue;
+    for(const auto& row : V){
+        for(const auto& col : row){
+            if(isnan(col) || isinf(col)) continue;
             output += pow(col - vMean, 2);
             ++tSIZE;
         }
     }
-    return output/tSIZE;
+
+    return sqrt(output/tSIZE);
 }
 
 template<typename T> std::vector<unsigned int> orderedIndex(std::vector<T> V, bool ascending = true){
@@ -2267,6 +2383,9 @@ template<typename T> std::vector<T> unique(std::vector<T> V){
 }
 
 template<typename T> unsigned int numUnique(const std::vector<T>& V){
+    if(V.empty()) return 0;
+    else if(V.size() == 1) return 1;
+
     unsigned int numDuplicated = 0;
     bool duplicated = false;
     std::vector<T> uniqueItems;
@@ -2427,7 +2546,161 @@ template<typename T> std::vector<T> collapse(std::vector<std::vector<T>>& V){
     return output;
 }
 
+template<typename T>
+size_t area(const std::vector<std::vector<T>>& M){
+    size_t output = 0;
+    for(auto& row : M){
+        output += row.size();
+    }
+    return output;
+}
+
+template<typename T>
+size_t volume(const std::vector<std::vector<std::vector<T>>>& tensor){
+    size_t output = 0;
+    for(auto& plane : tensor){
+        output += area(plane);
+    }
+    return output;
+}
+
 // Coordinate functions
+
+//template<typename T>
+//bool _2Dpath(vMatrix<T>& output,
+//             const std::vector<T>& begin,
+//             const std::vector<T>& end){
+//
+//    output.clear();
+//    if((begin.size() < 2) || (end.size() < 2)) return false;
+//
+//    float distX = end[0]-begin[0];
+//    float distY = end[1]-begin[1];
+//
+//    // Determine straight line distance
+//    float dist = sqrt(float(pow(distX, 2) + pow(distY, 2)));
+//    float stepX = distX != 0.0 ? distX/distY : 0.0;
+//    float stepY = distY != 0.0 ? distY/distX : 0.0;
+//
+//    std::vector<T> xCoords; xCoords.reserve(dist);
+//    std::vector<T> yCoords; yCoords.reserve(dist);
+//    xCoords.push_back(begin[0]); yCoords.push_back(begin[1]);
+//
+//    if(stepX != 0.0) for(float x = begin[0] + stepX; x <= distX; x += stepX){ xCoords.push_back(x); }
+//    if(stepY != 0.0) for(float y = begin[1] + stepY; y <= distY; y += stepY){ yCoords.push_back(y); }
+//    for(size_t i = 1; i < xCoords.size(); ++i){
+//        if(xCoords[i] > xCoords[i-1]+1){
+//            xCoords.insert(xCoords.begin() + i, xCoords[i-1]+1);
+//        }
+//    }
+//    for(size_t i = 1; i < yCoords.size(); ++i){
+//        if(yCoords[i] > yCoords[i-1]+1){
+//            yCoords.insert(yCoords.begin() + i, yCoords[i-1]+1);
+//        }
+//    }
+//
+//    while(xCoords.back() < end[0]){
+//        xCoords.push_back(xCoords.back() + 1);
+//    }
+//    while(yCoords.back() < end[1]){
+//        yCoords.push_back(yCoords.back() + 1);
+//    }
+//
+//    while(xCoords.size() < yCoords.size()){
+//        xCoords.push_back(xCoords.back());
+//    }
+//    while(yCoords.size() < xCoords.size()){
+//        yCoords.push_back(yCoords.back());
+//    }
+//
+//    for(size_t i = 0; i < xCoords.size(); ++i){
+//        output.push_back({xCoords[i], yCoords[i]});
+//    }
+//
+//    return output.size() > 0;
+//
+//}
+
+template<typename T>
+bool _2Dpath(vMatrix<T>& output,
+             const std::vector<T>& begin,
+             const std::vector<T>& end){
+
+    output.clear();
+    if((begin.size() < 2) || (end.size() < 2)) return false;
+
+    double distX = double(end[0])-double(begin[0]);
+    double distY = double(end[1])-double(begin[1]);
+
+    // Determine straight line distance
+
+    double xPos = begin[0],
+            yPos = begin[1],
+            x = 0.0,
+            y = 0.0,
+            inc,
+            xEnd = nround(end[0]),
+            yEnd = nround(end[1]);
+
+    // Determine angle of motion
+
+    double dist = sqrt(pow(distX,2) + pow(distY, 2)),
+            angle;
+    if(distY >= 0){
+        if(distX >= 0) angle = asin(distY/dist); // Q1
+        else angle = PI - asin(distY/dist); // Q2
+    }
+    else{
+        if(distX >= 0) angle = 2*PI + asin(distY/dist); // Q4
+        else angle = PI - asin(distY/dist); // Q3
+    }
+
+    if(abs(distX) >= abs(distY)){
+        do{
+            output.emplace_back(std::vector<T>({T(xPos), T(yPos)}));
+
+            if(distX >= 0){
+                ++xPos;
+            }
+            else{
+                --xPos;
+            }
+
+            ++x;
+
+            inc = 1.0*tan(angle);
+            if((inc > 0) ^ (distY > 0)){
+                inc = -inc;
+            }
+            yPos += inc;
+
+        }while(x <= abs(distX));
+    }
+    else{
+        do{
+            output.emplace_back(std::vector<T>({T(xPos), T(yPos)}));
+
+            if(distY >= 0){
+                ++yPos;
+            }
+            else{
+                --yPos;
+            }
+
+            ++y;
+
+            inc = 1.0/tan(angle);
+            if((inc > 0) ^ (distX > 0)){
+                inc = -inc;
+            }
+            xPos += inc;
+
+        }while(y <= abs(distY));
+    }
+
+    return output.size() > 0;
+
+}
 
 template<typename T> float horizontal_angle(const T& originX, const T& originY,
                                  const T& destinationX, const T& destinationY){
@@ -2508,10 +2781,10 @@ inline float point_biserial_coefficient(const std::vector<float>& data,
 inline float signal_to_noise(const std::vector<float>& data,
                              const std::vector<unsigned int>& outcomeIndex){
     unsigned int L = data.size();
-    if(L < 1) return NAN;
+    if(numValid(data) < 2) return NAN;
+    if(outcomeIndex.empty()) return NAN;
 
     std::vector<float> sample, rem;
-    unsigned int N = 0;
 
     for(size_t i = 0; i < L; ++i){
         if(isnan(data[i])) continue;
@@ -2519,6 +2792,19 @@ inline float signal_to_noise(const std::vector<float>& data,
         else{
             sample.push_back(data[i]);
         }
+    }
+
+    if(sample.empty() || rem.empty()) return NAN;
+
+    if(sample.size() == 1){
+
+        if(rem.size() > 1){
+            return (sample.front() - average(rem))/stdev(data);
+        }
+        else{
+            return (sample.front() - rem.front())/stdev(data);
+        }
+
     }
 
     return (average(sample) - average(rem))/(stdev(rem) + stdev(sample));
@@ -2582,17 +2868,165 @@ inline float chisq_p(float F, int df){
     return 1.0f - p / tgamma(K);
 }
 
-inline float student_t_test(const std::vector<float>& P1,
-                             const std::vector<float>& P2){
-    size_t S1 = P1.size(), S2 = P2.size(), V = S1 + S2 - 2;
+template<typename T> double student_t_test(const std::vector<T>& P1,
+                             const std::vector<T>& P2,
+                             const uint8_t& tail = STATS_TWO_TAILED){
+
+    size_t S1 = validSize(P1), S2 = validSize(P2), V = S1 + S2 - 2;
     if((S1 < 3) || (S2 < 3)) return NAN;
 
-    float SD1 = stdev(P1), SD2 = stdev(P2);
-    float Sp = sqrt(((S1-1)*pow(SD1, 2) + (S2-1)*pow(SD2, 2))/(V));
-    float t_stat = absolute((average(P1) - average(P2))/(Sp*sqrt(1.0f/S1 + 1.0f/S2)));
+    double SD1 = stdev(P1), SD2 = stdev(P2);
+    double Sp = sqrt(((S1-1)*pow(SD1, 2) + (S2-1)*pow(SD2, 2))/(V));
+    double t_stat = absolute((average(P1) - average(P2))/(Sp*sqrt(1.0f/S1 + 1.0f/S2)));
+
+    if(isinf(t_stat) || isnan(t_stat)) return NAN;
 
     boost::math::students_t dist(V);
-    return boost::math::cdf(boost::math::complement(dist, t_stat))*2;
+
+    double output;
+    switch(tail){
+        case STATS_UPPER_TAIL:{
+            output = boost::math::cdf(boost::math::complement(dist, t_stat));
+            if(output < 0.0) return 1.0;
+            break;
+        }
+        case STATS_LOWER_TAIL:{
+            output = boost::math::cdf(boost::math::complement(dist, t_stat));
+            if(output > 0.0) return 1.0;
+            break;
+        }
+        default:{
+            output = boost::math::cdf(boost::math::complement(dist, t_stat))*2;
+            break;
+        }
+    }
+
+    return output;
+}
+
+template<typename T> double population_mean_test(const std::vector<T>& sample,
+                                                const std::vector<T>& population,
+                                                const uint8_t& tail = STATS_TWO_TAILED,
+                                                bool bonferroni_correct = true){
+
+    size_t S1 = validSize(sample), S2 = validSize(population), V = S1 + S2 - 2;
+    if((S1 < 2) || (S2 < 2)) return NAN;
+
+    double t_stat = abs(average(sample));
+    double Sp = sqrt(((S1-1)*pow(stdev(sample), 2) + (S2-1)*pow(stdev(population), 2))/(V)); // Pooled variation
+
+    if((Sp == 0.0) || isinf(Sp) || isnan(Sp)) return NAN;
+
+    boost::math::normal_distribution<double> dist(average(population), Sp);
+
+    double output;
+    switch(tail){
+        case STATS_UPPER_TAIL:{
+            if(t_stat < average(population)) output = 1.0;
+            else output = boost::math::cdf(boost::math::complement(dist, t_stat));
+            break;
+        }
+        case STATS_LOWER_TAIL:{
+            if(t_stat > average(population)) output = 1.0;
+            else output = boost::math::cdf(boost::math::complement(dist, t_stat));
+            break;
+        }
+        default:{
+            output = boost::math::cdf(boost::math::complement(dist, t_stat))*2;
+            break;
+        }
+    }
+
+    if(bonferroni_correct){
+        output *= V;
+        if(output > 1.0) return 1.0;
+    }
+
+    return output;
+
+}
+
+template<typename T> double one_sample_test(const T& sample,
+                                                const std::vector<T>& population,
+                                                const uint8_t& tail = STATS_TWO_TAILED,
+                                                bool bonferroni_correct = true){
+    if(isnan(sample)) return NAN;
+    size_t N = validSize(population);
+    double t_stat = abs(sample),
+            SD = stdev(population);
+
+    if((SD == 0.0) || isinf(SD) || isnan(SD)) return NAN;
+    boost::math::normal_distribution<double> dist(average(population), SD);
+
+    double output;
+    switch(tail){
+        case STATS_UPPER_TAIL:{
+            if(t_stat < average(population)) output = 1.0;
+            else output = boost::math::cdf(boost::math::complement(dist, t_stat));
+            break;
+        }
+        case STATS_LOWER_TAIL:{
+            if(t_stat > average(population)) output = 1.0;
+            else output = boost::math::cdf(boost::math::complement(dist, t_stat));
+            break;
+        }
+        default:{
+            output = boost::math::cdf(boost::math::complement(dist, t_stat))*2;
+            break;
+        }
+    }
+
+    if(bonferroni_correct){
+        output *= N;
+        if(output > 1.0) return 1.0;
+    }
+
+    return output;
+}
+
+template<typename T> double one_sample_test(const T& sample,
+                                                const std::vector<std::vector<T>>& population,
+                                                const uint8_t& tail = STATS_TWO_TAILED,
+                                                bool bonferroni_correct = true){
+    if(isnan(sample)) return NAN;
+    size_t N = validSize(population);
+    double t_stat = abs(sample),
+            SD = stdev(population);
+
+    if((SD == 0.0) || isinf(SD) || isnan(SD)) return NAN;
+    boost::math::normal_distribution<double> dist(average(population), SD);
+
+    double output;
+    switch(tail){
+        case STATS_UPPER_TAIL:{
+            if(t_stat < average(population)) output = 1.0;
+            else output = boost::math::cdf(boost::math::complement(dist, t_stat));
+            break;
+        }
+        case STATS_LOWER_TAIL:{
+            if(t_stat > average(population)) output = 1.0;
+            else output = boost::math::cdf(boost::math::complement(dist, t_stat));
+            break;
+        }
+        default:{
+            output = boost::math::cdf(boost::math::complement(dist, t_stat))*2;
+            break;
+        }
+    }
+
+    if(bonferroni_correct){
+        output *= N;
+        if(output > 1.0) return 1.0;
+    }
+
+    return output;
+}
+
+template<typename T> double one_sample_test(const std::vector<T>& sample,
+                                            const std::vector<std::vector<T>>& population,
+                                            const uint8_t& tail = STATS_TWO_TAILED,
+                                            bool bonferroni_correct = true){
+    return one_sample_test(average(sample), population, tail, bonferroni_correct);
 }
 
 inline float odds_ratio(const int& O, int OT,
@@ -2636,22 +3070,54 @@ inline float odds_chisq_test(const int& O, int OT, int N, int T){
     return boost::math::cdf(boost::math::complement(dist, alpha))*2;
 }
 
-inline float fisher_exact_P(const int& O, int OT, int N, int T){
+template<typename T> double logFactorial(T N){
+    double output = 0.0;
+    for(; N > 0; --N){
+        output += log10(double(N));
+    }
+    return output;
+}
 
-    unsigned int total = T;
+inline long double hypergeometric_probability(const int& a, const int& b, const int& c, const int& d){
+    return pow(10, (logFactorial(a+b) +
+            logFactorial(c+d) +
+            logFactorial(a+c) +
+            logFactorial(b+d) -
+                logFactorial(a+b+c+d) -
+                logFactorial(a) -
+                 logFactorial(b) -
+                 logFactorial(c) -
+                 logFactorial(d)));
+}
+
+inline long double fisher_exact_P(const int& O, int OT, int N, int T,
+                                  const bool& bonferroni_correct = false){
+
+    size_t total = T;
 
     T -= N;
     OT -= O;
     N -= O;
     T -= OT;
 
-    return (factorial((long double)(O+OT))*factorial((long double)(N+T)) *
-            factorial((long double)(O+N))*factorial((long double)(OT+T))) /
-                (factorial((long double)(total))*factorial((long double)(O)) *
-                 factorial((long double)(OT))*factorial((long double)(N))*factorial((long double)(T)));
+    long double p_cutoff = hypergeometric_probability(O, OT, N, T),
+            p_value = 0.0L;
+
+    for(int i = 0; i <= total; ++i){
+        if((O + OT - i >= 0) && (O + N - i >= 0) && (T - O + i >= 0)){
+            long double p = hypergeometric_probability(i, O + OT - i, O + N - i, T - O + i);
+            if(p <= p_cutoff) p_value += p;
+        }
+    }
+
+    if(bonferroni_correct){
+        p_value *= total;
+        if(p_value > 1.0L) return 1.0L;
+    }
+
+    return p_value;
 
 }
-
 
 
 // String algorithms
@@ -2707,12 +3173,34 @@ inline constexpr bool isDelimiter(const char& c){
             (c == ',') || (c == '-'));
 }
 
+inline bool check_letter(const char& c, const char& other_c){
+    if(isLetter(c)){
+        if(c == other_c) return true;
+        if(isUpperCase(c) && isLowerCase(other_c)){
+            if((c + 32) == other_c) return true;
+        }
+        else if(isLowerCase(c) && isUpperCase(other_c)){
+            if((c - 32) == other_c) return true;
+        }
+    }
+
+    return false;
+}
+
 inline constexpr bool isSpecial(const char& c){
-    return(((c < 'A') && (c > 'Z')) &&
-           ((c < 'a') && (c > 'z')) &&
-           ((c < '0') && (c > '9')) &&
+    return(((c < 'A') || (c > 'Z')) &&
+           ((c < 'a') || (c > 'z')) &&
+           ((c < '0') || (c > '9')) &&
            (c != '-') && (c != '+') &&
            (c != '/'));
+}
+
+inline constexpr bool isTypeChar(const char& c){
+    return (((c > 31) && (c < 127)) || (c == '\t') || (c == '\n'));
+}
+
+inline bool isNumeric(const char& c){
+    return ((c > 39) && (c < 58));
 }
 
 inline bool isNumeric(char* c){
@@ -2753,11 +3241,20 @@ inline bool isNumeric(const std::string& s){
 }
 
 inline std::string sigFigs(const std::string& numeric){
-    if(numeric.find('.') >= numeric.size()) return numeric;
+    if((numeric.find('.') >= numeric.size()) ||
+       (numeric.find('E') >= numeric.size())) return numeric;
+
     std::string output = numeric;
     while(output.back() == '0') output.pop_back();
     while(output.back() == '.') output.pop_back();
+
     return output;
+}
+
+inline std::string sigFigs(const float& value){
+    std::stringstream str;
+    str << value;
+    return sigFigs(str.str());
 }
 
 template<typename T> std::string strDigits(const T& numeric, const unsigned int& numDecimals){ // Only works with classes with to_string support in std
@@ -2785,6 +3282,37 @@ template<typename T> std::string strDigits(const T& numeric, const unsigned int&
 
     return numStr;
 
+}
+
+inline int hexToInt(const char* c){
+    int L = strlen(c);
+    if((L < 2) || (L % 2)) return -1;
+    int output = 0, d1, d2;
+
+    for(int i = L - 1, j = 0; i > 0; i -= 2, j += 2){
+        if((c[i] > 'f') || (c[i - 1] > 'f')) return -1;
+
+        if(isNumber(c[i])){
+            d1 = int(c[i]) - 48;
+        } else {
+            d1 = int(c[i]) - 87;
+        }
+
+        if(isNumber(c[i - 1])){
+            d2 = int(c[i - 1]) - 48;
+        } else {
+            d2 = int(c[i - 1]) - 87;
+        }
+
+        output += d1*pow(16, j) + d2*pow(16, j+1);
+
+    }
+
+    return output;
+}
+
+inline int hexToInt(const std::string& s){
+    return hexToInt(s.c_str());
 }
 
 inline void operator+=(std::string& text, const float& numeric){
@@ -2829,11 +3357,23 @@ inline void to_lowercase(std::string& s){
     }
 }
 
+inline std::string get_lowercase(const std::string& s){
+    std::string output = s;
+    to_lowercase(output);
+    return output;
+}
+
 inline void to_uppercase(std::string& s){
     size_t L = s.size();
     for(size_t i = 0; i < L; ++i){
         if(isLowerCase(s[i])) s[i] -= 32;
     }
+}
+
+inline std::string get_uppercase(const std::string& s){
+    std::string output = s;
+    to_uppercase(output);
+    return output;
 }
 
 inline void capitalize(std::string& s){
@@ -2867,9 +3407,98 @@ inline bool isWord(const std::string& s){
     return true;
 }
 
+inline bool sw_align(const std::string& query, const std::string& background,
+                     const float& threshold = 0.6f,
+                     unsigned int* output = nullptr){
+    unsigned int xL = query.size()+1, yL = background.size()+1;
+    vMatrix<int> scores(yL, std::vector<int>(xL, 0)),
+                    dir(yL, std::vector<int>(xL, 3));
+
+    std::vector<int> assessment(4, 0);
+
+    for(size_t y = 1; y < yL; ++y){
+        for(size_t x = 1; x < xL; ++x){
+            if(query[x-1] == background[y-1]){
+                assessment[0] = scores[y-1][x-1] + 5;
+            }
+            else{
+                assessment[0] = scores[y-1][x-1] - 4;
+            }
+
+            if((x > 1) && (dir[y][x-1] == dir[y][x-2])) assessment[1] = scores[y][x-1] - 4; // Gap extension penalty
+            else{
+                assessment[1] = scores[y][x-1] - 12; // Gap opening penalty
+            }
+
+            if((y > 1) && (dir[y-1][x] == dir[y-2][x])){
+                assessment[2] = scores[y-1][x] - 4;
+            }
+            else assessment[2] = scores[y-1][x] - 12;
+
+            dir[y][x] = maxIndex(assessment);
+            scores[y][x] = assessment[dir[y][x]];
+        }
+    }
+
+    int maxScore = max(scores), thresScore = maxScore * threshold;
+    if(output != nullptr) *output = maxScore;
+    VectorPairU maxCoords;
+
+    for(size_t y = 1; y < yL; ++y){
+        for(size_t x = 1; x < xL; ++x){
+            if(scores[y][x] > thresScore) maxCoords.emplace_back(x, y);
+        }
+    }
+
+    std::vector<VectorPairU> coords;
+
+    int stepX = 0, stepY = 0, identical;
+    bool walk;
+    for(size_t i = 0; i < maxCoords.size(); ++i){
+
+        coords.emplace_back();
+
+        stepX = maxCoords[i].x;
+        stepY = maxCoords[i].y;
+        identical = 0;
+
+        walk = true;
+        while(walk){
+            switch(dir[stepY][stepX]){
+                case SW_PTR_DIAG:{
+                    if(scores[stepY-1][stepX-1] < scores[stepY][stepX]) ++identical;
+                    --stepX;
+                    --stepY;
+                    coords.back().insert(0, stepX, stepY);
+                    break;
+                }
+                case SW_PTR_LEFT:{
+                    --stepX;
+                    coords.back().insert(0, stepX, UINT_MAX);
+                    break;
+                }
+                case SW_PTR_UP:{
+                    --stepY;
+                    coords.back().insert(0, UINT_MAX, stepY);
+                    break;
+                }
+                default:{
+                    walk = false;
+                    break;
+                }
+            }
+        }
+
+    }
+
+    return (float)maxScore > ((float)(background.size())+(float)(query.size()))/2*5*threshold;
+
+}
+
 inline bool cmpShortString(std::string focus, std::string other, const BYTE& params = CMP_STR_DEFAULT){
 
     size_t s1SIZE = focus.size(), s2SIZE = other.size();
+    if((s1SIZE < 1) || (s2SIZE < 1)) return false;
     if(!(params & CMP_STR_SIZE_INSENSITIVE) && (s1SIZE != s2SIZE)) return false;
 
     if(params & CMP_STR_CASE_INSENSITIVE){
@@ -2889,31 +3518,36 @@ inline bool cmpShortString(std::string focus, std::string other, const BYTE& par
         unsigned int index = other.find(focus);
         if(params & CMP_STR_SMALL_DISCRETE){
             if(index < s2SIZE){
-                if(index > 0) if(!isCharType(other[index-1], " ,.;!_/\\+=|<>")) bOutput = false;
-                if(index + s1SIZE < s2SIZE) if(!isCharType(other[index+s1SIZE], " ,.;!_/\\+=|<>")) bOutput = false;
+                if(index > 0) if(!isCharType(other[index-1], DELIM_STANDARD)) bOutput = false;
+                if(index + s1SIZE < s2SIZE) if(!isCharType(other[index+s1SIZE], DELIM_STANDARD)) bOutput = false;
             }
             else bOutput = false;
         }
+        else bOutput = index < other.size();
     }
     else{
         unsigned int index = focus.find(other);
         if(params & CMP_STR_SMALL_DISCRETE){
             if(index < s1SIZE){
-                if(index > 0) if(!isCharType(focus[index-1], " ,.;!_/\\+=|<>")) bOutput = false;
-                if(index + s2SIZE < s1SIZE) if(!isCharType(focus[index+s2SIZE], " ,.;!_/\\+=|<>")) bOutput = false;
+                if(index > 0) if(!isCharType(focus[index-1], DELIM_STANDARD)) bOutput = false;
+                if(index + s2SIZE < s1SIZE) if(!isCharType(focus[index+s2SIZE], DELIM_STANDARD)) bOutput = false;
             }
             else bOutput = false;
         }
+        else bOutput = index < focus.size();
     }
 
     return bOutput;
 }
 
-inline bool cmpString(std::string focus, std::string other, const BYTE& params = CMP_STR_DEFAULT){
+inline bool cmpString(std::string focus, std::string other,
+                      const BYTE& params = CMP_STR_DEFAULT,
+                      const float& threshold = 0.6f){
 
     if(focus == other)
         return true; // Attempt short-circuit for direct matches
     else if(!params) return false;
+    else if(focus.empty() || other.empty()) return false;
 
     size_t s1SIZE = focus.size(), s2SIZE = other.size();
     if(!(params & CMP_STR_SIZE_INSENSITIVE) && (s1SIZE != s2SIZE)) return false;
@@ -2935,28 +3569,40 @@ inline bool cmpString(std::string focus, std::string other, const BYTE& params =
 
     if(s2SIZE >= s1SIZE){
         if(other.find(focus) < s2SIZE) return true;
+        else if(params & CMP_STR_SW){
+            return sw_align(focus, other, threshold);
+        }
     }
-    else if(focus.find(other) < s1SIZE) return true;
+    else{
+        if(focus.find(other) < s1SIZE) return true;
+        else if(params & CMP_STR_SW){
+            return sw_align(focus, other, threshold);
+        }
+    }
 
     return false;
 }
 
-inline bool cmpStringToList(const std::string& focus, const std::vector<std::string>& list, const BYTE& params = CMP_STR_DEFAULT){
-    for (auto str : list){
-        if(cmpString(focus, str, params)) return true;
+inline bool cmpStringToList(const std::string& focus, const std::vector<std::string>& list,
+                            const BYTE& params = CMP_STR_DEFAULT, const float& threshold = 0.6f){
+    for (auto& str : list){
+        if(cmpString(focus, str, params, threshold)) return true;
     }
     return false;
 }
 
-inline bool cmpStringToList(const StringVector& query, const StringVector& other, const BYTE& params = CMP_STR_DEFAULT){
-    for(auto str: query){
+inline bool cmpStringToList(const StringVector& query, const StringVector& other,
+                            const BYTE& params = CMP_STR_DEFAULT, const float& threshold = 0.6f){
+    for(auto& str: query){
         if(cmpStringToList(str, other, params)) return true;
     }
     return false;
 }
 
-inline bool cmpStringIncludeList(const std::string& focus, const std::vector<std::string>& list, const BYTE& params = CMP_STR_DEFAULT){
-    for (auto str : list){
+inline bool cmpStringIncludeList(const std::string& focus, const std::vector<std::string>& list,
+                                 const BYTE& params = CMP_STR_DEFAULT,
+                                 const float& threshold = 0.6f){
+    for (auto& str : list){
         if(!cmpString(focus, str, params)) return false;
     }
     return true;
@@ -2964,8 +3610,9 @@ inline bool cmpStringIncludeList(const std::string& focus, const std::vector<std
 
 inline unsigned int findShortString(std::string focus, std::string other, const BYTE& params = CMP_STR_DEFAULT){
 
+    if(focus.empty() || other.empty()) return UINT_MAX;
     size_t s1SIZE = focus.size(), s2SIZE = other.size();
-    if(!(params & CMP_STR_SIZE_INSENSITIVE) && (s1SIZE != s2SIZE)) return false;
+    if(!(params & CMP_STR_SIZE_INSENSITIVE) && (s1SIZE != s2SIZE)) return UINT_MAX;
 
     if(params & CMP_STR_CASE_INSENSITIVE){
         for(size_t i = 0; i < s1SIZE; ++i){
@@ -2984,12 +3631,14 @@ inline unsigned int findShortString(std::string focus, std::string other, const 
     if(s2SIZE >= s1SIZE){
         index = other.find(focus);
         if(params & CMP_STR_SMALL_DISCRETE){
-            if(index < s2SIZE){
+            if(focus.size() == other.size()) bOutput = true;
+            else if(index < s2SIZE){
                 if(index > 0) if(!isCharType(other[index-1], " ,.;!_/\\+=")) bOutput = false;
                 if(index + s1SIZE < s2SIZE) if(!isCharType(other[index+s1SIZE], " ,.;!_/\\+=")) bOutput = false;
             }
             else bOutput = false;
         }
+        else bOutput = index < other.size();
     }
     else{
         index = focus.find(other);
@@ -3000,6 +3649,7 @@ inline unsigned int findShortString(std::string focus, std::string other, const 
             }
             else bOutput = false;
         }
+        else bOutput = index < focus.size();
     }
 
     if(bOutput) return index;
@@ -3010,6 +3660,7 @@ inline unsigned int findString(std::string focus, std::string other, const BYTE&
 
     if(focus == other) return 0; // Attempt short-circuit for direct matches
 
+    if(focus.empty() || other.empty()) return UINT_MAX;
     size_t s1SIZE = focus.size(), s2SIZE = other.size();
     if(!(params & CMP_STR_SIZE_INSENSITIVE) && (s1SIZE != s2SIZE)) return UINT_MAX;
 
@@ -3032,6 +3683,350 @@ inline unsigned int findString(std::string focus, std::string other, const BYTE&
     if(fIndex < s1SIZE) return fIndex;
 
     return UINT_MAX;
+}
+
+inline size_t findString(const char* query, const char* background){
+    size_t S = strlen(query),
+            L = strlen(background),
+            beginIdx = UINT_MAX,
+            matchIdx = 0;
+
+    if(S > L) return UINT_MAX;
+
+    for(size_t i = 0; i < L - S + 1; ++i){
+        if(background[i] == query[matchIdx]){
+            if(beginIdx == UINT_MAX){
+                beginIdx = i;
+            }
+            ++matchIdx;
+        }
+        else{
+            matchIdx = 0;
+            beginIdx = UINT_MAX;
+        }
+
+        if(matchIdx == S){
+            return beginIdx;
+        }
+    }
+
+    return UINT_MAX;
+}
+inline bool checkString(const char* query, const char* background){
+    size_t S = strlen(query),
+            L = strlen(background),
+            matchIdx = 0;
+
+    if(S > L) return false;
+
+    for(size_t i = 0; i < L - S + 1; ++i){
+        if(background[i] == query[matchIdx]){
+            ++matchIdx;
+        }
+        else{
+            matchIdx = 0;
+        }
+
+        if(matchIdx == S){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+inline bool ptr_at_string(const char* ptr, const char* query){
+    if(!(*ptr) || !(*query)) return false;
+    while((*ptr) && (*query)){
+        if(*ptr != *query) return false;
+        ++ptr;
+        ++query;
+    }
+    return !(*query);
+}
+
+inline std::string getBestStringMatch(const std::string& tag,
+                                      const std::vector<std::string>& list,
+                                      const float& threshold = 0.6f){
+    size_t tagSIZE = tag.size();
+    if(tagSIZE < 1) return std::string();
+    if(list.empty()) return std::string();
+    if(list.size() == 1) return list.front();
+
+    unsigned int maxScore = 0, maxIndex = UINT_MAX, cScore = 0, cIndex = 0;
+    for(auto& term : list){
+        if(sw_align(tag, term, threshold, &cScore)){
+            if(cScore > maxScore){
+                maxScore = cScore;
+                maxIndex = cIndex;
+            }
+        }
+        ++cIndex;
+    }
+
+    if(maxIndex == UINT_MAX) return std::string();
+    return list[maxIndex];
+}
+
+inline unsigned int charMatchNum(const std::string& query, const std::string& other){ // Case insensitive match comparison
+    size_t L1 = query.size(), L2 = other.size(), minL = L1 > L2 ? L2 : L1;
+    unsigned int matchNum, bestMatchNum = 0;
+
+    for(size_t i = 0; i < L1; ++i){
+        for(size_t j = 0; j < L2; ++j){
+
+            matchNum = 0;
+
+            if(isLowerCase(query[i])){ // Find start match position
+                while(((i < L1) && (j < L2)) && (query[i] != other[j])){
+                    if(query[i] == (other[j] + 32)) break;
+                    ++j;
+                }
+            }
+            else if(isUpperCase(query[i])){
+                while(((i < L1) && (j < L2)) && (query[i] != other[j])){
+                    if(query[i] == (other[j] - 32)) break;
+                    ++j;
+                }
+            }
+            else{
+                while(((i < L1) && (j < L2)) && (query[i] != other[j])){
+                    ++j;
+                }
+            }
+
+            if(j >= L2) break;
+
+            unsigned int startPos = i;
+
+            while((startPos < L1) && (j < L2) && (matchNum < minL)){
+                if(query[startPos] == other[j]){
+                    ++startPos; ++j; ++matchNum;
+                }
+                else if(isLowerCase(query[startPos])){
+                    if(query[startPos] == (other[j] + 32)){
+                        ++startPos; ++j; ++matchNum;
+                    }
+                    else{
+                        ++startPos; ++j;
+                    }
+                }
+                else if(isUpperCase(query[startPos])){
+                    if(query[startPos] == (other[j] - 32)){
+                        ++startPos; ++j; ++matchNum;
+                    }
+                    else{
+                        ++startPos; ++j;
+                    }
+                }
+                else{
+                    ++startPos; ++j;
+                }
+            }
+
+            if(matchNum > bestMatchNum) bestMatchNum = matchNum;
+        }
+    }
+
+    return bestMatchNum;
+}
+
+inline unsigned int getBestStringMatchIndex(const std::string& tag,
+                                      const std::vector<std::string>& list){
+    size_t tagSIZE = tag.size();
+    if(tagSIZE < 1) return UINT_MAX;
+    if(list.size() < 1) return UINT_MAX;
+    if(list.size() == 1) return 0U;
+
+    unsigned int closeSizeIndex = 0, cIndex = 0, minSizeDiff = tagSIZE;
+    for(auto& term : list){
+        if(term.size() == tagSIZE) return cIndex;
+        else{
+            unsigned int matchNum = charMatchNum(tag, term);
+            if(tagSIZE > matchNum){
+                if((tagSIZE - matchNum) < minSizeDiff){
+                    minSizeDiff = tagSIZE - matchNum;
+                    closeSizeIndex = cIndex;
+                }
+            }
+            else{
+                if((matchNum - tagSIZE) < minSizeDiff){
+                    minSizeDiff = matchNum - tagSIZE;
+                    closeSizeIndex = cIndex;
+                }
+            }
+        }
+        ++cIndex;
+    }
+    return closeSizeIndex;
+}
+
+inline bool cmpString(char* focus, char* other, float threshold){
+    size_t s1SIZE = 0, s2SIZE = 0, matchNum = 0;
+    char* f1 = focus, *f2 = other;
+    while(!((*f1 == '\t') || (*f1 == '\n') || (*f1 == '\0'))){
+        ++f1; ++s1SIZE;
+    }
+    char* f1END = f1;
+    while(!((*f2 == '\t') || (*f2 == '\n') || (*f2 == '\0'))){
+        ++f2; ++s2SIZE;
+    }
+    char* f2END = f2;
+    f1 = focus; f2 = other;
+
+    if(s1SIZE != s2SIZE){
+
+        if((s1SIZE < 3) || (s2SIZE < 3)) return false; // Attempt to prevent false positives from common words
+        bool lenient = threshold > 0.0f;
+
+        if(lenient){ // Allow adjustable leniency for interpretation
+            if(s1SIZE < (float)s2SIZE*(1.0f-threshold)) return false;
+            else if (s2SIZE < (float)s1SIZE*(1.0f-threshold)) return false;
+        }
+
+    }
+
+    unsigned int i = 0;
+    if(s1SIZE >= s2SIZE){
+        while(f1 != f1END){
+            if(*f2 == *f1){
+                ++matchNum;
+                if(matchNum == s2SIZE) return true;
+                ++f2; ++f1;
+            }
+            else if(isUpperCase(*f2)){
+                if(*f2 == *f1 - 32){
+                    ++matchNum;
+                    if(matchNum == s2SIZE) return true;
+                    ++f2; ++f1;
+                }
+                else{
+                    ++f1;
+                    matchNum = 0;
+                    if(i + s2SIZE - matchNum >= s1SIZE) return false;
+                }
+            }
+            else if(isLowerCase(*f2)){
+                if(*f2 == *f1 + 32){
+                    ++matchNum;
+                    if(matchNum == s2SIZE) return true;
+                    ++f2; ++f1;
+                }
+                else{
+                    ++f1;
+                    matchNum = 0;
+                    if(i + s2SIZE - matchNum >= s1SIZE) return false;
+                }
+            }
+            else{
+                ++f1;
+                matchNum = 0;
+                if(i + s2SIZE - matchNum >= s1SIZE) return false;
+            }
+            ++i;
+        }
+    }
+    else{
+        while(f2 != f2END){
+            if(*f2 == *f1){
+                ++matchNum;
+                if(matchNum == s1SIZE) return true;
+                ++f2; ++f1;
+            }
+            else if(isUpperCase(*f1)){
+                if(*f1 == *f2 - 32){
+                    ++matchNum;
+                    if(matchNum == s1SIZE) return true;
+                    ++f2; ++f1;
+                }
+                else{
+                    ++f2;
+                    matchNum = 0;
+                    if(i + s1SIZE - matchNum >= s2SIZE) return false;
+                }
+            }
+            else if(isLowerCase(*f1)){
+                if(*f1 == *f2 + 32){
+                    ++matchNum;
+                    if(matchNum == s1SIZE) return true;
+                    ++f2; ++f1;
+                }
+                else{
+                    ++f2;
+                    matchNum = 0;
+                    if(i + s1SIZE - matchNum >= s2SIZE) return false;
+                }
+            }
+            else{
+                ++f2;
+                matchNum = 0;
+                if(i + s1SIZE - matchNum >= s2SIZE) return false;
+            }
+            ++i;
+        }
+    }
+
+    return false;
+}
+
+inline std::string getMatchingTag(const std::string& tag, const std::vector<std::string>& list, const BYTE& params = CMP_STR_DEFAULT){
+    std::vector<std::string> matches;
+    for(auto& item : list){
+        if(tag == item) return tag;
+        else if(cmpString(tag, item, params)) matches.push_back(item);
+    }
+    if(matches.size() > 1){
+        return getBestStringMatch(tag, matches);
+    }
+    else if(matches.size() == 1) return matches.front();
+    else return std::string();
+}
+
+inline unsigned int getMatchingIndex(const std::string& focus, const std::vector<std::string>& list, const BYTE& params = CMP_STR_DEFAULT){
+    unsigned int matchIndex = 0;
+    std::vector<std::string> matches;
+    std::vector<unsigned int> matchIndices;
+    for(auto& item : list){
+        if(focus == item) return matchIndex;
+        if(cmpString(focus, item, params)){
+            matches.push_back(item);
+            matchIndices.push_back(matchIndex);
+        }
+        ++matchIndex;
+    }
+    if(matches.size() > 1) return matchIndices[getBestStringMatchIndex(focus, matches)];
+    else if(matches.size() == 1) return matchIndices.front();
+    else return UINT_MAX;
+}
+
+template<typename T> T* matching_item(const std::string& query,
+                                      std::map<std::string, T>& M,
+                                      const unsigned char& params = CMP_STR_DEFAULT){
+    if(M.empty()) return nullptr;
+
+    std::vector<std::string> tags; tags.reserve(M.size());
+
+    auto endIT = M.end();
+    for(auto IT = M.begin(); IT != endIT; ++IT){
+        tags.emplace_back(IT->first);
+    }
+
+    size_t matchIndex = getMatchingIndex(query, tags, params);
+    if(matchIndex != UINT_MAX){
+        return &M[tags[matchIndex]];
+    }
+
+    return nullptr;
+}
+
+inline bool removeStrings(StringVector& prompt, const StringVector& strings){
+    for(size_t i = 0; i < prompt.size();){
+        if(cmpStringToList(prompt[i], strings)){
+            prompt.erase(prompt.begin() + i);
+        }
+        else ++i;
+    }
+    return prompt.size() > 0;
 }
 
 inline std::string concatenateColumn(const StringVector& info){
@@ -3073,6 +4068,150 @@ inline void concatenateString(const std::vector<std::string>& input, std::string
         if(i < L-1) output += delim;
         ++i;
     }
+}
+
+inline unsigned int nline(const std::string& str){
+    unsigned int output = 1;
+    for(size_t i = 0; i < str.size(); ++i){
+        if((str[i] == '\n') && (i < str.size() - 1)) ++output;
+    }
+    return output;
+}
+
+inline unsigned int line_begin(const std::string& str, const unsigned int& index){
+
+    if(index >= nline(str)) return UINT_MAX;
+
+    if(index == 0) return 0;
+
+    size_t i = 0, cLine = 0;
+
+    while((i < str.size()) && (cLine < index)){
+        if(str[i] == '\n'){
+            ++cLine;
+            if(cLine == index){
+                if(i < str.size() - 1) return i + 1;
+                else return UINT_MAX;
+            }
+        }
+        ++i;
+    }
+
+    return UINT_MAX;
+}
+
+inline unsigned int line_end(const std::string& str, const unsigned int& index){
+
+    if(index >= nline(str)) return UINT_MAX;
+
+    size_t i = 0, cLine = 0;
+
+    while((i < str.size()) && (cLine <= index)){
+        if(str[i] == '\n'){
+            if(cLine == index){
+                return i;
+            }
+            ++cLine;
+        }
+        ++i;
+    }
+
+    return UINT_MAX;
+}
+
+inline unsigned int ncol(const std::string& str, const std::string& delim = "\t"){
+    unsigned int output = 0, rowLength = 1;
+
+    for(const auto& c : str){
+        if(c == '\n'){
+            if(rowLength > output){
+                output = rowLength;
+            }
+            rowLength = 1;
+        }
+        else if(isCharType(c, delim)) ++rowLength;
+    }
+
+    return output;
+}
+
+inline unsigned int nrow(const std::string& str){ return nline(str); }
+
+inline void concatenate_lateral(std::string& left, const std::string& right,
+                                       const unsigned int& spacing = 1, const std::string& delim = "\t"){
+
+    if(right.empty() || delim.empty()) return;
+    if(left.empty()){
+        left = right;
+        return;
+    }
+
+    size_t L1 = nline(left), L2 = nline(right), L = L1 > L2 ? L1 : L2,
+        x = ncol(left, delim), rowLength = 1, cLine = 0;
+
+    for(size_t i = 0; cLine < L; ++i){
+        if(i >= left.size()){
+
+            if(cLine < L2){
+                while(rowLength < x + spacing){
+                    left.insert(left.end(), delim.front());
+                    ++i;
+                    ++rowLength;
+                }
+            }
+            else{
+                while(rowLength < x){
+                    left.insert(left.end(), delim.front());
+                    ++i;
+                    ++rowLength;
+                }
+            }
+
+            left.insert(left.end(),
+                            right.begin() + line_begin(right, cLine),
+                            right.begin() + line_end(right, cLine));
+
+            i += line_end(right, cLine) - line_begin(right, cLine);
+
+            left.insert(left.end(), '\n');
+
+            ++i;
+            ++cLine;
+            rowLength = 1;
+        }
+        else if(left[i] == '\n'){
+            if(cLine < L2){
+                while(rowLength < x + spacing){
+                    left.insert(left.begin() + i, delim.front());
+                    ++i;
+                    ++rowLength;
+                }
+            }
+            else{
+                while(rowLength < x){
+                    left.insert(left.begin() + i, delim.front());
+                    ++i;
+                    ++rowLength;
+                }
+            }
+
+            if(cLine < L2){
+
+                left.insert(left.begin() + i,
+                            right.begin() + line_begin(right, cLine),
+                            right.begin() + line_end(right, cLine));
+
+                i += line_end(right, cLine) - line_begin(right, cLine);
+
+            }
+            ++cLine;
+            rowLength = 1;
+        }
+        else if(isCharType(left[i], delim)){
+            ++rowLength;
+        }
+    }
+
 }
 
 inline void trimSpaces(std::string& tag){
@@ -3145,7 +4284,7 @@ inline void splitString(const std::string& input, std::vector<std::string>& outp
                 if(*delimIT == input[i]){
                         output.emplace_back();
                         output.back().assign(input, lastPos, i-lastPos);
-                        processString(output.back());
+                        trim(output.back(), delim);
                         if(output.back().size() < 1) output.pop_back();
                         lastPos = i+1;
                 }
@@ -3202,6 +4341,12 @@ inline float getFirstDigit(const float& number){
 
 inline float placeDecimal(const float& number, int position = 0){
     return number/pow(10.0f, floor(log10(number)) - position);
+}
+
+// Time
+
+inline float getDuration(const std::chrono::high_resolution_clock::time_point& time_point){
+    return std::chrono::duration<float>(TIME_NOW - time_point).count();
 }
 
 }
