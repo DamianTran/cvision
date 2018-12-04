@@ -9,8 +9,6 @@ CVision aims to form the basis of a free, simplified API in C++ for front-end de
 
 APP -> Views -> Panels -> Element Groups -> Elements -> SFML Primitives
 
-Every CVision element class derives from the base visElement, which is recognized globally by the base CVViewPanel class.  Thus, a user-defined visElement child class requires the override of only two pure virtual functions:
-
 Base elements all inherit abilities including:
   * Mouse capture
   * Highlight
@@ -21,10 +19,21 @@ Base elements all inherit abilities including:
   
 Panels are specialized elements that can transduce update and draw events to child elements of any type (including other panels).
 
-virtual bool draw();
-virtual bool update(CVEvent, 2D float vector);
+Other specialized elements include:
+ * Text boxes
+ * Buttons
+ * Scroll bar widgets
+ * Plots (full interactivity)
+ * Spreadsheets (work in-progress)
+ 
+Every CVision element class derives from the base visElement, which is recognized globally by the base CVViewPanel class.  Thus, a user-defined visElement child class requires the override of only two pure virtual functions:
+
+`virtual bool draw();
+virtual bool update(CVEvent, 2D float vector);`
 
 These functions will be automatically activated as long as the widgets are connected in a circuit to the main app by attaching elements to panels, and panels to views.
+
+Fonts and images are managed upon instantiation of an APP class (or custom derived class), and can be locally accessed by all child elements.  Each can be accessed from a created element by calling `getAppTexture("textureName")` or `getAppFont("fontName")`, which simplifies the process of managing media files.
 
 ## INSTALL
 
