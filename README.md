@@ -3,7 +3,7 @@ CVision: The open source C++ library for graphical user interfaces
 (c) Damian Tran 2017-2018
 See included LICENCE file for GPL 3.0 terms and conditions of use and redistribution
 
-##ABOUT
+## ABOUT
 
 CVision aims to form the basis of a free, simplified API in C++ for front-end development.  A program based on CVision initiates the main APP class from the main() program entry point, initializing a runtime loop for each viewport that updates every widget under the app's control in a hierarchical manner.
 
@@ -26,7 +26,7 @@ virtual bool update(CVEvent, 2D float vector);
 
 These functions will be automatically activated as long as the widgets are connected in a circuit to the main app by attaching elements to panels, and panels to views.
 
-##INSTALL
+## INSTALL
 
 This library requires your GCC compiler version to be at or above 6.3.0, and an installation of the SFML (Simple and Fast Multimedia Library) of at least version 2.4.2 (Found at www.sfml-dev.org)
 
