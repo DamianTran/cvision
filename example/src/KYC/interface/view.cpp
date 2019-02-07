@@ -1,29 +1,45 @@
-/**================================================================
-
->	Keystone ID Source Code
->	Copyright (C) 2019 Keystone ID, Incorporated
-
->	DESCRIPTION:
-
->	Keystone ID is a web-searching service for enhanced
->	due diligence on individuals with web, political, or
->	government presence.  Keystone ID makes use of several
->	database APIs including Twitter, Facebook, and the
->	News API to help clients verify the credentials of, or
->	discover affiliations to, target individuals.
-
->	LEGAL:
-
->	The source code herein is PROPRIETARY and its
->	use, modification, and distribution are to be
->	performed solely with the permission of the
->	owning Company ("Keystone ID, Incorporated").
->	Use, modification, and/or distribution of the
->	enclosed material is ILLEGAL and parties involved
->	in such acts are liable for damages incurred as
->	a result of such acts to the owning Company.
-
-================================================================**/
+/** /////////////////////////////////////////////////////////////
+//
+//  CVision: the flexible cascading-style GUI library for C++
+//
+// //////////////////////////////////////////////////////////////
+//
+// Copyright (c) 2017 - 2019 Damian Tran
+//
+// DESCRIPTION:
+//
+// CVision is a graphical user interface (GUI) library that
+// attempts to simplify and speed up the process of desktop
+// app design.  CVision incorporates a cascading structure
+// scheme that resembles the following:
+//
+// App -> View -> Panel -> Element -> Primitives/Sprites
+//
+// The subsequent connection of each "leaf" of the hierarchy
+// automatically ensures that the element will be updated,
+// drawn to the renderer, and otherwise disposed of at
+// the program's termination.
+//
+// LEGAL:
+//
+// Modification and redistribution of CVision is freely 
+// permissible under any circumstances.  Attribution to the 
+// Author ("Damian Tran") is appreciated but not necessary.
+// 
+// CVision is an open source library that is provided to you
+// (the "User") AS IS, with no implied or explicit
+// warranties.  By using CVision, you acknowledge and agree
+// to this disclaimer.  Use of CVision in the Users's programs
+// or as a part of a derivative library is performed at
+// the User's OWN RISK.
+//
+// ACKNOWLEDGEMENTS:
+//
+// CVision makes use of SFML (Simple and Fast Multimedia Library)
+// Copyright (c) Laurent Gomila
+// See licence: www.sfml-dev.org/license.php
+//
+/////////////////////////////////////////////////////////////  **/
 
 #include "KYC/interface/view.hpp"
 #include "KYC/interface/app.hpp"

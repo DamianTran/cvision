@@ -22,14 +22,14 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely
-// permissible under any circumstances.  Attribution to the
+// Modification and redistribution of CVision is freely 
+// permissible under any circumstances.  Attribution to the 
 // Author ("Damian Tran") is appreciated but not necessary.
-//
+// 
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
-// warranties.  By using CVision, you ackowledge and agree
-// to this disclaimer.  Use of CVision in Users's programs
+// warranties.  By using CVision, you acknowledge and agree
+// to this disclaimer.  Use of CVision in the Users's programs
 // or as a part of a derivative library is performed at
 // the User's OWN RISK.
 //

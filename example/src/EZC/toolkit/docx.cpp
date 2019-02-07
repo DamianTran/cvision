@@ -1,22 +1,45 @@
-/** ////////////////////////////////////////////////////////////////
-
-    *** EZ-C++ - A simplified C++ experience ***
-
-        Yet (another) open source library for C++
-
-        Original Copyright (C) Damian Tran 2019
-
-        By aiFive Technologies, Inc. for developers
-
-    Copying and redistribution of this code is freely permissible.
-    Inclusion of the above notice is preferred but not required.
-
-    This software is provided AS IS without any expressed or implied
-    warranties.  By using this code, and any modifications and
-    variants arising thereof, you are assuming all liabilities and
-    risks that may be thus associated.
-
-////////////////////////////////////////////////////////////////  **/
+/** /////////////////////////////////////////////////////////////
+//
+//  CVision: the flexible cascading-style GUI library for C++
+//
+// //////////////////////////////////////////////////////////////
+//
+// Copyright (c) 2017 - 2019 Damian Tran
+//
+// DESCRIPTION:
+//
+// CVision is a graphical user interface (GUI) library that
+// attempts to simplify and speed up the process of desktop
+// app design.  CVision incorporates a cascading structure
+// scheme that resembles the following:
+//
+// App -> View -> Panel -> Element -> Primitives/Sprites
+//
+// The subsequent connection of each "leaf" of the hierarchy
+// automatically ensures that the element will be updated,
+// drawn to the renderer, and otherwise disposed of at
+// the program's termination.
+//
+// LEGAL:
+//
+// Modification and redistribution of CVision is freely 
+// permissible under any circumstances.  Attribution to the 
+// Author ("Damian Tran") is appreciated but not necessary.
+// 
+// CVision is an open source library that is provided to you
+// (the "User") AS IS, with no implied or explicit
+// warranties.  By using CVision, you acknowledge and agree
+// to this disclaimer.  Use of CVision in the Users's programs
+// or as a part of a derivative library is performed at
+// the User's OWN RISK.
+//
+// ACKNOWLEDGEMENTS:
+//
+// CVision makes use of SFML (Simple and Fast Multimedia Library)
+// Copyright (c) Laurent Gomila
+// See licence: www.sfml-dev.org/license.php
+//
+/////////////////////////////////////////////////////////////  **/
 
 #include "EZC/toolkit/docx.hpp"
 #include "EZC/toolkit/tree.hpp"
