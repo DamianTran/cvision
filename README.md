@@ -1,7 +1,6 @@
 # CVision
-CVision: The open source C++ library for graphical user interfaces
+CVision: The open source C++ library for cascading-style graphical user interfaces
 (c) Damian Tran 2017-2018
-See included LICENCE file for GPL 3.0 terms and conditions of use and redistribution
 
 ## ABOUT
 
@@ -37,6 +36,6 @@ Fonts and images are managed upon instantiation of an APP class (or custom deriv
 
 ## INSTALL
 
-This library requires your GCC compiler version to be at or above 6.3.0, and an installation of the SFML (Simple and Fast Multimedia Library) of at least version 2.4.2 (Found at www.sfml-dev.org)
+This library requires your GCC compiler version to be at or above 7.3.0.  The precompiled library files in the /lib directory will work immediately for Windows.  Precompiled versions for macOS and Linux will be soon to follow!  Otherwise, you're always welcome to build the library from source using the included headers and source files.
 
 The supporting documentation for this library is a work in progress, as is the library itself (as of June 2018).  Please check back on this repo on a monthly basis for increasingly up-to-date coverage, more extensive library capabilities, and more efficient optimizations.
