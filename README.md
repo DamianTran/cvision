@@ -1,6 +1,6 @@
 # CVision
 CVision: The open source C++ library for cascading-style graphical user interfaces
-(c) Damian Tran 2017-2018
+(c) Damian Tran 2017-2019
 
 ## ABOUT
 
