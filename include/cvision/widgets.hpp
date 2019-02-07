@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you ackowledge and agree
@@ -59,9 +59,12 @@
 #define CV_OBJ_ANIM_ROTATE              6
 #endif
 
-#include "cvision/button.hpp"
+#include "cvision/lib.hpp"
+#include "cvision/textbox.hpp"
 
 namespace cvis{
+
+class CVButton;
 
 class CVTitleBar: public CVTextBox{
 
@@ -87,7 +90,7 @@ public:
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
     CVISION_API bool draw(sf::RenderTarget* target);
 
-    void setMouseGlow(const bool& state = true,
+    CVISION_API void setMouseGlow(const bool& state = true,
                     const std::string& texture = "gradient_radial");
 
     CVISION_API CVTitleBar(CVView* View, const uint8_t& alignment, const float& height, const float& width,
@@ -97,7 +100,7 @@ public:
     CVISION_API ~CVTitleBar();
 };
 
-class CVScrollBar: public CVBox{
+class CVISION_API CVScrollBar: public CVBox{
 protected:
     sf::Vector2f anchorBegin,
                 anchorEnd;

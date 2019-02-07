@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you ackowledge and agree
@@ -487,7 +487,7 @@ protected:
 
         inline unsigned int numDimensions() const{ return matrix.size(); }
 
-        inline sf::Vector2f getScale(const unsigned int& dimension) const;
+        CVISION_API sf::Vector2f getScale(const unsigned int& dimension) const;
 
         inline sf::Vector2f getXScale() const{ return getScale(DIMENSION_X); }
         inline sf::Vector2f getYScale() const{ return getScale(DIMENSION_Y); }
