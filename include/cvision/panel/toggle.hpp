@@ -41,29 +41,42 @@
 //
 /////////////////////////////////////////////////////////////  **/
 
-#include "cvision/console.hpp"
+#pragma once
 
-using namespace EZC;
+#ifndef CVIS_PANEL_TOGGLE
+#define CVIS_PANEL_TOGGLE
 
-namespace cvis{
+#include "cvision/panel.hpp"
 
-CVConsoleLog::CVConsoleLog(CVView* View, const sf::Vector2f& position, const float& width, const float& height,
-              const textEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
-              const float& borderWidth, const uint8_t& animType,
-              const std::string& logFile, CVTypeBox* usrEntryBox):
-                  CVTextLog(View, position, width, height, textInfo, fillColor, borderColor, borderWidth,
-                            animType, logFile, usrEntryBox){
+/** ========================================================================
 
-    setTextPanelPadding(3.0f);
-    initialMessageCount = 150;
-    messageLoadInc = 50;
+    Panel with toggleable display elements
 
-    disableWidthTextWrap();
+======================================================================== **/
 
-    setIncomingMsgPanelFillColor(sf::Color::Transparent);
-    setMsgPanelFillColor(sf::Color::Transparent);
-    setUserTextAlign(ALIGN_LEFT);
-    setHighlightPanelFillColor(sf::Color::Transparent);
+namespace cvis
+{
+
+class CVISION_API CVTogglePanel : public CVBasicViewPanel
+{
+public:
+
+    CVISION_API CVTogglePanel(CVView* parentView, std::string panelTag = "", sf::Color backgroundColor = sf::Color::Transparent,
+                     const sf::Vector2f& size = sf::Vector2f(NAN, NAN), bool bFitToWindow = true,
+                     const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
+
+    CVISION_API bool update(CVEvent& event, const sf::Vector2f& position) override;
+    CVISION_API bool draw(sf::RenderTarget* target) override;
+
+    CVISION_API void switch_to(const size_t& index);
+    CVISION_API void switch_to(const std::string& tag);
+
+protected:
+
+    size_t active_index;
+
+};
+
 }
 
-}
+#endif // CVIS_PANEL_TOGGLE

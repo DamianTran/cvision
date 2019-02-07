@@ -1,19 +1,48 @@
+/** /////////////////////////////////////////////////////////////
 //
-// CVision: a multi-platform graphics interface libary for C++
+//  CVision: the flexible cascading-style GUI library for C++
 //
-//////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2017 - 2018 Damian Tran
+// Copyright (c) 2017 - 2019 Damian Tran
+//
+// DESCRIPTION:
+//
+// CVision is a graphical user interface (GUI) library that
+// attempts to simplify and speed up the process of desktop
+// app design.  CVision incorporates a cascading structure
+// scheme that resembles the following:
+//
+// App -> View -> Panel -> Element -> Primitives/Sprites
+//
+// The subsequent connection of each "leaf" of the hierarchy
+// automatically ensures that the element will be updated,
+// drawn to the renderer, and otherwise disposed of at
+// the program's termination.
+//
+// LEGAL:
+//
+// Modification and redistribution of CVision is freely 
+// permissible under any circumstances.  Attribution to the 
+// Author ("Damian Tran") is appreciated but not necessary.
+// 
+// CVision is an open source library that is provided to you
+// (the "User") AS IS, with no implied or explicit
+// warranties.  By using CVision, you ackowledge and agree
+// to this disclaimer.  Use of CVision in Users's programs
+// or as a part of a derivative library is performed at
+// the User's OWN RISK.
+//
+// ACKNOWLEDGEMENTS:
 //
 // CVision makes use of SFML (Simple and Fast Multimedia Library)
 // Copyright (c) Laurent Gomila
 // See licence: www.sfml-dev.org/license.php
 //
-// Redistribution of CVision is permitted under accordance with
-// the GNU general public licence (GPL) version 3.0 and the
-// terms and conditions specified in CVlicence.txt
+/////////////////////////////////////////////////////////////  **/
 
 #include "cvision/widgets.hpp"
+#include "cvision/view.hpp"
 
 namespace cvis{
 
@@ -21,7 +50,7 @@ CVTitleBar::CVTitleBar(CVView* View, const uint8_t& alignment, const float& widt
                const textEntry& textInfo, const std::string& logo, const sf::Color& fillColor,
                const sf::Color& outlineColor, const float& outlineWidth):
                    CVTextBox(View, sf::Vector2f(0.0f,0.0f), width, height, fillColor, outlineColor, outlineWidth),
-                   alignment(0_BIT),
+                   alignment(alignment),
                    closeButton(nullptr),
                    resizeButton(nullptr),
                    minimizeButton(nullptr),
@@ -30,33 +59,29 @@ CVTitleBar::CVTitleBar(CVView* View, const uint8_t& alignment, const float& widt
                    bCanResize(true),
                    bCanMinimize(true){
 
+    #ifdef __APPLE__
     const float logoPct = 0.6f,
-                #ifdef __APPLE__
                 buttonPct = 0.5f,
-                button_padding = height/2,
+                button_padding = height*3/4,
                 button_spacing = height*3/4;
-                #else
+    #else
+    const float logoPct = 0.6f,
                 buttonPct = 0.4f,
                 button_padding = height,
                 button_spacing = 3*height/2;
-                #endif
-
-    if(!logo.empty()){
-        addSprite(appTexture(logo),
-                  sf::Vector2f(height*3/4, height/2),
-                  sf::Vector2f(height*0.6f, height*logoPct));
-    }
+    #endif
 
     #ifdef __APPLE__
-    closeButton = new CVButton(View, sf::Vector2f(width - (button_padding + button_spacing*2), height/2),
+    closeButton = new CVButton(View, sf::Vector2f(button_padding, height/2),
                                height*buttonPct, height*buttonPct, "orb_button", 1, 0, true, nullptr);
     closeButton->setSpriteColor(sf::Color(220,50,50));
-    resizeButton = new CVButton(View, sf::Vector2f(width - button_padding, height/2),
+    resizeButton = new CVButton(View, sf::Vector2f(button_padding + button_spacing*2, height/2),
                                 height*buttonPct, height*buttonPct, "orb_button", 2, 0, true, nullptr);
     resizeButton->setSpriteColor(sf::Color(50,220,20));
-    minimizeButton = new CVButton(View, sf::Vector2f(width - (button_padding + button_spacing), height/2),
+    minimizeButton = new CVButton(View, sf::Vector2f(button_padding + button_spacing, height/2),
                                   height*buttonPct, height*buttonPct, "orb_button", 2, 0, true, nullptr);
     minimizeButton->setSpriteColor(sf::Color(220,220,100));
+    setMask(appTexture("gradient_linear"));
     #else
     closeButton = new CVButton(View, sf::Vector2f(width - button_padding, height/2),
                                height*buttonPct, height*buttonPct, "gen_x", 1, 0, true, nullptr);
@@ -66,14 +91,37 @@ CVTitleBar::CVTitleBar(CVView* View, const uint8_t& alignment, const float& widt
                                   height*buttonPct, height*buttonPct, "bottom_line", 2, 0, true, nullptr);
     #endif
 
-    addTextEntry(textInfo, sf::Vector2f(height*3/2, height*2/5));
+    #ifdef __APPLE__
+    addTextEntry(textInfo, sf::Vector2f(width/2, height*3/8));
+    displayText.back().move(-displayText.back().getGlobalBounds().width/2, 0.0f);
+    #else
+    addTextEntry(textInfo, sf::Vector2f(height*3/2, height/2));
+    #endif
+
+    this->textInfo = textInfo;
     align(alignment);
+    alignText();
+    displayText.front().move(sf::Vector2f(height*1.32, 0));
+
+    if(!logo.empty()){
+        #ifdef __APPLE__
+        addSprite(appTexture(logo),
+                  sf::Vector2f(displayText.back().getGlobalBounds().left - height*3/4,
+                               height/2),
+                  sf::Vector2f(height*logoPct, height*logoPct));
+        #else
+        addSprite(appTexture(logo),
+                  sf::Vector2f(height*3/4, height/2),
+                  sf::Vector2f(height*logoPct, height*logoPct));
+        #endif
+    }
 }
 
 void CVTitleBar::align(const uint8_t& alignment){
     if(alignment == this->alignment) return;
 
     this->alignment = alignment;
+
 
     switch(alignment){
         case ALIGN_LEFT_MIDLINE:{
@@ -159,7 +207,12 @@ bool CVTitleBar::update(CVEvent& event, const sf::Vector2f& mousePos){
         }
     }
 
-    if(bCanResize) resizeButton->update(event, mousePos);
+    if(bCanResize){
+        resizeButton->update(event, mousePos);
+        if(resizeButton->getTrigger()){
+            View->maximize();
+        }
+    }
 
     if(event.LMBhold &&
        bounds.contains(event.LMBpressPosition) &&
@@ -204,6 +257,9 @@ CVScrollBar::CVScrollBar(CVView* parentView, const sf::Vector2f& anchorBegin,
                           bReleaseOnEnd(false){
     panel.front().setOrigin(width/2, 0.0f);
     panel.front().setRotation(scrollAngle*180.0f/PI - 90.0f);
+
+    setRounding(width/2);
+
     calcHighlightBounds();
 }
 
@@ -229,7 +285,7 @@ void CVScrollBar::calcHighlightBounds(){
 
 bool CVScrollBar::scroll(const float& delta){
     if(((delta > 0.0f) && (scrollPos == scrollMax - panelSize)) ||
-       (delta < 0.0f) && (scrollPos == 0.0f)) return false;
+       ((delta < 0.0f) && (scrollPos == 0.0f))) return false;
 
     if(delta + scrollPos + panelSize > scrollMax){
         scrollPos = scrollMax - panelSize;

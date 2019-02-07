@@ -41,29 +41,31 @@
 //
 /////////////////////////////////////////////////////////////  **/
 
+#pragma once
+
+#ifndef CVIS_HPP
+#define CVIS_HPP
+
+#include "cvision/lib.hpp"
+
+#include "EZC/algorithm.hpp"
+
+#include <SFML/Graphics.hpp>
+
+#include "cvision/algorithm.hpp"
+#include "cvision/anim.hpp"
+#include "cvision/widgets.hpp"
+#include "cvision/panel.hpp"
+#include "cvision/time.hpp"
+#include "cvision/type.hpp"
 #include "cvision/console.hpp"
+#include "cvision/word.hpp"
+#include "cvision/plot.hpp"
+#include "cvision/button.hpp"
+#include "cvision/dataview.hpp"
+#include "cvision/templates.hpp"
+#include "cvision/templates/calendar.hpp"
+#include "cvision/templates/sketch.hpp"
+#include "cvision/table.hpp"
 
-using namespace EZC;
-
-namespace cvis{
-
-CVConsoleLog::CVConsoleLog(CVView* View, const sf::Vector2f& position, const float& width, const float& height,
-              const textEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
-              const float& borderWidth, const uint8_t& animType,
-              const std::string& logFile, CVTypeBox* usrEntryBox):
-                  CVTextLog(View, position, width, height, textInfo, fillColor, borderColor, borderWidth,
-                            animType, logFile, usrEntryBox){
-
-    setTextPanelPadding(3.0f);
-    initialMessageCount = 150;
-    messageLoadInc = 50;
-
-    disableWidthTextWrap();
-
-    setIncomingMsgPanelFillColor(sf::Color::Transparent);
-    setMsgPanelFillColor(sf::Color::Transparent);
-    setUserTextAlign(ALIGN_LEFT);
-    setHighlightPanelFillColor(sf::Color::Transparent);
-}
-
-}
+#endif // CVIS_HPP

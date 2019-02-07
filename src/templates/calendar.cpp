@@ -1,25 +1,57 @@
+/** /////////////////////////////////////////////////////////////
 //
-// CVision: a multi-platform graphics interface libary for C++
+//  CVision: the flexible cascading-style GUI library for C++
 //
-//////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2017 - 2018 Damian Tran
+// Copyright (c) 2017 - 2019 Damian Tran
+//
+// DESCRIPTION:
+//
+// CVision is a graphical user interface (GUI) library that
+// attempts to simplify and speed up the process of desktop
+// app design.  CVision incorporates a cascading structure
+// scheme that resembles the following:
+//
+// App -> View -> Panel -> Element -> Primitives/Sprites
+//
+// The subsequent connection of each "leaf" of the hierarchy
+// automatically ensures that the element will be updated,
+// drawn to the renderer, and otherwise disposed of at
+// the program's termination.
+//
+// LEGAL:
+//
+// Modification and redistribution of CVision is freely 
+// permissible under any circumstances.  Attribution to the 
+// Author ("Damian Tran") is appreciated but not necessary.
+// 
+// CVision is an open source library that is provided to you
+// (the "User") AS IS, with no implied or explicit
+// warranties.  By using CVision, you ackowledge and agree
+// to this disclaimer.  Use of CVision in Users's programs
+// or as a part of a derivative library is performed at
+// the User's OWN RISK.
+//
+// ACKNOWLEDGEMENTS:
 //
 // CVision makes use of SFML (Simple and Fast Multimedia Library)
 // Copyright (c) Laurent Gomila
 // See licence: www.sfml-dev.org/license.php
 //
-// Redistribution of CVision is permitted under accordance with
-// the GNU general public licence (GPL) version 3.0 and the
-// terms and conditions specified in CVlicence.txt
+/////////////////////////////////////////////////////////////  **/
 
 #include "cvision/templates/calendar.hpp"
-#include "cvision/cvis_time.hpp"
-#include "algorithm.hpp"
+#include "cvision/time.hpp"
+#include "cvision/view.hpp"
+#include "cvision/app.hpp"
+
+#include "EZC/algorithm.hpp"
+#include "EZC/toolkit/string.hpp"
 
 namespace cvis{
 
-using namespace AIALG;
+using namespace EZC;
 
 CVCalendarPanel::CVCalendarPanel(CVView* parentView, const std::string& panelTag,
                                  const sf::Color& bkgColor, const sf::Vector2f& size,
@@ -27,16 +59,13 @@ CVCalendarPanel::CVCalendarPanel(CVView* parentView, const std::string& panelTag
                                      CVBasicViewPanel(parentView, panelTag, bkgColor,
                                                       size, bFitWindow, position),
                                         scale(time_scale::week),
-                                        year(0),
-                                        day(0),
-                                        month(0),
-                                        hour(0),
-                                        minute(0),
-                                        second(0),
                                         scheduleBlockAlpha(160),
+                                        b24hour(false),
                                         tableOutlineThickness(1.0f),
                                         margins({ 64.0f, 64.0f, 0.0f, 0.0f }),
                                         headerBox(nullptr),
+                                        backHeaderButton(nullptr),
+                                        fwdHeaderButton(nullptr),
                                         scheduleBounds(left_margin(),top_margin(),
                                                        bounds.width - left_margin(),
                                                        bounds.height - top_margin()),
@@ -54,6 +83,9 @@ CVCalendarPanel::CVCalendarPanel(CVView* parentView, const std::string& panelTag
                                                             bounds.top + bounds.height - 12.0f),
                                                    size.y, 5.0f, sf::Color(140,140,140), sf::Color::Transparent, 0.0f,
                                         1000.0f, CV_OBJ_ANIM_FADE_IN){
+
+    viewing_time.getTimeNow();
+    current_time.getTimeNow();
 
     textInfo.alignment = ALIGN_LEFT;
     textInfo.fontSize = 16*View->getViewScale();
@@ -75,16 +107,8 @@ CVCalendarPanel::CVCalendarPanel(CVView* parentView, const std::string& panelTag
     cellFillColorIndex = colorTheme.size();
     colorTheme.emplace_back(sf::Color(255,255,255));
 
-    TimePoint t;
-    t.getTimeNow();
-    year = t.year();
-    day = t.day();
-    month = t.month();
-    hour = t.hour();
-    minute = t.minute();
-    second = t.second();
-
     setTimeScale(time_scale::week);
+    centerOnTime(current_time);
 
     setDrawClipping(true);
 }
@@ -141,6 +165,18 @@ const TimePoint& CVCalendarRecord::start() const{
     return time;
 }
 
+TimePoint CVCalendarRecord::getDuration() const{
+
+    return end() - start();
+
+}
+
+std::string CVCalendarRecord::getDurationStr() const{
+
+    return getDuration().getDurationStr();
+
+}
+
 const TimePoint& CVCalendarRecord::end() const{
     return end_time;
 }
@@ -160,6 +196,31 @@ void CVCalendarRecord::setScale(const time_scale& newScale){
     scale = newScale;
 }
 
+void CVCalendarRecord::addReminder(const TimePoint& time_advance){
+
+    reminders.emplace_back(time_advance);
+
+}
+
+bool CVCalendarRecord::flagReminder(const TimePoint& time){
+
+    bool bShouldFlag = false;
+    for(size_t i = 0; i < reminders.size();){
+
+        if(time > start() - reminders[i]){
+            if(time < start()){
+                bShouldFlag = true;
+            }
+            reminders.erase(reminders.begin() + i);
+        }
+        else ++i;
+
+    }
+
+    return bShouldFlag;
+
+}
+
 const sf::Color& CVCalendarRecord::color() const{
     return color_code;
 }
@@ -171,7 +232,15 @@ void CVCalendarRecord::save(FILE* outFILE) const{
     fwrite(&bRepeat, 1, sizeof(bool), outFILE);
     writeString(info, outFILE);
     writeString(location, outFILE);
+    writeString(notes, outFILE);
     writeVector(repeatTags, outFILE);
+
+    size_t L = reminders.size();
+    fwrite(&L, sizeof(L), 1, outFILE);
+    for(size_t i = 0; i < L; ++i){
+        fwrite(reminders[i], outFILE);
+    }
+
     fwrite(time, outFILE);
     fwrite(end_time, outFILE);
     fwrite(frequency, outFILE);
@@ -183,7 +252,16 @@ void CVCalendarRecord::load(FILE* inFILE){
     fread(&bRepeat, 1, sizeof(bool), inFILE);
     readString(info, inFILE);
     readString(location, inFILE);
+    readString(notes, inFILE);
     readVector(repeatTags, inFILE);
+
+    size_t L;
+    fread(&L, sizeof(L), 1, inFILE);
+    reminders.resize(L);
+    for(size_t i = 0; i < L; ++i){
+        fread(reminders[i], inFILE);
+    }
+
     fread(time, inFILE);
     fread(end_time, inFILE);
     fread(frequency, inFILE);
@@ -347,6 +425,8 @@ bool CVCalendarRecord::shift(const CVCalendarRecord& other, const TimePoint& pad
 void CVCalendarRecord::shift(const TimePoint& distance){
     time += distance;
     end_time += distance;
+    time.distribute();
+    end_time.distribute();
 }
 
 float CVCalendarRecord::diff_years() const{
@@ -395,6 +475,23 @@ float CVCalendarRecord::median_minutes() const{
 
 float CVCalendarRecord::median_seconds() const{
     return float(end_time.total_seconds() + time.total_seconds())/2;
+}
+
+std::ostream& operator<<(std::ostream& output, const CVCalendarRecord& input){
+
+    output << input.start() << '\t' << input.end();
+    if(!input.reminders.empty()){
+
+        output << "\nReminders:";
+        for(auto& rem : input.reminders){
+
+            output << "\n\t" << rem;
+
+        }
+
+    }
+    return output;
+
 }
 
 CVSchedule::CVSchedule():
@@ -764,7 +861,11 @@ bool removeRecord(CVSchedule& records,
 
 void CVCalendarPanel::clear(){
     CVViewPanel::clear();
+
     headerBox = nullptr;
+    fwdHeaderButton = nullptr;
+    backHeaderButton = nullptr;
+
     headerBars.clear();
     rowBars.clear();
     plotSpace.clear();
@@ -774,102 +875,31 @@ void CVCalendarPanel::clear(){
 void CVCalendarPanel::setTimeScale(const time_scale& newScale){
 
     scale = newScale;
-    clear();
+    updateDisplay();
 
-    switch(scale){
-        default:{   // Weekly
+}
 
-            unsigned int D = days_in_month(month);
-            sf::Color expiredColor = cellFillColor();
-            if(expiredColor.r + expiredColor.g + expiredColor.b > 384) darken(expiredColor, 20);
-            else brighten(expiredColor, 20);
+void CVCalendarPanel::setTime(const TimePoint& newTime){
 
-            TimePoint calendar_day(year, month, 0, 0, 0, 0);
+    viewing_time = newTime;
+    viewing_time.distribute();
+    updateDisplay();
 
-            headerBox = new CVTextBox(View, sf::Vector2f(getPosition().x, getPosition().y), bounds.width, top_margin()/2,
-                                                            textEntry(monthStr(month) + " " + std::to_string(year), textInfo.font, textInfo.fontSize*1.5f,
-                                                                ALIGN_CENTER_MIDLINE, textInfo.textColor),
-                                                            headerColor(), cellBorderColor(), tableOutlineThickness);
-            headerBox->setMask(appTexture("gradient_linear"));
-            headerBox->setMaskColor(sf::Color(250,250,250,160));
+}
 
-            addPanelElement(headerBox, "header");
+void CVCalendarPanel::moveTime(const TimePoint& duration){
 
-            for(size_t i = 0; i < D; ++i){
+    viewing_time += duration;
+    viewing_time.distribute();
+    updateDisplay();
 
-                if(i < day - 1){
-                    plotSpace.emplace_back(new CVTextBox(View, sf::Vector2f(left_margin() + getPosition().x + (bounds.width - left_margin())*i/7,
-                                                                             top_margin() + getPosition().y), (bounds.width - left_margin())/7,
-                                                         3*(bounds.height - top_margin()),
-                                                            expiredColor, cellBorderColor(), tableOutlineThickness));
-                    addPanelElement(plotSpace.back());
-                }
-                else{
-                    plotSpace.emplace_back(new CVTextBox(View, sf::Vector2f(left_margin() + getPosition().x + (bounds.width - left_margin())*i/7,
-                                                                             top_margin() + getPosition().y), (bounds.width - left_margin())/7,
-                                                         3*(bounds.height - top_margin()),
-                                                            cellFillColor(), cellBorderColor(), tableOutlineThickness));
-                    addPanelElement(plotSpace.back());
+}
 
-                    if(i == day - 1){
-                        plotSpace.emplace_back(new CVTextBox(View, sf::Vector2f(left_margin() + getPosition().x + (bounds.width - left_margin())*i/7,
-                                                                             top_margin() + getPosition().y), (bounds.width - left_margin())/7,
-                                                         3*(bounds.height - top_margin())*(((float)hour + float(minute)/60)/24),
-                                                            expiredColor, cellBorderColor(), tableOutlineThickness));
-                        addPanelElement(plotSpace.back());
-                    }
-                }
+void CVCalendarPanel::set24hour(const bool& status){
 
-                calendar_day.setDay(i + 1);
-                std::stringstream headerStr;
-                headerStr << i+1 << " - " << day_of_week(calendar_day);
+    b24hour = status;
+    updateDisplay();
 
-                headerBars.emplace_back(new CVTextBox(View, sf::Vector2f(left_margin() + getPosition().x + (bounds.width - left_margin())*i/7,
-                                                                         getPosition().y + top_margin()/2), (bounds.width - left_margin())/7, top_margin()/2,
-                                                      textEntry(headerStr.str(), textInfo.font, textInfo.fontSize*1.3f,
-                                                                textInfo.alignment, textInfo.textColor),
-                                                        headerColor(), cellBorderColor(), tableOutlineThickness));
-                headerBars.back()->setMask(appTexture("gradient_linear"));
-                headerBars.back()->setMaskColor(sf::Color(200,200,200,150));
-                addPanelElement(headerBars.back());
-
-            }
-
-            scheduleBounds.left = plotSpace.front()->getGlobalBounds().left;
-            scheduleBounds.top = plotSpace.front()->getGlobalBounds().top;
-            scheduleBounds.width = plotSpace.back()->getGlobalBounds().left +
-                                    plotSpace.back()->getGlobalBounds().width -
-                                    scheduleBounds.left;
-            scheduleBounds.height = plotSpace.back()->getGlobalBounds().top +
-                                    plotSpace.back()->getGlobalBounds().height -
-                                    scheduleBounds.top;
-
-            for(size_t i = 0; i < 24; ++i){
-                rowBars.emplace_back(new CVTextBox(View, sf::Vector2f(getPosition().x,
-                                                                      tableOutlineThickness + top_margin() +
-                                                                      getPosition().y +
-                                                                      (bounds.height - top_margin())*i/8),
-                                                   left_margin(), (bounds.height - top_margin())/8,
-                                                   textEntry(std::to_string(i).append(":00"), textInfo.font, textInfo.fontSize*1.25f,
-                                                                textInfo.alignment, textInfo.textColor),
-                                                   sideBarColor(), cellBorderColor(), tableOutlineThickness));
-                rowBars.back()->setMask(appTexture("gradient_linear"));
-                rowBars.back()->setMaskColor(sf::Color(250,250,250,60));
-                addPanelElement(rowBars.back());
-            }
-
-            rowBars.emplace_back(new CVTextBox(View, sf::Vector2f(getPosition().x, getPosition().y + tableOutlineThickness),
-                                               left_margin(), top_margin(),
-                                               sideBarColor(), cellBorderColor(), tableOutlineThickness));
-            rowBars.back()->setMask(appTexture("gradient_linear"));
-            rowBars.back()->setMaskColor(sf::Color(250,250,250,60));
-            addPanelElement(rowBars.back());
-
-            break;
-        }
-    }
-
-    updateRecords();
 }
 
 bool CVCalendarPanel::draw(sf::RenderTarget* target){
@@ -891,6 +921,8 @@ bool CVCalendarPanel::draw(sf::RenderTarget* target){
     }
 
     headerBox->draw(target);
+    backHeaderButton->draw(target);
+    fwdHeaderButton->draw(target);
 
     scrollBarX.draw(target);
     scrollBarY.draw(target);
@@ -902,6 +934,17 @@ bool CVCalendarPanel::draw(sf::RenderTarget* target){
 
 bool CVCalendarPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
     if(!CVBasicViewPanel::update(event, mousePos)) return false;
+
+    if(fwdHeaderButton->getTrigger()){
+
+        moveTime(MONTHS(1));
+
+    }
+    if(backHeaderButton->getTrigger()){
+
+        moveTime(MONTHS(-1));
+
+    }
 
     sf::FloatRect itemBounds(left_margin(), top_margin(), 0.0f,0.0f);
     if(!plotSpace.empty()){
@@ -969,6 +1012,30 @@ bool CVCalendarPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
         for(auto& cell : scheduleBlocks){
             cell->move(moveDist);
         }
+
+        for(auto& element : rowBars){
+
+            if((mousePos.y < element->getGlobalBounds().top + element->getGlobalBounds().height) &&
+               (mousePos.y > element->getGlobalBounds().top)){
+
+                element->highlight(true);
+
+            }
+            else element->highlight(false);
+
+        }
+
+        for(auto& element : headerBars){
+
+            if((mousePos.x < element->getGlobalBounds().left + element->getGlobalBounds().width) &&
+               (mousePos.x > element->getGlobalBounds().left)){
+
+                element->highlight(true);
+
+            }
+            else element->highlight(false);
+
+        }
     }
 
     return true;
@@ -992,6 +1059,25 @@ void CVCalendarPanel::setPosition(const sf::Vector2f& newPosition){
 
 void CVCalendarPanel::setPosition(const float& x, const float& y){
     setPosition(sf::Vector2f(x, y));
+}
+
+void CVCalendarPanel::centerOnTime(const TimePoint& time){
+
+    switch(scale){
+        default:{
+
+            if(time.month() != viewing_time.month()) setTime(time);
+
+            break;
+
+        }
+
+    }
+
+    scrollBarX.setScrollOffset((bounds.width - left_margin())/7 * (float)time.day() - (bounds.width - left_margin())/2);
+    scrollBarY.setScrollOffset((bounds.height - top_margin())*(((float)time.hour() +
+                                                    float(time.minute())/60)/24) * 3 - (bounds.height - top_margin())/2);
+
 }
 
 bool CVCalendarPanel::addRecord(const std::string& info,
@@ -1092,37 +1178,23 @@ void CVCalendarPanel::updateRecords(){
 
                     TimePoint end_t = item.start();
 
-                    if(item.start().month() <= month){
-                        end_t.setYear(year);
-                        end_t.setMonth(month);
-                        end_t.setDay(days_in_month(month));
-                        end_t.setHour(23);
-                        end_t.setMinute(59);
-                        end_t.setSecond(59);
-                        while(rep_time.back().start() <= (end_t - rep_time.front().repeat_frequency())){
-                            rep_time.emplace_back(rep_time.back());
-                            rep_time.back().shift(rep_time.front().repeat_frequency());
-                        }
-                    }
-                    else{
-                        end_t.setYear(year);
-                        end_t.setMonth(month);
-                        end_t.setDay(0);
-                        end_t.setHour(0);
-                        end_t.setMinute(0);
-                        end_t.setSecond(0);
+                    end_t.setYear(viewing_time.year());
+                    end_t.setMonth(viewing_time.month());
+                    end_t.setDay(days_in_month(viewing_time.month()));
+                    end_t.setHour(23);
+                    end_t.setMinute(59);
+                    end_t.setSecond(59);
+                    while(rep_time.back().start() <= (end_t - rep_time.front().repeat_frequency())){
+                        rep_time.emplace_back(rep_time.back());
+                        rep_time.back().shift(rep_time.front().repeat_frequency());
 
-                        while(rep_time.back().start() >= end_t + rep_time.front().repeat_frequency()){
-                            rep_time.emplace_back(rep_time.back());
-                            rep_time.back().shift(-rep_time.front().repeat_frequency());
-                        }
                     }
 
                 }
 
                 for(auto& record : rep_time){
 
-                    if(record.start().month() != month) continue;
+                    if(record.start().month() != viewing_time.month()) continue;
 
                     if(bAltFlag){
                         if(bAltToggle){
@@ -1142,35 +1214,73 @@ void CVCalendarPanel::updateRecords(){
                         if(!cmpStringToList(monthStr(record.start().month()), record.getRepeatTags())) continue;
                     }
 
-                    newBounds.left = scheduleBounds.left +
-                                          (bounds.width - left_margin())*(record.start().day()-1)/7;
-                    newBounds.width = (bounds.width - left_margin())/7;
-                    newBounds.top = scheduleBounds.top + 3*(bounds.height - top_margin())*(((float)record.start().hour() +
-                                                                                            float(record.start().minute())/60.0f)/24.0f);
-                    newBounds.height = 3*(bounds.height - top_margin())
-                            * (((float)record.end().hour() + float(record.end().minute())/60.0f -
-                                (float)record.start().hour() - float(record.start().minute())/60.0f)/24);
 
-                    unsigned int brightness = 0;
-                    brightness = (record.color().r + record.color().g + record.color().b)/3;
-                    sf::Color textColor;
-                    if(brightness > 80) textColor = sf::Color::Black;
-                    else textColor = sf::Color::White;
-                    textColor.a = scheduleBlockAlpha;
+                    TimePoint tmp_begin = record.start(),
+                                tmp_end = record.start();
 
-                    sf::Color blockColor = record.color();
-                    blockColor.a = scheduleBlockAlpha;
+                    tmp_end.setHour(23);
+                    tmp_end.setMinute(59);
+                    tmp_end.setSecond(59);
 
-                    scheduleBlocks.emplace_back(new CVTextBox(View, sf::Vector2f(newBounds.left, newBounds.top),
-                                                              newBounds.width, newBounds.height,
-                                                                    textEntry(num_to_time(record.start().hour(), record.start().minute(), record.start().second()) +
-                                                                              " - " + num_to_time(record.end().hour(), record.end().minute(), record.end().second()) +
-                                                                                          "\n" + record.tag(),
-                                                                              textInfo.font, textInfo.fontSize,
-                                                                            ALIGN_LEFT, textColor),
-                                                                    blockColor, cellBorderColor(), tableOutlineThickness));
-                    scheduleBlocks.back()->setTextWrap(true);
-                    addPanelElement(scheduleBlocks.back());
+                    do{
+
+                        if(tmp_end > record.end()) tmp_end = record.end();
+
+                        newBounds.left = scheduleBounds.left +
+                                          (bounds.width - left_margin())*(tmp_begin.day()-1)/7;
+                        newBounds.width = (bounds.width - left_margin())/7 - 2*tableOutlineThickness;
+                        newBounds.top = scheduleBounds.top + (bounds.height - top_margin())*(((float)tmp_begin.hour() +
+                                                                                                float(tmp_begin.minute())/60)/24) * 3;
+                        newBounds.height = (bounds.height - top_margin())
+                                * (((float)tmp_end.hour() + float(tmp_end.minute())/60 -
+                                    (float)tmp_begin.hour() - float(tmp_begin.minute())/60)/24) * 3;
+
+                        unsigned int brightness = 0;
+                        brightness = (record.color().r + record.color().g + record.color().b)/3;
+                        sf::Color textColor;
+                        if(brightness > 80) textColor = sf::Color::Black;
+                        else textColor = sf::Color::White;
+                        textColor.a = scheduleBlockAlpha;
+
+                        sf::Color blockColor = record.color();
+                        blockColor.a = scheduleBlockAlpha;
+
+                        scheduleBlocks.emplace_back(new CVTextBox(View, sf::Vector2f(newBounds.left, newBounds.top),
+                                                                  newBounds.width, newBounds.height,
+                                                                        textEntry(record.start().getTime(b24hour) +
+                                                                                  " - " + record.end().getTime(b24hour) +
+                                                                                              "\n" + record.tag(),
+                                                                                  textInfo.font, textInfo.fontSize,
+                                                                                ALIGN_LEFT, textColor),
+                                                                        blockColor, cellBorderColor(), tableOutlineThickness));
+                        scheduleBlocks.back()->setTextWrap(true);
+                        scheduleBlocks.back()->setHighlightableStatus(true);
+
+                        std::vector<bool> rounded_edges(4, false);
+                        if(tmp_begin.day() == record.start().day()){
+
+                            rounded_edges[0] = true;
+                            rounded_edges[1] = true;
+
+                        }
+                        if(tmp_end.day() == record.end().day()){
+
+                            rounded_edges[2] = true;
+                            rounded_edges[3] = true;
+
+                        }
+
+                        scheduleBlocks.back()->setRounding(12.0f, 12, rounded_edges);
+                        addPanelElement(scheduleBlocks.back());
+
+                        tmp_begin.setHour(0);
+                        tmp_begin.setMinute(0);
+                        tmp_begin.setSecond(0);
+
+                        ++tmp_begin.day();
+                        ++tmp_end.day();
+
+                    }while(tmp_end.day() <= record.end().day());
 
                 }
 
@@ -1179,6 +1289,153 @@ void CVCalendarPanel::updateRecords(){
             }
         }
     }
+}
+
+void CVCalendarPanel::updateDisplay(){
+
+    clear();
+
+    switch(scale){
+        default:{   // Weekly
+
+            unsigned int D = days_in_month(viewing_time.month());
+            sf::Color expiredColor = cellFillColor();
+            if(expiredColor.r + expiredColor.g + expiredColor.b > 384) darken(expiredColor, 20);
+            else brighten(expiredColor, 20);
+
+            TimePoint calendar_day(viewing_time.year(), viewing_time.month(), 0, 0, 0, 0);
+
+            headerBox = new CVTextBox(View, sf::Vector2f(getPosition().x, getPosition().y), bounds.width, top_margin()/2,
+                                                            textEntry(monthStr(viewing_time.month()) + " " + std::to_string(viewing_time.year()), textInfo.font, textInfo.fontSize*1.5f,
+                                                                ALIGN_CENTER, textInfo.textColor),
+                                                            headerColor(), cellBorderColor(), tableOutlineThickness);
+            headerBox->setMask(appTexture("gradient_linear"));
+            headerBox->setMaskColor(sf::Color(250,250,250,160));
+
+            float buttonSize = headerBox->getGlobalBounds().height*5/8;
+
+            backHeaderButton = new CVButton(View, sf::Vector2f(getPosition().x + headerBox->getGlobalBounds().width/3,
+                                                               getPosition().y + headerBox->getGlobalBounds().height/2),
+                                            buttonSize, buttonSize,
+                                            "chevron_arrow", 1, 0, true);
+            backHeaderButton->rotate(180.0f);
+            fwdHeaderButton = new CVButton(View, sf::Vector2f(getPosition().x + headerBox->getGlobalBounds().width*2/3,
+                                                              getPosition().y + headerBox->getGlobalBounds().height/2),
+                                            buttonSize, buttonSize,
+                                            "chevron_arrow", 1, 0, true);
+
+            fwdHeaderButton->setSpriteColor(sf::Color(15, 171, 225, 200));
+            backHeaderButton->setSpriteColor(sf::Color(15, 171, 225, 200));
+
+            addPanelElement(headerBox, "header");
+            addPanelElement(backHeaderButton, "backButton");
+            addPanelElement(fwdHeaderButton, "frontButton");
+
+            for(size_t i = 0; i < D; ++i){
+
+                calendar_day.setDay(i + 1);
+                std::stringstream headerStr;
+                headerStr << i+1 << " - " << day_of_week(calendar_day);
+
+                if(current_time - calendar_day > DAYS(1)){
+
+                    plotSpace.emplace_back(new CVTextBox(View, sf::Vector2f(left_margin() + getPosition().x +
+                                                                            (bounds.width - left_margin())*i/7,
+                                                                             top_margin() + getPosition().y), (bounds.width - left_margin())/7,
+                                                         3*(bounds.height - top_margin()),
+                                                            expiredColor, cellBorderColor(), tableOutlineThickness));
+                    addPanelElement(plotSpace.back());
+
+                }
+                else{
+                    plotSpace.emplace_back(new CVTextBox(View, sf::Vector2f(left_margin() + getPosition().x +
+                                                                            (bounds.width - left_margin())*i/7,
+                                                                             top_margin() + getPosition().y), (bounds.width - left_margin())/7,
+                                                         3*(bounds.height - top_margin()),
+                                                            cellFillColor(), cellBorderColor(), tableOutlineThickness));
+                    addPanelElement(plotSpace.back());
+
+                    if((current_time.day() == calendar_day.day()) &&
+                       (abs(current_time - calendar_day) < DAYS(1))){
+                        plotSpace.emplace_back(new CVTextBox(View, sf::Vector2f(left_margin() + getPosition().x +
+                                                                                (bounds.width - left_margin())*i/7,
+                                                                             top_margin() + getPosition().y), (bounds.width - left_margin())/7,
+                                                         3*(bounds.height - top_margin())*(((float)current_time.hour() + float(current_time.minute())/60)/24),
+                                                            expiredColor, cellBorderColor(), tableOutlineThickness));
+                        addPanelElement(plotSpace.back());
+                    }
+                }
+
+                headerBars.emplace_back(new CVTextBox(View, sf::Vector2f(left_margin() + getPosition().x + (bounds.width - left_margin())*i/7,
+                                                                         getPosition().y + top_margin()/2), (bounds.width - left_margin())/7, top_margin()/2,
+                                                      textEntry(headerStr.str(), textInfo.font, textInfo.fontSize*1.3f,
+                                                                textInfo.alignment, textInfo.textColor),
+                                                        headerColor(), cellBorderColor(), tableOutlineThickness));
+                headerBars.back()->setMask(appTexture("gradient_linear"));
+                headerBars.back()->setMaskColor(sf::Color(200,200,200,150));
+                addPanelElement(headerBars.back());
+
+            }
+
+            scheduleBounds.left = plotSpace.front()->getGlobalBounds().left;
+            scheduleBounds.top = plotSpace.front()->getGlobalBounds().top;
+            scheduleBounds.width = plotSpace.back()->getGlobalBounds().left +
+                                    plotSpace.back()->getGlobalBounds().width -
+                                    scheduleBounds.left;
+            scheduleBounds.height = plotSpace.back()->getGlobalBounds().top +
+                                    plotSpace.back()->getGlobalBounds().height -
+                                    scheduleBounds.top;
+
+            TimePoint sideBarTime;
+            sideBarTime.setMinute(0);
+            sideBarTime.setSecond(0);
+
+            for(size_t i = 0; i < 24; ++i){
+                sideBarTime.setHour(i);
+                rowBars.emplace_back(new CVTextBox(View, sf::Vector2f(getPosition().x,
+                                                                      tableOutlineThickness + top_margin() +
+                                                                      getPosition().y +
+                                                                      (bounds.height - top_margin())*i/8),
+                                                   left_margin(), (bounds.height - top_margin())/8,
+                                                   textEntry(sideBarTime.getTime(b24hour), textInfo.font, textInfo.fontSize*1.25f,
+                                                                textInfo.alignment, textInfo.textColor),
+                                                   sideBarColor(), cellBorderColor(), tableOutlineThickness));
+                rowBars.back()->setMask(appTexture("gradient_linear"));
+                rowBars.back()->setMaskColor(sf::Color(250,250,250,60));
+                addPanelElement(rowBars.back());
+            }
+
+            rowBars.emplace_back(new CVTextBox(View, sf::Vector2f(getPosition().x, getPosition().y + tableOutlineThickness),
+                                               left_margin(), top_margin(),
+                                               sideBarColor(), cellBorderColor(), tableOutlineThickness));
+            rowBars.back()->setMask(appTexture("gradient_linear"));
+            rowBars.back()->setMaskColor(sf::Color(250,250,250,60));
+            addPanelElement(rowBars.back());
+
+            break;
+        }
+    }
+
+    sf::FloatRect itemBounds(left_margin(), top_margin(), 0.0f,0.0f);
+    if(!plotSpace.empty()){
+        sf::FloatRect otherBounds;
+        itemBounds = plotSpace.front()->getBounds();
+        otherBounds = plotSpace.back()->getBounds();
+        if(otherBounds.left + otherBounds.width > itemBounds.left + itemBounds.width){
+            itemBounds.width = otherBounds.left + otherBounds.width - itemBounds.left;
+        }
+        if(otherBounds.top + otherBounds.height > itemBounds.top + itemBounds.height){
+            itemBounds.height = otherBounds.top + otherBounds.height - itemBounds.top;
+        }
+    }
+
+    scheduleBounds = itemBounds;
+
+    scrollBarY.setScrollMax(itemBounds.height);
+    scrollBarX.setScrollMax(itemBounds.width);
+
+    updateRecords();
+
 }
 
 void CVCalendarPanel::save(const std::string& path) const{

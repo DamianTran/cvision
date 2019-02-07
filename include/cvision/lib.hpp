@@ -41,29 +41,15 @@
 //
 /////////////////////////////////////////////////////////////  **/
 
-#include "cvision/console.hpp"
+#pragma once
 
-using namespace EZC;
+#ifndef CVISION_API_LIB
+#define CVISION_API_LIB
 
-namespace cvis{
+#ifdef CVISION_EXPORTS
+#define CVISION_API __declspec(dllexport)
+#else
+#define CVISION_API __declspec(dllimport)
+#endif
 
-CVConsoleLog::CVConsoleLog(CVView* View, const sf::Vector2f& position, const float& width, const float& height,
-              const textEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
-              const float& borderWidth, const uint8_t& animType,
-              const std::string& logFile, CVTypeBox* usrEntryBox):
-                  CVTextLog(View, position, width, height, textInfo, fillColor, borderColor, borderWidth,
-                            animType, logFile, usrEntryBox){
-
-    setTextPanelPadding(3.0f);
-    initialMessageCount = 150;
-    messageLoadInc = 50;
-
-    disableWidthTextWrap();
-
-    setIncomingMsgPanelFillColor(sf::Color::Transparent);
-    setMsgPanelFillColor(sf::Color::Transparent);
-    setUserTextAlign(ALIGN_LEFT);
-    setHighlightPanelFillColor(sf::Color::Transparent);
-}
-
-}
+#endif // CVISION_API_LIB

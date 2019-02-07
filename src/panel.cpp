@@ -1,22 +1,56 @@
+/** /////////////////////////////////////////////////////////////
 //
-// CVision: a multi-platform graphics interface libary for C++
+//  CVision: the flexible cascading-style GUI library for C++
 //
-//////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////
 //
-// Copyright (c) 2017 - 2018 Damian Tran
+// Copyright (c) 2017 - 2019 Damian Tran
+//
+// DESCRIPTION:
+//
+// CVision is a graphical user interface (GUI) library that
+// attempts to simplify and speed up the process of desktop
+// app design.  CVision incorporates a cascading structure
+// scheme that resembles the following:
+//
+// App -> View -> Panel -> Element -> Primitives/Sprites
+//
+// The subsequent connection of each "leaf" of the hierarchy
+// automatically ensures that the element will be updated,
+// drawn to the renderer, and otherwise disposed of at
+// the program's termination.
+//
+// LEGAL:
+//
+// Modification and redistribution of CVision is freely 
+// permissible under any circumstances.  Attribution to the 
+// Author ("Damian Tran") is appreciated but not necessary.
+// 
+// CVision is an open source library that is provided to you
+// (the "User") AS IS, with no implied or explicit
+// warranties.  By using CVision, you ackowledge and agree
+// to this disclaimer.  Use of CVision in Users's programs
+// or as a part of a derivative library is performed at
+// the User's OWN RISK.
+//
+// ACKNOWLEDGEMENTS:
 //
 // CVision makes use of SFML (Simple and Fast Multimedia Library)
 // Copyright (c) Laurent Gomila
 // See licence: www.sfml-dev.org/license.php
 //
-// Redistribution of CVision is permitted under accordance with
-// the GNU general public licence (GPL) version 3.0 and the
-// terms and conditions specified in CVlicence.txt
+/////////////////////////////////////////////////////////////  **/
 
 #include "cvision/panel.hpp"
-#include "algorithm.hpp"
+#include "cvision/view.hpp"
+#include "cvision/app.hpp"
 
-using namespace AIALG;
+#include "EZC/algorithm.hpp"
+#include "EZC/toolkit/string.hpp"
+
+#include <boost/range/adaptor/reversed.hpp>
+
+using namespace EZC;
 
 namespace cvis{
 
@@ -52,9 +86,51 @@ CVSwitchPanel::CVSwitchPanel(CVView* parentView, std::string panelTag, sf::Color
                          viewIndex(0),
                          bCanPan(false),
                          bAutoPan(false),
+                         bCenterOnNew(true),
+                         bClosablePanels(true),
+                         bLoop(true),
+                         bTimed(false),
                          panRate(60.0f),
-                         elementPadding(3.0f){
-    setExpand(true);
+                         elementPadding(3.0f),
+                         autoSwitchLatency(10.0f),
+                         timeLastSwitch(TIME_NOW){
+    setExpand(false);
+}
+
+std::string CVSwitchPanel::getFocusTag(){
+
+    if(numPanels()){
+
+        return viewPanelTags[viewIndex];
+
+    }
+
+    return std::string();
+
+}
+
+void CVSwitchPanel::switch_next()
+{
+    if(viewIndex + 1 < numPanels())
+    {
+        setCenter(viewIndex + 1);
+    }
+    else if(bLoop)
+    {
+        setCenter(0);
+    }
+}
+
+void CVSwitchPanel::switch_previous()
+{
+    if(viewIndex > 0)
+    {
+        setCenter(viewIndex - 1);
+    }
+    else if(bLoop && numPanels())
+    {
+        setCenter(numPanels() - 1);
+    }
 }
 
 void CVSwitchPanel::setElementPadding(const float& newPadding){
@@ -73,31 +149,51 @@ CVElement* CVSwitchPanel::getActiveElement(){
 
 void CVSwitchPanel::addPanelElement(CVElement* newElement, std::string tag, const unsigned int& index){
 
-    if(numPanels() > 0){
-        if(index < numPanels()){
-            newElement->setPosition(viewPanelElements[index]->getPosition());
+    if(numPanels()){
+        if(!index)
+        {
+            newElement->setPosition(viewPanelElements.front()->getPosition().x - newElement->getBounds().width - elementPadding,
+                          viewPanelElements.front()->getPosition().y + viewPanelElements.front()->getSize().y/2 - newElement->getSize().y/2);
+        }
+        else if(index < numPanels()){
+            newElement->setPosition(viewPanelElements[index]->getPosition().x,
+                          viewPanelElements[index]->getPosition().y + viewPanelElements[index]->getSize().y/2 - newElement->getSize().y/2);
             for(size_t i = index; i < numPanels(); ++i){
                 viewPanelElements[i]->move(newElement->getBounds().width + elementPadding, 0.0f);
             }
         }
         else{
-            newElement->setPosition(getPosition().x + bounds.width + elementPadding,
-                          getPosition().y);
+            newElement->setPosition(viewPanelElements.back()->getPosition().x + viewPanelElements.back()->getSize().x + elementPadding,
+                                    getPosition().y + getSize().y/2 - newElement->getSize().y/2);
         }
     }
     else{
-        setPosition(View->getWidth()/2 - newElement->getBounds().width/2, getPosition().y);
-        newElement->setPosition(getPosition());
+        newElement->setPosition(getPosition().x + getSize().x/2 - newElement->getBounds().width/2,
+                                getPosition().y + getSize().y/2 - newElement->getBounds().height/2);
     }
 
     CVViewPanel::addPanelElement(newElement, tag, index);
 
-    closeButtons.emplace_back(View, sf::Vector2f(newElement->getPosition().x + newElement->getBounds().width - 20.0f,
-                                                   newElement->getPosition().y + 20.0f),
-                                15.0f,15.0f,"gen_x",1,0,true,nullptr);
-    closeButtons.back().setSpriteColor(sf::Color(160,160,160,160));
+    if(bClosablePanels)
+    {
+        closeButtons.emplace_back(View, sf::Vector2f(newElement->getPosition().x + newElement->getBounds().width - 20.0f,
+                                                       newElement->getPosition().y + 20.0f),
+                                    15.0f,15.0f,"gen_x",1,0,true,nullptr);
+        closeButtons.back().setSpriteColor(sf::Color(160,160,160,160));
+    }
 
-    setCenter(numPanels()-1);
+    if(bCenterOnNew)
+    {
+        if(index < numPanels())
+        {
+            setCenter(index);
+        }
+        else
+        {
+            setCenter(numPanels()-1);
+        }
+    }
+
 }
 
 void CVSwitchPanel::removePanelElement(const unsigned int& index){
@@ -166,19 +262,20 @@ bool CVSwitchPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
 
     if(!CVBasicViewPanel::update(event, mousePos)) return false;
 
-    if(event.viewHasFocus &&
-       (event.keyLog.size() > 0) && shiftPressed()){
-        for(auto& key : event.keyLog){
-            if(key == getKey(CV_CTRL_FWD)){
-                setCenter(viewIndex + 1);
-            }
-            else if(key == getKey(CV_CTRL_REV)){
-                setCenter(viewIndex - 1);
+    if(bCanPan){
+
+        if(event.viewHasFocus &&
+           (event.keyLog.size() > 0) && shiftPressed()){
+            for(auto& key : event.keyLog){
+                if(key == getKey(CV_CTRL_FWD)){
+                    setCenter(viewIndex + 1);
+                }
+                else if(key == getKey(CV_CTRL_REV)){
+                    setCenter(viewIndex - 1);
+                }
             }
         }
-    }
 
-    if(bCanPan){
         if(bounds.contains(mousePos) &&
            (event.mouseWheelDelta.x != 0.0f)){ // Horizontal pan
             float moveDist = panRate*event.mouseWheelDelta.x;
@@ -201,15 +298,57 @@ bool CVSwitchPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
         }
     }
 
-    if(bAutoPan && (viewIndex != UINT_MAX)){
-        if(numPanels() == 0){
-            setPosition(View->getWidth()/2, getPosition().y);
+    if(bAutoPan && (viewIndex != UINT_MAX) && numPanels()){
+
+        sf::Vector2f moveDist = panRate/500*(sf::Vector2f(getBounds().left + getSize().x/2,
+                                       getBounds().top + getSize().y/2) -
+             sf::Vector2f(viewPanelElements[viewIndex]->getPosition().x + viewPanelElements[viewIndex]->getBounds().width/2,
+                          viewPanelElements[viewIndex]->getPosition().y + viewPanelElements[viewIndex]->getBounds().height/2));
+
+        for(auto& element : viewPanelElements)
+        {
+            element->move(moveDist);
         }
-        else{
-            move(panRate/500*(sf::Vector2f(View->getBounds().left + View->getBounds().width/2,
-                                           View->getBounds().top + View->getHeight()/2) -
-                 sf::Vector2f(viewPanelElements[viewIndex]->getPosition().x + viewPanelElements[viewIndex]->getBounds().width/2,
-                              viewPanelElements[viewIndex]->getPosition().y + viewPanelElements[viewIndex]->getBounds().height/2)));
+
+    }
+
+    if(bTimed)
+    {
+        if(std::chrono::duration<float>(TIME_NOW - timeLastSwitch).count() > autoSwitchLatency)
+        {
+            switch_next();
+            timeLastSwitch = TIME_NOW;
+        }
+    }
+
+    // Handle events
+
+    std::string triggerInfo = take_trigger("SwitchTo");
+    if(!triggerInfo.empty())
+    {
+        if(isNumeric(triggerInfo))
+        {
+            try
+            {
+                switch_to(std::stoi(triggerInfo));
+            }
+            catch(...)
+            {
+                switch_to(triggerInfo);
+            }
+        }
+        else
+        {
+            switch_to(triggerInfo);
+        }
+    }
+    else
+    {
+        triggerInfo = take_trigger("SwitchNext");
+
+        if(!triggerInfo.empty())
+        {
+
         }
     }
 
@@ -273,8 +412,8 @@ std::string CVNodePanel::lastInteracted() const{
 }
 
 bool CVNodePanel::captureInteraction(std::string* output){
-    if(interactionTrace.size() > 0){
-        if(output != nullptr) *output = interactionTrace.front();
+    if(!interactionTrace.empty()){
+        if(output) *output = interactionTrace.front();
         interactionTrace.erase(interactionTrace.begin());
         return true;
     }
@@ -612,8 +751,8 @@ void CVListPanel::setSelection(const std::string& tag, const bool& state){
     }
 }
 
-StringVector CVListPanel::getSelection() const{
-    StringVector output;
+std::vector<std::string> CVListPanel::getSelection() const{
+    std::vector<std::string> output;
     for(auto& element : selected){
         output.emplace_back(element->tag());
     }
@@ -707,13 +846,13 @@ void CVListPanel::addTextEntry(const std::string& newText, const unsigned int& i
     listTags.emplace_back(newText);
 }
 
-void CVListPanel::addTextEntries(const StringVector& newText){
+void CVListPanel::addTextEntries(const std::vector<std::string>& newText){
     for(auto& text : newText){
         addTextEntry(text);
     }
 }
 
-void CVListPanel::setTextEntries(const StringVector& newText){
+void CVListPanel::setTextEntries(const std::vector<std::string>& newText){
     size_t i = 0;
     for(; (i < newText.size() && i < listTags.size()); ++i){
         if(newText[i] != listTags[i]){
@@ -743,6 +882,11 @@ void CVListPanel::removeTextEntry(const unsigned int& index){
     else{
         removePanelElement(UINT_MAX);
     }
+}
+
+bool CVListPanel::textEntryExists(const std::string& text) const
+{
+    return anyEqual(text, listTags);
 }
 
 void CVListPanel::setListPadding(const float& newPadding){
@@ -870,6 +1014,8 @@ CVAssemblyPanel::CVAssemblyPanel(CVView* parentView, std::string panelTag, sf::C
                                                         bounds.top + bounds.height - 2*scrollBarPadding),
                       size.y, 5.0f, sf::Color(140,140,140), sf::Color::Transparent, 0.0f,
                       1000.0f, CV_OBJ_ANIM_FADE_IN){
+
+    IDtag = "AssemblyPanel";
 
     scrollBarY.setPanelSize(size.y);
     scrollBarY.setPosition(sf::Vector2f(bounds.left + bounds.width - scrollBarPadding/2,
