@@ -36,6 +36,23 @@ Fonts and images are managed upon instantiation of an APP class (or custom deriv
 
 ## INSTALL
 
-This library requires your GCC compiler version to be at or above 7.3.0.  The precompiled library files in the /lib directory will work immediately for Windows.  Precompiled versions for macOS and Linux will be soon to follow!  Otherwise, you're always welcome to build the library from source using the included headers and source files.
+### USING PRECOMPILED LIBRARIES:
+
+This library requires your GCC compiler version to be at or above 7.3.0.  The precompiled library files in the /lib directory will work immediately for Windows.  Precompiled versions for macOS and Linux will be soon to follow!  
+
+### BUILDING FROM SOURCE:
+
+You're always welcome to build the library from source using the included headers and source files.  This will require SFML 2.5.1 (https://www.sfml-dev.org/index.php).  You will need to link to the following libraries:
+
+#### On Windows:
+
+    * freetype
+    * opengl32
+    * gdi32
+    * winmm
+    * stdc++
+    * gcc
+    
+## DOCUMENTATION
 
 The supporting documentation for this library is a work in progress, as is the library itself (as of June 2018).  Please check back on this repo on a monthly basis for increasingly up-to-date coverage, more extensive library capabilities, and more efficient optimizations.
