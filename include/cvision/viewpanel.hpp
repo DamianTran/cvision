@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -50,12 +50,10 @@
 
 #include "cvision/textbox.hpp"
 
-#ifdef __cplusplus
-extern "C"{
-#endif
-
 namespace cvis
 {
+
+class CVEvent;
 
 class CVISION_API CVViewPanel: public CVTextBox
 {
@@ -141,15 +139,16 @@ protected:
     std::vector<std::string> viewPanelTags;
 
     bool bFitWindow,            // Fit to the window upon creation and upon resize
-         bTransduceFade,     // Transduce fade events to panel elements
+         bTransduceFade,        // Transduce fade events to panel elements
          bTransduceFocus,
-         bDragAndDrop,       // Transfer focus to panel elements
-         bOutOfBoundsDraw,   // Draw items outside of the panel boundary
-         bOutOfBoundsUpdate; // Update items outside of the panel boundary
+         bDragAndDrop,          // Transfer focus to panel elements
+         bOutOfBoundsDraw,      // Draw items outside of the panel boundary
+         bOutOfBoundsUpdate;    // Update items outside of the panel boundary
 
     sf::Sprite* dragShadow;     // If drag-and-drop, a sprite for the item shadow
 
     CVISION_API void updateBounds();
+    CVISION_API void updatePanels(CVEvent& event, const sf::Vector2f& mousePos);
 
 private:
 
@@ -159,9 +158,5 @@ private:
 };
 
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif // CVIS_VIEW_PANEL

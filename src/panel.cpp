@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -54,14 +54,59 @@ using namespace EZC;
 
 namespace cvis{
 
+CVBasicViewPanel::CVBasicViewPanel(CVView* parentView, std::string panelTag, sf::Color backgroundColor,
+                     const sf::Vector2f& size, bool bFitToWindow,
+                     const sf::Vector2f& position):
+        CVViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position)
+{
+
+
+
+}
+
 bool CVBasicViewPanel::draw(sf::RenderTarget* target){
+
+    if(!CVShape::draw(target)) return false;
 
     CV_DRAW_CLIP_BEGIN
 
-    if(!CVTextBox::draw(target)) return false;
+    if(!bSpriteOnly)
+    {
+        for(auto& item : panel)
+        {
+            target->draw(item);
+        }
+    }
+
+    if(bMasked) target->draw(shapeMask);
+
+    for(auto& sprite : spriteList)
+    {
+        target->draw(sprite);
+    }
+
+    for(auto& text : displayText)
+    {
+        target->draw(text);
+    }
 
     for(auto& panel : viewPanelElements){
         if(bOutOfBoundsDraw || getBounds().intersects(panel->getBounds())) panel->draw(target);
+    }
+
+    if(bHasShadow)
+    {
+        target->draw(shadow);
+    }
+
+    if(is_closable())
+    {
+        closeButton->draw(target);
+    }
+
+    if(!active)
+    {
+        target->draw(inactiveMask);
     }
 
     CV_DRAW_CLIP_END
@@ -71,11 +116,13 @@ bool CVBasicViewPanel::draw(sf::RenderTarget* target){
 
 bool CVBasicViewPanel::update(CVEvent& event, const sf::Vector2f& mousePos){ // Disperse update function
     if(!CVViewPanel::update(event, mousePos)) return false;
-    for(auto& panel : boost::adaptors::reverse(viewPanelElements)){
-        if(bOutOfBoundsUpdate || View->contains(*panel)){
-            panel->update(event, mousePos);
-        }
+    updatePanels(event, mousePos);
+
+    if(is_closable() && closeButton->getTrigger())
+    {
+        bDelete = true;
     }
+
     return true;
 }
 
@@ -176,10 +223,7 @@ void CVSwitchPanel::addPanelElement(CVElement* newElement, std::string tag, cons
 
     if(bClosablePanels)
     {
-        closeButtons.emplace_back(View, sf::Vector2f(newElement->getPosition().x + newElement->getBounds().width - 20.0f,
-                                                       newElement->getPosition().y + 20.0f),
-                                    15.0f,15.0f,"gen_x",1,0,true,nullptr);
-        closeButtons.back().setSpriteColor(sf::Color(160,160,160,160));
+        newElement->setClosable(true);
     }
 
     if(bCenterOnNew)
@@ -199,13 +243,9 @@ void CVSwitchPanel::addPanelElement(CVElement* newElement, std::string tag, cons
 void CVSwitchPanel::removePanelElement(const unsigned int& index){
     sf::FloatRect panelBounds = viewPanelElements[index]->getBounds();
     CVViewPanel::removePanelElement(index);
-    closeButtons.erase(closeButtons.begin() + index);
 
     for(size_t i = index; i < viewPanelElements.size(); ++i){
         viewPanelElements[i]->move(sf::Vector2f(-panelBounds.width, 0.0f));
-    }
-    for(size_t i = index; i < closeButtons.size(); ++i){
-        closeButtons[i].move(-panelBounds.width, 0.0f);
     }
 
     if(bExpand){
@@ -231,36 +271,27 @@ void CVSwitchPanel::setPanRate(const float& newRate){
 
 void CVSwitchPanel::move(const sf::Vector2f& distance){
     CVBasicViewPanel::move(distance);
-    for(auto& button : closeButtons){
-        button.move(distance);
-    }
 }
 
 void CVSwitchPanel::setPosition(const sf::Vector2f& position){
     move(position - getPosition());
 }
 
-bool CVSwitchPanel::draw(sf::RenderTarget* target){
-    if(!CVBasicViewPanel::draw(target)) return false;
-
-    for(auto& button : closeButtons){
-        button.draw(target);
-    }
-
-    return true;
-}
-
 bool CVSwitchPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
 
-    for(size_t i = 0; i < closeButtons.size();){
-        closeButtons[i].update(event, mousePos);
-        if(closeButtons[i].getTrigger()){
+    if(!CVViewPanel::update(event, mousePos)) return false;
+
+    for(int i = viewPanelElements.size() - 1; i >= 0; --i){
+        if(viewPanelElements[i]->shouldDelete())
+        {
             removePanelElement(i);
         }
-        else ++i;
+        else{
+            if(bOutOfBoundsUpdate || View->contains(*viewPanelElements[i])){
+                viewPanelElements[i]->update(event, mousePos);
+            }
+        }
     }
-
-    if(!CVBasicViewPanel::update(event, mousePos)) return false;
 
     if(bCanPan){
 
@@ -350,10 +381,6 @@ bool CVSwitchPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
         {
 
         }
-    }
-
-    for(auto& button : closeButtons){
-        button.setFocus(hasFocus());
     }
 
     return true;
@@ -568,36 +595,45 @@ bool CVNodePanel::update(CVEvent& event, const sf::Vector2f& mousePos){
     bool interactionCaptured = false;
     int index = numPanels()-1;
 
-    for(auto& panel : boost::adaptors::reverse(viewPanelElements)){
-        if(View->contains(*panel)){
-            panel->update(event, mousePos);
+    for(int i = viewPanelElements.size() - 1; i >= 0;)
+    {
+        if(View->contains(*viewPanelElements[i])){
+            viewPanelElements[i]->update(event, mousePos);
         }
 
-        if(bNodeOpened && !interactionCaptured && event.LMBreleased &&
-           (event.LMBreleaseFrames == 1) &&
-           panel->getBounds().contains(mousePos)){
-               if(panel->isType<CVNodePanel>()){
-                      if(((CVNodePanel*)panel)->isOpen()){
-                            std::string interaction;
-                            if(((CVNodePanel*)panel)->captureInteraction(&interaction)){
-                                logInteraction(interaction);
-                                interactionCaptured = true;
-                            }
-                            if(((CVNodePanel*)panel)
-                                ->center
-                                    ->getBounds().contains(mousePos)) pathSelected[index] = false;
-                      }
-                      else{
-                            pathSelected[index] = true;
-//                            setCenter(*panel);
-                      }
-                }
-                else{
-                    logInteraction(viewPanelTags[index]);
-                    interactionCaptured = true;
-                }
+        if(viewPanelElements[i]->shouldDelete())
+        {
+            delete(viewPanelElements[i]);
+            viewPanelElements.erase(viewPanelElements.begin() + i);
         }
-        --index;
+        else
+        {
+            if(bNodeOpened && !interactionCaptured && event.LMBreleased &&
+               (event.LMBreleaseFrames == 1) &&
+               viewPanelElements[i]->getBounds().contains(mousePos)){
+                   if(viewPanelElements[i]->isType<CVNodePanel>()){
+                          if(((CVNodePanel*)viewPanelElements[i])->isOpen()){
+                                std::string interaction;
+                                if(((CVNodePanel*)viewPanelElements[i])->captureInteraction(&interaction)){
+                                    logInteraction(interaction);
+                                    interactionCaptured = true;
+                                }
+                                if(((CVNodePanel*)viewPanelElements[i])
+                                    ->center
+                                        ->getBounds().contains(mousePos)) pathSelected[i] = false;
+                          }
+                          else{
+                                pathSelected[i] = true;
+    //                            setCenter(*viewPanelElements[i]);
+                          }
+                    }
+                    else{
+                        logInteraction(viewPanelTags[i]);
+                        interactionCaptured = true;
+                    }
+            }
+            --i;
+        }
 
     }
 

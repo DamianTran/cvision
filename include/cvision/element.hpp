@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -150,6 +150,8 @@ protected:
     bool bHasShadow;         // Has stationary texture copy
     bool bDragAndDrop;       // Allow drag-and-drop mechanics
     bool bClipBounds;        // Clip draw region to bounds
+    bool bDelete;            // A close call has been ordered on this element
+    bool bTriggered;         // Has a generic trigger event been initiated on this element?
 
     bool bStatic;            // Cannot be moved
     bool bNoInteract;        // Skip update cycles (enhance performance with many elements)
@@ -166,7 +168,7 @@ protected:
     std::vector<std::string>        incoming_triggers;  // Trigger signals waiting to be processed
     std::vector<CVTriggerTarget>    trigger_targets;    // Trigger targets to send information to
 
-    void addTypeID(const std::string& ID);
+    CVElement* closeButton;                             // An element that can act as a close trigger signal
 
     /** ========================================================================
 
@@ -270,11 +272,32 @@ public:
     }
     CVISION_API void sendTriggers() const;
 
+    inline bool getTrigger(){
+        if(bTriggered){
+            bTriggered = false;
+            return true;
+        }
+        return false;
+    }
+
+    CVISION_API void setClosable(const bool& status = true,         // Enable closable signal
+                                 CVElement* element = nullptr);     // Default signal is an "x" sprite CVButton
+
+    inline bool is_closable() const
+    {
+        return closeButton;
+    }
+
     /** ========================================================================
 
         States
 
     // ===================================================================== **/
+
+    inline const bool& shouldDelete() const
+    {
+        return bDelete;
+    }
 
     inline const unsigned int& getCurrentState() const
     {

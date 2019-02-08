@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -56,7 +56,6 @@ CVButton::CVButton(CVView* View, const sf::Vector2f& position, float width, floa
                     CVTextBox(View, position, width, height, textInfo, fillColor, borderColor, borderWidth),
                     bFadeInHover(false),
                     bFadeInToggle(false),
-                    bTriggered(false),
                     bToggleFlipX(false),
                     bToggleFlipY(false),
                     rotateAngle(NAN),
@@ -93,7 +92,6 @@ CVButton::CVButton(CVView* View, const sf::Vector2f& position, const float& widt
                  CVTextBox(View, position, width, height, sf::Color::Transparent, sf::Color::Transparent, 0.0f),
                  bFadeInHover(false),
                  bFadeInToggle(false),
-                 bTriggered(false),
                  bToggleFlipX(false),
                  bToggleFlipY(false),
                  rotateAngle(NAN),
@@ -264,6 +262,11 @@ bool CVButton::draw(sf::RenderTarget* target){
     }
     for(auto& text : displayText){
         target->draw(text);
+    }
+
+    if(is_closable())
+    {
+        closeButton->draw(target);
     }
 
     if(!active) target->draw(inactiveMask);

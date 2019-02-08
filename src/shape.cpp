@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -68,6 +68,11 @@ void CVShape::move(const sf::Vector2f& offset)
     for(auto& sprite : spriteList)
     {
         sprite.move(offset);
+    }
+
+    if(is_closable())
+    {
+        closeButton->move(offset);
     }
 
     bounds.left += offset.x;
@@ -155,7 +160,7 @@ bool CVShape::update(CVEvent& event, const sf::Vector2f& mousePos)
 
 bool CVShape::draw(sf::RenderTarget* target)
 {
-    if(target == nullptr) return false;
+    if(!target) return false;
     if(!visible) return false;
     return true;
 }

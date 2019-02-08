@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -43,6 +43,10 @@
 
 #include "cvision/app.hpp"
 #include "cvision/view.hpp"
+
+#if defined WIN32 || defined _WIN32 || defined __WIN32
+#include <windows.h>
+#endif
 
 #include <EZC/algorithm.hpp>
 
@@ -113,7 +117,7 @@ void CVApp::mainUpdate()
             view->viewPort->
             create(sf::VideoMode(view->width, view->height),
                    view->name, view->style, newWinSettings);
-            view->viewPort->setActive(true);
+            view->activateWindow();
 
             view->bWindowCreateWaiting = false;
 
@@ -172,6 +176,25 @@ void CVApp::closeAll()
     {
         closeView(0);
     }
+}
+
+CVApp::CVApp(unsigned int frameRate,
+           float leftClickLatency,
+           float rightClickLatency,
+           const std::string& defaultFont):
+                    running(false),
+                    mainUpdateThread(nullptr),
+                    defaultFont(defaultFont),
+                    frameRate(frameRate),
+                    frameTime(1.0f/frameRate),
+                    leftClickLatency(leftClickLatency),
+                    rightClickLatency(rightClickLatency)
+{
+
+#if defined WIN32 || defined __WIN32 || defined _WIN32
+    OleInitialize(NULL);
+#endif // WIN32
+
 }
 
 CVApp::~CVApp()

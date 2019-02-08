@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -51,6 +51,11 @@
 #include <vector>
 #include <string>
 #include <thread>
+#include <mutex>
+
+#if defined WIN32 || defined _WIN32 || defined __WIN32
+#include <windows.h>
+#endif
 
 #include <SFML/Graphics.hpp>
 
@@ -86,6 +91,59 @@ namespace cvis
 class CVApp;
 class CVViewPanel;
 class CVTextBox;
+class CVView;
+
+#if defined WIN32 || defined _WIN32 || defined __WIN32
+class CVISION_API CVDropTarget : public IDropTarget
+{
+public:
+
+    CVISION_API CVDropTarget(CVView* view);
+    virtual ~CVDropTarget() = default;
+
+    bool getWaitingData(std::vector<std::string>& output); // Attempt to transfer waiting drop requests
+    const bool& mouse_drag() const;
+
+protected:
+
+    // IUnknown interface virtuals
+    CVISION_API STDMETHOD(QueryInterface)(REFIID iid, void FAR* FAR* ppvobj);
+    CVISION_API STDMETHOD_(ULONG, AddRef)();
+    CVISION_API STDMETHOD_(ULONG, Release)();
+
+    // IDropTarget interface virtuals
+    CVISION_API STDMETHOD(DragEnter)(LPDATAOBJECT pDataObj, DWORD grfKeyState,
+                         POINTL pt, LPDWORD pdweffect);
+    CVISION_API STDMETHOD(DragOver)(DWORD grfKeyState,
+                        POINTL pt,
+                        LPDWORD pdweffect);
+    CVISION_API STDMETHOD(DragLeave)();
+    CVISION_API STDMETHOD(Drop)(LPDATAOBJECT pDataObj,
+                    DWORD grfKeyState,
+                    POINTL pt,
+                    LPDWORD pdweffect);
+
+private:
+
+    unsigned long FReferences;
+
+    bool bAcceptFormat;
+    bool bDragActive;
+
+    CVView* viewHandle;
+
+    std::vector<std::string> waiting_data;
+
+    CVISION_API void HandleDrop(HDROP hDrop);
+
+    std::mutex dropLock;
+
+    // No copy to allow for mutex lock
+    CVDropTarget(const CVDropTarget& other) = delete;
+    CVDropTarget& operator=(const CVDropTarget& other) = delete;
+
+};
+#endif
 
 class CVISION_API CVView
 {
@@ -98,11 +156,17 @@ protected:
 
     friend class CVApp;
 
-    bool forceClose, render,
-         bCloseSignal,
-         bClosed,
-         bElasticSelect,
-         bWindowCreateWaiting;
+#if defined WIN32 || defined _WIN32 || defined __WIN32
+    CVDropTarget* dropTarget;
+#endif
+
+    bool forceClose;
+    bool render;
+    bool bCloseSignal;
+    bool bClosed;
+    bool bElasticSelect;
+    bool bWindowCreateWaiting;
+    bool bDropable;            // Signal to the OS that this window can accept drop input
 
     float defaultViewScale; // Allow scaling based on view dimensions
 
@@ -115,9 +179,6 @@ protected:
     std::string name;
     uint32_t style;
 
-    std::vector<CVElement*> popUpElements;
-    std::vector<CVElement*> waitingPopUpElements;
-
     std::vector<CVViewPanel*> viewPanels;
     std::vector<CVViewPanel*> waitingViewPanels;
     std::vector<std::string> panelTags;
@@ -127,8 +188,6 @@ protected:
     std::vector<CVAnim> pendingAnims;
     unsigned int numPendingAnims;
 
-    std::vector<CVView*> subViews;
-    std::vector<std::string> subViewTags;
     CVView* parentView;
     std::thread* appThread;
 
@@ -155,6 +214,7 @@ protected:
     std::chrono::high_resolution_clock::time_point timeLastRightClick;
 
     CVISION_API void handleTriggerEvent(const unsigned char& eventID);
+    CVISION_API void activateWindow();
 
 public:
 
@@ -177,7 +237,11 @@ public:
 
     sf::Vector2f mousePos;
 
+    virtual void preDrawProcess(){ }        // Override to insert update events before the draw cycle
+    virtual void postDrawProcess(){ }       // Override to insert update events following the draw cycle
+
     CVISION_API void setTopMargin(const float& margin);
+    CVISION_API void setDropable(const bool& status = true);
 
     inline void requestFocus()
     {
@@ -423,36 +487,9 @@ public:
         move_to(getPosition() + getSize() - newSizeDims, speed);
     }
 
-    inline void addPopUp(CVElement* popUpElement)
-    {
-        waitingPopUpElements.push_back(popUpElement);
-    }
-    inline unsigned int numPopUpElements()
-    {
-        return popUpElements.size();
-    }
-
-    inline void deletePopUp(CVElement* popUpElement)
-    {
-        for(std::vector<CVElement*>::iterator it = popUpElements.begin();
-                it != popUpElements.end();)
-        {
-            if(*it == popUpElement)
-            {
-                delete(*it);
-                popUpElements.erase(it);
-            }
-            else ++it;
-        }
-    }
-
     CVISION_API const float getViewScale() const;
     CVISION_API void setDefaultViewScale(const float& x, const float& y);
 
-    inline const unsigned int numSubViews()
-    {
-        return subViews.size();
-    }
     inline CVView* getParentView()
     {
         return parentView;
@@ -519,7 +556,7 @@ public:
            uint32_t style, CVApp* mainApp, const sf::Vector2f& screenPosition = sf::Vector2f(NAN,NAN),
            const sf::Color& backgroundColor = sf::Color::Black);
 
-    CVISION_API ~CVView();
+    CVISION_API virtual ~CVView();
 };
 
 #define CV_DRAW_CLIP_BEGIN              sf::View init_view,\

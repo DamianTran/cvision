@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -58,7 +58,6 @@ protected:
 
     bool bFadeInHover,
         bFadeInToggle,
-        bTriggered,
         bToggleFlipX,
         bToggleFlipY;
 
@@ -93,14 +92,6 @@ public:
     CVISION_API void setColor(const sf::Color& newColor, const unsigned int& state = 0);
     CVISION_API void setFadeIn(const bool& state, const uint8_t& targetAlpha = 255, const uint8_t& rate = 0);
     CVISION_API void setFadeOnClick(const bool& state, const uint8_t& targetAlpha = 255, const uint8_t& rate = 0);
-
-    inline bool getTrigger(){
-        if(bTriggered){
-            bTriggered = false;
-            return true;
-        }
-        return false;
-    }
 
     template<typename FUNC> void setActivationFunction(FUNC func){ activateFunc = func; } // Allow for custom activation functions by CVView
 

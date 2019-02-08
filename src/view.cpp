@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -45,27 +45,214 @@
 #include "cvision/app.hpp"
 #include "cvision/viewpanel.hpp"
 
-#include <boost/range/adaptors.hpp>
-
 #if defined _WIN32 || defined _WIN32 || defined WIN32
+
 #include <windows.h>
+#include <ole2.h>
+#include <oleidl.h>
+#define WM_OLEDROP WM_USER + 1
+
 #elif defined __APPLE__
+
 #include <Foundation/Foundation.h>
 #include <AvailabilityMacros.h>
 #import <Cocoa/Cocoa.h>
+
 #endif
 
 namespace cvis
 {
 
+#if defined _WIN32 || defined _WIN32 || defined WIN32
+
+CVDropTarget::CVDropTarget(CVView* view):
+    FReferences(1),
+    bAcceptFormat(false),
+    bDragActive(false),
+    viewHandle(view)
+{
+
+}
+
+void CVDropTarget::HandleDrop(HDROP hDrop)
+{
+    int num_files = DragQueryFile(hDrop, 0xFFFFFFFF,
+                                  (LPSTR)NULL, NULL);
+
+    if(num_files)
+    {
+
+        dropLock.lock();
+
+        for(int i = 0; i < num_files; ++i)
+        {
+            int newDataLength = DragQueryFile(hDrop, i, NULL, NULL) + 1;
+            char * newData = new char[newDataLength];
+            DragQueryFile(hDrop, i, newData, newDataLength);
+            waiting_data.emplace_back(newData);
+            delete(newData);
+        }
+
+        dropLock.unlock();
+
+    }
+}
+
+bool CVDropTarget::getWaitingData(std::vector<std::string>& output)
+{
+
+    if(waiting_data.empty())
+    {
+        return false;
+    }
+
+    dropLock.lock();
+
+    output.insert(output.end(),
+                  waiting_data.begin(),
+                  waiting_data.end());
+    waiting_data.clear();
+
+    dropLock.unlock();
+
+    return true;
+
+}
+
+const bool& CVDropTarget::mouse_drag() const
+{
+    return bDragActive;
+}
+
+STDMETHODIMP CVDropTarget::QueryInterface(REFIID iid, void FAR* FAR* ppv)
+{
+    if((iid == IID_IUnknown) || (iid == IID_IDropTarget))
+    {
+        *ppv = this;
+        AddRef();
+        return NOERROR;
+    }
+
+    *ppv = NULL;
+    return ResultFromScode(E_NOINTERFACE);
+}
+
+STDMETHODIMP_(ULONG) CVDropTarget::AddRef()
+{
+    return ++FReferences;
+}
+
+STDMETHODIMP_(ULONG) CVDropTarget::Release()
+{
+    if(!(--FReferences))
+    {
+        delete this;
+        return 0;
+    }
+    return FReferences;
+}
+
+// Check for data compatibility and other pre-initialization flags
+
+STDMETHODIMP CVDropTarget::DragEnter(LPDATAOBJECT pDataObj,
+                                     DWORD grfKeyState,
+                                     POINTL pt,
+                                     LPDWORD pdwEffect)
+{
+    FORMATETC fmtetc;
+
+    fmtetc.cfFormat     =   CF_HDROP;
+    fmtetc.ptd          =   NULL;
+    fmtetc.dwAspect     =   DVASPECT_CONTENT;
+    fmtetc.lindex       =   -1;
+    fmtetc.tymed        =   TYMED_HGLOBAL;
+
+    if(pDataObj->QueryGetData(&fmtetc) == NOERROR)
+    {
+        bAcceptFormat = true;
+    }
+    else
+    {
+        bAcceptFormat = false;
+    }
+
+    bDragActive = true;
+
+    return NOERROR;
+}
+
+// Send a signal for the window to visually respond to the drag state
+
+STDMETHODIMP CVDropTarget::DragOver(DWORD grfKeyState,
+                                    POINTL pt,
+                                    LPDWORD pdwEffect)
+{
+
+    return NOERROR;
+
+}
+
+// Notify the window that the drag state has been left
+
+STDMETHODIMP CVDropTarget::DragLeave()
+{
+    bAcceptFormat = false;
+    bDragActive = false;
+    return NOERROR;
+}
+
+// Implement the data transfer
+
+STDMETHODIMP CVDropTarget::Drop(LPDATAOBJECT pDataObj,
+                             DWORD grfKeyState,
+                             POINTL pt,
+                             LPDWORD pdwEffect)
+{
+
+    FORMATETC fmtetc;
+
+    fmtetc.cfFormat     =   CF_HDROP;
+    fmtetc.ptd          =   NULL;
+    fmtetc.dwAspect     =   DVASPECT_CONTENT;
+    fmtetc.lindex       =   -1;
+    fmtetc.tymed        =   TYMED_HGLOBAL;
+
+    STGMEDIUM medium;
+    HRESULT hr = pDataObj->GetData(&fmtetc, &medium);
+
+    if(!FAILED(hr))
+    {
+
+        HGLOBAL hFiles = medium.hGlobal;
+        HDROP hDrop = (HDROP)GlobalLock(hFiles);
+
+        HandleDrop(hDrop);
+
+        GlobalUnlock(hFiles);
+        ReleaseStgMedium(&medium);
+
+    }
+    else
+    {
+        *pdwEffect = DROPEFFECT_NONE;
+        return hr;
+    }
+
+    return NOERROR;
+
+}
+#endif
+
 CVView::CVView(unsigned int x, unsigned int y, std::string winName,
                uint32_t style, CVApp* mainApp,
                const sf::Vector2f& screenPosition,
                const sf::Color& backgroundColor):
+    dropTarget(nullptr),
     forceClose(false),
     bClosed(false),
     bElasticSelect(false),
     bWindowCreateWaiting(false),
+    bDropable(false),
     defaultViewScale(1920.0f*1080.0f),
     backgroundColor(backgroundColor),
     numPendingAnims(0),
@@ -133,7 +320,7 @@ CVView::CVView(unsigned int x, unsigned int y, std::string winName,
                     sf::ContextSettings newWinSettings;
                     newWinSettings.antialiasingLevel = 4;
                     viewPort->create(sf::VideoMode(x, y), winName, style, newWinSettings);
-                    viewPort->setActive(true);
+                    activateWindow();
 #endif
                 }
                 else
@@ -197,8 +384,7 @@ CVView::CVView(unsigned int x, unsigned int y, std::string winName,
 
             // Framerate limit cycle
 
-nextFrame:
-            ;
+            nextFrame:;
 
             duration = TIME_NOW - t0;
 
@@ -259,6 +445,26 @@ CVElement* CVView::getElementById(const std::string& tag)
     }
 
     return nullptr;
+}
+
+void CVView::activateWindow()
+{
+
+    viewPort->setActive(true);
+
+}
+
+void CVView::setDropable(const bool& status)
+{
+
+    #if defined WIN32 || defined __WIN32 || defined _WIN32
+
+    bDropable = status;
+
+    #elif defined __APPLE__
+
+    #endif // WIN32
+
 }
 
 void CVView::setTopMargin(const float& newMargin)
@@ -357,11 +563,6 @@ CVViewPanel* CVView::operator[](const std::string s)
     return *taggedItem(s, viewPanels, panelTags);
 }
 
-CVView* CVView::taggedSubView(std::string tag)
-{
-    return *taggedItem(tag, subViews, subViewTags);
-}
-
 const float CVView::getViewScale() const
 {
     return pow(sf::VideoMode::getDesktopMode().height*
@@ -371,15 +572,6 @@ const float CVView::getViewScale() const
 void CVView::setDefaultViewScale(const float& x, const float& y)
 {
     defaultViewScale = x*y;
-}
-
-void CVView::addSubView(CVView* newSubView, std::string tag)
-{
-    if(addUnique(newSubView, subViews))
-    {
-        if(tag.size() > 0) subViewTags.push_back(tag);
-        else subViewTags.push_back("Subview " + std::to_string(subViews.size()));
-    }
 }
 
 void CVView::addPanel(CVViewPanel* newPanel, std::string tag, const unsigned int& index)
@@ -508,6 +700,42 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
     if(bClosed || (viewPort == nullptr) || !viewPort->isOpen()) return false;
 
+    // Handle drag and drop
+
+    if(bDropable && !dropTarget)
+    {
+        #if defined WIN32 || defined __WIN32 || defined _WIN32
+
+        HWND winHandle = viewPort->getSystemHandle();
+        dropTarget = new CVDropTarget(this);
+
+        RegisterDragDrop(winHandle, (LPDROPTARGET)dropTarget);
+
+        #elif defined __APPLE__
+
+        #endif // WIN32
+    }
+    else if(!bDropable && dropTarget)
+    {
+        #if defined WIN32 || defined __WIN32 || defined _WIN32
+
+        HWND winHandle = viewPort->getSystemHandle();
+        delete(dropTarget);
+        dropTarget = nullptr;
+
+        RevokeDragDrop(winHandle);
+
+        #elif defined __APPLE__
+
+        #endif // WIN32
+    }
+
+    if(dropTarget)
+    {
+        eventTrace.clearDropData();
+        dropTarget->getWaitingData(eventTrace.drop_data);
+    }
+
     // Handle screenshots in the main update thread
     if(saveRequestFiles.size() > 0)
     {
@@ -535,6 +763,8 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
             ++i;
         }
     }
+
+    preDrawProcess();
 
 #ifndef __APPLE__
     if(!handleViewEvents(event)) return false;
@@ -683,15 +913,18 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
     // Open the view focus to capture
     event.focusCaptured = false;
 
-    for(auto& element : boost::adaptors::reverse(popUpElements))
+    for(int i = viewPanels.size() - 1; i >= 0; --i)
     {
-        element->update(event, mousePos);
+        if(viewPanels[i]->shouldDelete())
+        {
+            delete(viewPanels[i]);
+            viewPanels.erase(viewPanels.begin() + i);
+        }
+        else
+        {
+            viewPanels[i]->update(event, mousePos);
+        }
     }
-    for(auto& panel : boost::adaptors::reverse(viewPanels))
-    {
-        panel->update(event, mousePos);
-    }
-
     if(event.closed())  // Check for a close signal
     {
         bClosed = true;
@@ -724,6 +957,8 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
     {
         event.RMBreleaseTime += event.lastFrameTime;
     }
+
+    postDrawProcess();
 
     event.tossData(); // Toss data if conditions are met and not picked up
     event.eventsProcessed = false;
@@ -957,18 +1192,15 @@ void CVView::close()
 
 CVView::~CVView()
 {
-    for(auto& S : subViews)
-    {
-        S->close();
-        delete(S);
-    }
-    for(auto& popUp : popUpElements)
-    {
-        delete(popUp);
-    }
+
     for(auto& panel : viewPanels)
     {
         delete(panel);
+    }
+
+    if(dropTarget)
+    {
+        delete(dropTarget);
     }
 
     close();

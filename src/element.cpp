@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -43,6 +43,7 @@
 
 #include "cvision/element.hpp"
 #include "cvision/algorithm.hpp"
+#include "cvision/button.hpp"
 #include "cvision/view.hpp"
 #include "cvision/app.hpp"
 
@@ -70,8 +71,11 @@ namespace cvis
         bHasShadow(false),\
         bDragAndDrop(false),\
         bClipBounds(false),\
+        bDelete(false),\
+        bTriggered(false),\
         bStatic(false),\
         bNoInteract(false),\
+        closeButton(nullptr),\
         highlightColor(255,255,255,255),\
         origin(0.0f,0.0f),\
         destination(NAN, NAN),\
@@ -115,6 +119,38 @@ CVElement::CVElement(CVView* View,
 CVElement::~CVElement()
 {
     View->releaseMouseCapture(*this);
+    if(is_closable())
+    {
+        delete(closeButton);
+        closeButton = nullptr;
+    }
+}
+
+void CVElement::setClosable(const bool& status,
+                            CVElement* button)
+{
+
+    if(status && !is_closable())
+    {
+        if(button)
+        {
+            closeButton = button;
+        }
+        else
+        {
+            float buttonSize = View->getWidth() < View->getHeight() ? View->getWidth()*0.02 : View->getHeight() * 0.02;
+            closeButton = new CVButton(View, sf::Vector2f(getPosition().x + getBounds().width - buttonSize * 1.5,
+                                                       getPosition().y + buttonSize * 1.5),
+                                    buttonSize, buttonSize,"gen_x",1,0,true,nullptr);
+            ((CVButton*)closeButton)->setSpriteColor(sf::Color(160,160,160,160));
+        }
+    }
+    else if(!status && is_closable())
+    {
+        delete(closeButton);
+        closeButton = nullptr;
+    }
+
 }
 
 bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
@@ -424,6 +460,16 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
     if(event.LMBhold && (event.LMBholdTime < 0.3f) && !bounds.contains(event.LMBpressPosition))
     {
         setFocus(false);
+    }
+
+    if(is_closable())
+    {
+        closeButton->setFocus(hasFocus());
+        closeButton->update(event, mousePos);
+        if(closeButton->getTrigger())
+        {
+            bDelete = true;
+        }
     }
 
     return true;

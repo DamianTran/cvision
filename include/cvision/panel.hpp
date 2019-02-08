@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -83,11 +83,9 @@ public:
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
     CVISION_API bool draw(sf::RenderTarget* target);
 
-    CVBasicViewPanel(CVView* parentView, std::string panelTag = "", sf::Color backgroundColor = sf::Color::Transparent,
+    CVISION_API CVBasicViewPanel(CVView* parentView, std::string panelTag = "", sf::Color backgroundColor = sf::Color::Transparent,
                      const sf::Vector2f& size = sf::Vector2f(NAN, NAN), bool bFitToWindow = true,
-                     const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f)):
-        CVViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position){
-        }
+                     const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
 };
 
 class CVISION_API CVSwitchPanel: public CVBasicViewPanel{ // Allows for switching of view focus between panel elements
@@ -107,12 +105,9 @@ protected:
 
     std::chrono::high_resolution_clock::time_point timeLastSwitch;
 
-    std::vector<CVButton> closeButtons;
-
 public:
 
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
-    CVISION_API bool draw(sf::RenderTarget* target);
 
     CVISION_API CVElement* getActiveElement();
     CVISION_API std::string getFocusTag();

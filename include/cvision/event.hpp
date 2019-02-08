@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -288,19 +288,55 @@ public:
     CVISION_API float mouseVelocity() const;
     CVISION_API float mouseMoveAngle() const;
 
-    sf::Vector2f viewResizeScale,
-    LMBpressPosition,
-    RMBpressPosition,
-    lastFrameMousePosition,
-    currentMousePosition,
-    LMBreleasePosition,
-    RMBreleasePosition,
-    mouseWheelDelta,
-    lastFrameGlobalMousePosition,
-    lastLMBpressPosition,
-    lastRMBpressPosition;
+    sf::Vector2f viewResizeScale;
+    sf::Vector2f LMBpressPosition;
+    sf::Vector2f RMBpressPosition;
+    sf::Vector2f lastFrameMousePosition;
+    sf::Vector2f currentMousePosition;
+    sf::Vector2f LMBreleasePosition;
+    sf::Vector2f RMBreleasePosition;
+    sf::Vector2f mouseWheelDelta;
+    sf::Vector2f lastFrameGlobalMousePosition;
+    sf::Vector2f lastLMBpressPosition;
+    sf::Vector2f lastRMBpressPosition;
 
     std::vector<sf::Vector2f> mouseTraceBuffer; // Record of mouse positions for the last N frames
+    std::vector<std::string> drop_data;         // Enqueued drop data from the host OS
+
+    inline bool hasDropData() const
+    {
+        return !drop_data.empty();
+    }
+
+    inline size_t dropDataCount() const
+    {
+        return drop_data.size();
+    }
+
+    inline bool take_data(const unsigned int& index)
+    {
+        if(index >= dropDataCount()) return false;
+        drop_data.erase(drop_data.begin() + index);
+        return true;
+    }
+
+    inline bool take_data(const std::string& match)
+    {
+        for(size_t i = 0; i < dropDataCount(); ++i)
+        {
+            if(drop_data[i] == match)
+            {
+                take_data(i);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    inline void clearDropData()
+    {
+        drop_data.clear();
+    }
 
     sf::FloatRect viewBounds,
     lastViewBounds;

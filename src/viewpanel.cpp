@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -99,6 +99,23 @@ void CVViewPanel::updateBounds()
         bounds.height = 0.0f;
         panel.front().setSize(sf::Vector2f(0.0f,0.0f));
     }
+}
+
+void CVViewPanel::updatePanels(CVEvent& event, const sf::Vector2f& mousePos)
+{
+
+    for(int i = viewPanelElements.size() - 1; i >= 0; --i){
+        if(viewPanelElements[i]->shouldDelete())
+        {
+            removePanelElement(i);
+        }
+        else{
+            if(bOutOfBoundsUpdate || View->contains(*viewPanelElements[i])){
+                viewPanelElements[i]->update(event, mousePos);
+            }
+        }
+    }
+
 }
 
 void CVViewPanel::setExpand(const bool& state)

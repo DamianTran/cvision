@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -178,27 +178,12 @@ public:
 
     CVISION_API void mainUpdate();
 
-    explicit CVApp():
-        running(false),
-        mainUpdateThread(nullptr),
-        defaultFont(),
-        frameRate(60),
-        frameTime(1.0f/60),
-        leftClickLatency(0.5f),
-        rightClickLatency(0.5f) { }
-    explicit CVApp(unsigned int frameRate,
-                   float leftClickLatency,
-                   float rightClickLatency,
-                   const std::string& defaultFont):
-        running(false),
-        mainUpdateThread(nullptr),
-        defaultFont(defaultFont),
-        frameRate(frameRate),
-        frameTime(1.0f/frameRate),
-        leftClickLatency(leftClickLatency),
-        rightClickLatency(rightClickLatency) { }
+    CVISION_API CVApp(unsigned int frameRate = 60,
+           float leftClickLatency = 0.5,
+           float rightClickLatency = 0.5,
+           const std::string& defaultFont = "");
 
-    ~CVApp();
+    CVISION_API ~CVApp();
 };
 
 }
