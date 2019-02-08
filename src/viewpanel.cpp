@@ -104,7 +104,7 @@ void CVViewPanel::updateBounds()
 void CVViewPanel::updatePanels(CVEvent& event, const sf::Vector2f& mousePos)
 {
 
-    for(int i = viewPanelElements.size() - 1; i >= 0; --i){
+    for(int i = viewPanelElements.size() - 1; (i >= 0) && !viewPanelElements.empty(); --i){
         if(viewPanelElements[i]->shouldDelete())
         {
             removePanelElement(i);

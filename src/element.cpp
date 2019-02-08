@@ -155,7 +155,7 @@ void CVElement::setClosable(const bool& status,
 
 bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
-    if(bNoInteract || (View->viewPort == nullptr) || !View->viewPort->isOpen() || !visible) return false;
+    if(bNoInteract || !View->viewPort || !View->viewPort->isOpen() || !visible) return false;
 
     if(bFollowMouseX)
     {

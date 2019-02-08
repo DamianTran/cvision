@@ -358,8 +358,8 @@ public:
     {
         if(state)
         {
-            if(!bStatic) bStatic = true;
-            if(!canClick) canClick = true;
+            bStatic = false;
+            canClick = true;
             bNoInteract = false;
         }
         canDrag = state;

@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -41,7 +41,7 @@
 //
 /////////////////////////////////////////////////////////////  **/
 
-#include "cvision/panel.hpp"
+#include "cvision/panel/button.hpp"
 #include "cvision/button.hpp"
 #include "cvision/event.hpp"
 

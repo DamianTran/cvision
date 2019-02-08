@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -41,21 +41,6 @@
 //
 /////////////////////////////////////////////////////////////  **/
 
-//
-// CVision: a multi-platform graphics interface libary for C++
-//
-//////////////////////////////////////////////////////////////
-//
-// Copyright (c) 2017 - 2018 Damian Tran
-//
-// CVision makes use of SFML (Simple and Fast Multimedia Library)
-// Copyright (c) Laurent Gomila
-// See licence: www.sfml-dev.org/license.php
-//
-// Redistribution of CVision is permitted under accordance with
-// the GNU general public licence (GPL) version 3.0 and the
-// terms and conditions specified in CVlicence.txt
-
 #pragma once
 
 #ifndef CVIS_TABLE
@@ -64,7 +49,11 @@
 #include "cvision/panel.hpp"
 #include "cvision/widgets.hpp"
 
+
 namespace cvis{
+
+class CVTypeBox;
+class CVTextBox;
 
 class CVISION_API CVTablePanel : public CVBasicViewPanel{
 protected:

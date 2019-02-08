@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -47,11 +47,12 @@
 #define CVIS_SKETCH
 
 #include "cvision/panel.hpp"
-#include <SFML/Graphics.hpp>
 
 // Base class for graphical draw tools
 
 namespace cvis{
+
+class CVButtonPanel;
 
 class CVISION_API CVBrush{
 protected:

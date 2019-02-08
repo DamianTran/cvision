@@ -913,7 +913,7 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
     // Open the view focus to capture
     event.focusCaptured = false;
 
-    for(int i = viewPanels.size() - 1; i >= 0; --i)
+    for(int i = viewPanels.size() - 1; (i >= 0) && !viewPanels.empty(); --i)
     {
         if(viewPanels[i]->shouldDelete())
         {

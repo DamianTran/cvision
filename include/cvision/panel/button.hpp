@@ -41,76 +41,59 @@
 //
 /////////////////////////////////////////////////////////////  **/
 
-#include "cvision/panel/toggle.hpp"
+#pragma once
+
+#ifndef CVIS_BUTTON_PANEL
+#define CVIS_BUTTON_PANEL
+
+#include "cvision/panel.hpp"
 
 namespace cvis
 {
 
-CVTogglePanel::CVTogglePanel(CVView* parentView, std::string panelTag, sf::Color backgroundColor,
-                     const sf::Vector2f& size, bool bFitToWindow,
-                     const sf::Vector2f& position):
-                         CVBasicViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position),
-                         active_index(0)
-{
+class CVButton;
 
+class CVISION_API CVButtonPanel: public CVBasicViewPanel{
+protected:
 
+    std::string interactTag;
+    sf::Vector2i gridSize;
 
-}
+    void organizeGrid();
+    sf::Vector2f getGridPosition(const sf::Vector2i& coord) const;
 
-bool CVTogglePanel::update(CVEvent& event, const sf::Vector2f& mousePos)
-{
+    std::vector<std::vector<CVButton*>> buttonGrid;
 
-    if(!CVTextBox::update(event, mousePos))
-    {
-        return false;
-    }
+    float outerPadding,
+            innerPadding;
 
-    if(active_index < numPanels())
-    {
-        return viewPanelElements[active_index]->update(event, mousePos);
-    }
+public:
 
-    return false;
-}
+    std::string getInteraction();
+    bool checkInteraction() const;
 
-bool CVTogglePanel::draw(sf::RenderTarget* target)
-{
+    void setGrid(const sf::Vector2i& size);
+    void setGrid(const unsigned int& x, const unsigned int& y);
 
-    if(!CVTextBox::draw(target))
-    {
-        return false;
-    }
+    void setOuterPadding(const float& value);
+    void setInnerPadding(const float& value);
 
-    if(active_index < numPanels())
-    {
-        return viewPanelElements[active_index]->draw(target);
-    }
+    void addButton(const sf::Vector2i& coord,
+                   const std::string& tag = "",
+                   const std::string& icon = "",
+                   const std::string& text = "",
+                   const unsigned int& numStates = 2,
+                   const unsigned int& initialState = 0);
 
-    return false;
-}
+    bool update(CVEvent& event, const sf::Vector2f& mousePos);
+    bool draw(sf::RenderTarget* target);
 
-void CVTogglePanel::switch_to(const size_t& index)
-{
-    if(index < numPanels())
-    {
-        active_index = index;
-    }
+    CVButtonPanel(CVView* parentView, std::string panelTag = "", sf::Color backgroundColor = sf::Color::Transparent,
+                     const sf::Vector2f& size = sf::Vector2f(NAN, NAN), bool bFitToWindow = true,
+                     const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
+
+};
 
 }
 
-void CVTogglePanel::switch_to(const std::string& tag)
-{
-
-    for(size_t i = 0; i < numPanels(); ++i)
-    {
-        if(viewPanelTags[i] == tag)
-        {
-            switch_to(i);
-            return;
-        }
-    }
-
-}
-
-
-}
+#endif // CVIS_BUTTON_PANEL
