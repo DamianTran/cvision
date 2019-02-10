@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -59,6 +59,7 @@ protected:
 public:
 
     template<typename T> friend CVConsoleLog& operator<<(CVConsoleLog& log, const T& input){
+
         using EZC::operator<<;
 
         log.iobuffer << input;
@@ -87,10 +88,17 @@ public:
             else ++i;
         }
 
-        if(edit) log.editLastEntry(bufstr, false);
-        else log.addToLastEntry(bufstr, false);
+        if(edit)
+        {
+            log.editLastEntry(bufstr, false);
+        }
+        else
+        {
+            log.addToLastEntry(bufstr, false);
+        }
 
         log.iobuffer.str("");
+
         return log;
     }
 

@@ -1307,7 +1307,8 @@ void CVCalendarPanel::updateDisplay(){
             TimePoint calendar_day(viewing_time.year(), viewing_time.month(), 0, 0, 0, 0);
 
             headerBox = new CVTextBox(View, sf::Vector2f(getPosition().x, getPosition().y), bounds.width, top_margin()/2,
-                                                            textEntry(monthStr(viewing_time.month()) + " " + std::to_string(viewing_time.year()), textInfo.font, textInfo.fontSize*1.5f,
+                                                            textEntry(monthStr(viewing_time.month()) + " " + std::to_string(viewing_time.year()),
+                                                                      textInfo.font, textInfo.fontSize*1.5f,
                                                                 ALIGN_CENTER, textInfo.textColor),
                                                             headerColor(), cellBorderColor(), tableOutlineThickness);
             headerBox->setMask(appTexture("gradient_linear"));

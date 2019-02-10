@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -475,6 +475,10 @@ void CVDataViewerPanel::setup()
 bool CVDataViewerPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
 
+    if(bNoInteract || !View->viewPort) return false;
+
+    std::cout << "Updating...\n";
+
     if(bDisconnect)
     {
 
@@ -491,6 +495,8 @@ bool CVDataViewerPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
         setup();
 
     }
+
+    std::cout << "Check...\n";
 
     // Capture keys
 
@@ -625,6 +631,8 @@ bool CVDataViewerPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
         scrollBarY.setScrollable(false);
         scrollBarX.setScrollable(false);
     }
+
+    std::cout << "Check...\n";
 
     if(bounds.contains(mousePos)) event.captureFocus();
 
@@ -1022,6 +1030,8 @@ bool CVDataViewerPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
             }
         }
     }
+
+    std::cout << "Done...\n";
 
     return true;
 

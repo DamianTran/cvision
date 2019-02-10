@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -102,7 +102,7 @@ CVTitleBar::CVTitleBar(CVView* View, const uint8_t& alignment, const float& widt
     this->textInfo = textInfo;
     align(alignment);
     alignText();
-    displayText.front().move(sf::Vector2f(height*1.32, 0));
+    displayText.front().move(sf::Vector2f(height*1.42, 0));
 
     if(!logo.empty()){
         #ifdef __APPLE__

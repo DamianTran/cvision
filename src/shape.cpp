@@ -160,8 +160,7 @@ bool CVShape::update(CVEvent& event, const sf::Vector2f& mousePos)
 
 bool CVShape::draw(sf::RenderTarget* target)
 {
-    if(!target) return false;
-    if(!visible) return false;
+    if(!target || !visible) return false;
     return true;
 }
 

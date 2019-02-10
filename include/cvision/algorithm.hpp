@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -245,14 +245,14 @@ sf::Vector2f getTextHorizontalAlignment(sf::Text& text, sf::Rect<float>& bounds,
 
 inline float getTextCenterOffsetY(const sf::Text& text){
     if(!text.getFont()) return 0.0f;
-    return text.getFont()->getGlyph(97, text.getCharacterSize(), false).bounds.height/4 +
-            text.getFont()->getLineSpacing(text.getCharacterSize())/2;
+    return text.getFont()->getGlyph(97, text.getCharacterSize(), false).bounds.height/2 +
+            text.getFont()->getLineSpacing(text.getCharacterSize())/4;
 }
 inline float getLineHeight(const sf::Text& text)
 {
     if(!text.getFont()) return 0.0f;
     return text.getFont()->getGlyph(65, text.getCharacterSize(), false).bounds.height +
-            text.getFont()->getLineSpacing(text.getCharacterSize())/2;
+            text.getFont()->getLineSpacing(text.getCharacterSize());
 }
 inline unsigned int getLineCount(const sf::Text& text)
 {

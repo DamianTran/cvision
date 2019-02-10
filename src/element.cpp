@@ -775,7 +775,7 @@ void CVElement::addSprite(const sf::Texture* texture,
                           const sf::Color& fillColor)
 {
 
-    if(texture == nullptr) return;
+    if(!texture) return;
 
     spriteList.emplace_back(*texture);
     sf::Vector2f texSize(texture->getSize());

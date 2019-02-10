@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -55,7 +55,9 @@ namespace cvis
 CVTextLogMsg::CVTextLogMsg(CVView* View, const textEntry& newEntry):
     CVTextBox(View, sf::Vector2f(0.0f,0.0f), 2.0f, 2.0f, newEntry,
               sf::Color::Transparent, sf::Color::Transparent, 0.0f),
-                  bUser(false)
+                  bUser(false),
+                  bMsg(true),
+                  textLogIndex(0)
 {
 
 }
@@ -86,7 +88,7 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
     selectionStart(UINT_MAX),
     selectionLineStart(0),
     selectionLineEnd(0),
-    enterLine(false),
+    bEnterLine(false),
     textLog(nullptr)
 {
 
@@ -181,7 +183,7 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
 
         cursorInitPos.x = displayText.back().getPosition().x +
                             displayText.back().getGlobalBounds().width -
-                            getTextCenterOffsetY(displayText.back());
+                            getTextCenterOffsetY(displayText.back())/2;
     }
     else if(textInfo.alignment == ALIGN_VERTICAL)
     {
@@ -190,7 +192,7 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
 
         cursorInitPos.x = displayText.back().getPosition().x +
                             displayText.back().getGlobalBounds().width -
-                            getTextCenterOffsetY(displayText.back());
+                            getTextCenterOffsetY(displayText.back())/2;
     }
     else
     {
@@ -198,7 +200,7 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
 
         cursorInitPos.y = displayText.back().getPosition().y +
                             displayText.back().getGlobalBounds().height -
-                            getTextCenterOffsetY(displayText.back());
+                            getTextCenterOffsetY(displayText.back())/2;
     }
 
     cursor.setPosition(cursorInitPos);
@@ -884,7 +886,7 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                             typeString.erase(typeString.begin() + cursorPos, typeString.end());
                             clear_suggestion();
                         }
-                        if(enterLine)
+                        if(bEnterLine)
                         {
                             if(((textFitType == CV_TEXT_FIT_WRAP) ||
                                     (textFitType == CV_TEXT_FIT_NONE)) && shiftPressed())
@@ -1357,13 +1359,13 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
         if((textInfo.alignment == ALIGN_VERTICAL_INVERTED) || (textInfo.alignment == ALIGN_VERTICAL))
         {
             movePos.y = displayText.back().findCharacterPos(cursorPos - typeFrameStart).y + 1.0f;
-            movePos.x = displayText.back().findCharacterPos(cursorPos - typeFrameStart).x - getTextCenterOffsetY(displayText.back())/4;
+            movePos.x = displayText.back().findCharacterPos(cursorPos - typeFrameStart).x;
             View->anim_to(&cursor, movePos, pow(getDistance(cursor.getPosition(), movePos), 2), CV_OBJ_ANIM_SLIDE);
         }
         else
         {
             movePos.x = displayText.back().findCharacterPos(cursorPos - typeFrameStart).x - 1.0f;
-            movePos.y = displayText.back().findCharacterPos(cursorPos - typeFrameStart).y - getTextCenterOffsetY(displayText.back())/4;
+            movePos.y = displayText.back().findCharacterPos(cursorPos - typeFrameStart).y;
             View->anim_to(&cursor, movePos, pow(getDistance(cursor.getPosition(), movePos), 2), CV_OBJ_ANIM_SLIDE);
         }
     }
@@ -1658,7 +1660,8 @@ CVTextLog::CVTextLog(CVView* View, const sf::Vector2f& position, const float& wi
     bCanScroll(true),
     animType(animType),
     userTextAlign(ALIGN_RIGHT),
-    otherTextAlign(ALIGN_LEFT)
+    otherTextAlign(ALIGN_LEFT),
+    selectedEntry(nullptr)
 {
 
     colorTheme.emplace_back(borderColor);                   // Message panel fill
@@ -1844,6 +1847,7 @@ bool CVTextLog::update(CVEvent& event, const sf::Vector2f& mousePos)
             msgPanels.back()->setTextWrap(true);
             msgPanels.back()->setText(0, waitingText.front());
             msgPanels.back()->fitText();
+            msgPanels.back()->textLogIndex = textLog.size() - 1;
 
             float moveBump = 0.0f, shiftDist = msgPanels.back()->getSize().y + msgPanelPaddingPx/2;
             if(textLogUserEntered.size() > 1)
@@ -1948,61 +1952,49 @@ bool CVTextLog::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     // Process clicking
 
-    if(event.LMBhold && bounds.contains(mousePos))
+    if(hasFocus() &&
+       (event.LMBreleaseFrames == 1) &&
+       bounds.contains(event.LMBreleasePosition))
     {
-        if(hasFocus())
+        if(usrEntryBox && event.captureMouse())
         {
-            if((usrEntryBox != nullptr) &&
-                    event.captureMouse())
+            for(auto& item : msgPanels)
             {
-                if(event.LMBholdTime < 0.2f)
-                {
-                    unsigned int index = 0, textIndex;
-                    std::string checkString;
-                    float xCtr;
-                    sf::FloatRect panelBounds;
 
-                    for(auto& item : msgPanels)
-                    {
-                        panelBounds = item->getGlobalBounds();
-                        xCtr = item->getPosition().x + panelBounds.width/2;
-                        if(panelBounds.contains(mousePos))
-                        {
-                            if(xCtr > bounds.left + bounds.width/2 - 2.0f)
-                            {
-                                item->setFillColor(getHighlightPanelFillColor());
-                                usrEntryBox->setTypeString(msgPanels[index]->getText());
-                                selectedLogIndex = index;
-                            }
-                            else if(xCtr < bounds.left + bounds.width/2 + 2.0f)
-                            {
-                                item->setFillColor(getHighlightPanelFillColor());
-                                selectedLogIndex = index;
-                            }
-                        }
-                        else
-                        {
-                            if(xCtr < bounds.left + bounds.width/2 - 2.0f)
-                            {
-                                item->setFillColor(getIncomingMsgPanelFillColor());
-                            }
-                            else if(xCtr > bounds.left + bounds.width/2 + 2.0f)
-                            {
-                                item->setFillColor(getMsgPanelFillColor());
-                            }
-                        }
-                        ++index;
-                    }
-                }
-                else if((event.LMBpressPosition.x > bounds.left + bounds.width*0.9f) &&
-                        (event.LMBpressPosition.x < bounds.left + bounds.width*1.05f))
+                if(item->getGlobalBounds().contains(event.LMBpressPosition))
                 {
-                    if((scrollRange > 0.0f) && (event.LMBholdTime > 0.2f))
+                    item->setFillColor(getHighlightPanelFillColor());
+                    if(item->bUser)
                     {
-                        scrollSpeed *= 3;
-                        scrollDist = (scrollBar.getPosition().y + scrollBar.getSize().y/2 - mousePos.y)*event.lastFrameTime*20;
+                        usrEntryBox->setTypeString(textLog[item->textLogIndex]);
+                    }
+                    selectedLogIndex = item->textLogIndex;
+                    selectedEntry = item;
+                }
+                else
+                {
+                    selectedEntry = nullptr;
+                    if(item->bUser)
+                    {
+                        item->setFillColor(getMsgPanelFillColor());
+                    }
+                    else
+                    {
+                        item->setFillColor(getIncomingMsgPanelFillColor());
                     }
                 }
+            }
+        }
+    }
+    else if(event.LMBhold)
+    {
+        if((event.LMBpressPosition.x > bounds.left + bounds.width*0.9f) &&
+                (event.LMBpressPosition.x < bounds.left + bounds.width*1.05f))
+        {
+            if((scrollRange > 0.0f) && (event.LMBholdTime > 0.2f))
+            {
+                scrollSpeed *= 3;
+                scrollDist = (scrollBar.getPosition().y + scrollBar.getSize().y/2 - mousePos.y)*event.lastFrameTime*20;
             }
         }
     }
@@ -2101,7 +2093,7 @@ bool CVTextLog::update(CVEvent& event, const sf::Vector2f& mousePos)
             {
             case char(10):
             {
-                if((usrEntryBox != nullptr) && usrEntryBox->canEnterLine())
+                if(usrEntryBox && usrEntryBox->canEnterLine())
                 {
                     usrEntryBox->enterString();
                     usrEntryBox->sendEnteredString();
@@ -2112,7 +2104,7 @@ bool CVTextLog::update(CVEvent& event, const sf::Vector2f& mousePos)
             {
                 if(ctrlPressed())
                 {
-                    copyToClipboard(displayText[selectedLogIndex].getString());
+                    copyToClipboard(textLog[selectedLogIndex]);
                 }
                 break;
             }
@@ -2137,103 +2129,72 @@ void CVTextLog::addLogEntry(const std::string& text, bool userEntry, float updat
     printLock.unlock();
 }
 
-void CVTextLog::wrapLastMsg()
-{
-    sf::FloatRect textBounds = displayText.back().getGlobalBounds();
-
-    if(!isnan(maxPanelWidthPct))
-    {
-        if(textBounds.width > bounds.width*maxPanelWidthPct)
-        {
-            std::string displayTextString = displayText.back().getString();
-
-            for(size_t i = 0; i < displayTextString.size(); ++i)  // Add new line characters to fit text horizontally
-            {
-                if(displayText.back().findCharacterPos(i).x - bounds.left > bounds.width*maxPanelWidthPct)
-                {
-                    for(int j = i; j > 0; --j)
-                    {
-                        if(displayTextString[j-1] == ' ')
-                        {
-                            displayTextString[j-1] = '\n';
-                            break;
-                        }
-                        else if(isCharType(displayTextString[j-1], ",\\/:._-"))
-                        {
-                            displayTextString.insert(displayTextString.begin() + j, '\n');
-                            break;
-                        }
-                        else if(displayText.back().findCharacterPos(i).x -
-                                displayText.back().findCharacterPos(j).x > bounds.width*maxPanelWidthPct)
-                        {
-                            displayTextString.insert(displayTextString.begin() + i - 1, '\n');
-                            ++i;
-                            break;
-                        }
-                    }
-
-                    displayText.back().setString(displayTextString);
-                    textBounds = displayText.back().getGlobalBounds();
-                    if(textBounds.width < bounds.width*maxPanelWidthPct) break;
-                }
-            }
-        }
-    }
-
-    msgPanels.back()->setSize(sf::Vector2f(textBounds.width + 2*msgPanelPaddingPx,
-                                          textBounds.height + 2*msgPanelPaddingPx));
-}
-
 void CVTextLog::addToLastEntry(const std::string& text, bool userEntry)
 {
-    printLock.lock();
-    if((waitingText.size() > 0) && (textLogUserWaiting.back() == userEntry))
+    if(!waitingText.empty() && (textLogUserWaiting.back() == userEntry))
     {
+        printLock.lock();
         waitingText.back().append(text);
+        printLock.unlock();
     }
-    else if((textLogUserEntered.size() > 0) && (textLogUserEntered.back() == userEntry))
+    else if(!textLogUserEntered.empty() && (textLogUserEntered.back() == userEntry))
     {
+        printLock.lock();
         textLog.back().append(text);
-        displayText.back().setString(textLog.back());
-        float shiftDist = displayText.back().getGlobalBounds().height;
-        wrapLastMsg();
-        shiftDist -= displayText.back().getGlobalBounds().height;
-        if(shiftDist != 0.0f)
+        float shiftDist = msgPanels.back()->getGlobalBounds().height;
+        msgPanels.back()->setSize(sf::Vector2f(bounds.width * maxPanelWidthPct,
+                                               msgPanels.back()->getSize().y));
+        msgPanels.back()->setString(textLog.back());
+        shiftDist -= msgPanels.back()->getGlobalBounds().height;
+
+        if(shiftDist)
         {
-            shiftMsgs(shiftDist);
+            for(size_t i = 0; i + 1 < msgPanels.size(); ++i)
+            {
+                msgPanels[i]->anim_move(sf::Vector2f(0.0f, shiftDist), msgPopupSpeed);
+            }
         }
+
+        printLock.unlock();
     }
     else
     {
         addLogEntry(text, userEntry, 0.0f);
     }
-    printLock.unlock();
 }
 
 void CVTextLog::editLastEntry(const std::string& text, bool userEntry)
 {
-    printLock.lock();
-    if((waitingText.size() > 0) && (textLogUserWaiting.back() == userEntry))
+    if(!waitingText.empty() && (textLogUserWaiting.back() == userEntry))
     {
+        printLock.lock();
         waitingText.back() = text;
+        printLock.unlock();
     }
-    else if((textLogUserEntered.size() > 0) && (textLogUserEntered.back() == userEntry))
+    else if(!textLogUserEntered.empty() && (textLogUserEntered.back() == userEntry))
     {
+        printLock.lock();
         textLog.back() = text;
-        displayText.back().setString(text);
-        float shiftDist = displayText.back().getGlobalBounds().height;
-        wrapLastMsg();
-        shiftDist -= displayText.back().getGlobalBounds().height;
-        if(shiftDist != 0.0f)
+        float shiftDist = msgPanels.back()->getGlobalBounds().height;
+        msgPanels.back()->setSize(sf::Vector2f(bounds.width * maxPanelWidthPct,
+                                               msgPanels.back()->getSize().y));
+        msgPanels.back()->setString(text);
+        shiftDist -= msgPanels.back()->getGlobalBounds().height;
+
+        if(shiftDist)
         {
-            shiftMsgs(shiftDist);
+            for(size_t i = 0; i + 1 < msgPanels.size(); ++i)
+            {
+                msgPanels[i]->anim_move(sf::Vector2f(0.0f, shiftDist), msgPopupSpeed);
+            }
         }
+
+        printLock.unlock();
     }
     else
     {
         addLogEntry(text, userEntry, 0.0f);
     }
-    printLock.unlock();
 }
 
 bool CVTextLog::save()
@@ -2348,6 +2309,7 @@ bool CVTextLog::load()
             msgPanels.back()->setFillColor(dateColor);
             msgPanels.back()->fitText();
             msgPanels.back()->time = times[N];
+            msgPanels.back()->bMsg = false;
 
             for(size_t i = 1; i < msgPanels.size(); ++i)
             {
@@ -2369,6 +2331,7 @@ bool CVTextLog::load()
                                                    bounds.top + bounds.height - msgPanels.back()->getSize().y - 48.0f));
         msgPanels.back()->fitText();
         msgPanels.back()->time = times[N];
+        msgPanels.back()->textLogIndex = N;
 
         float moveBump = 0.0f, shiftDist = msgPanels.back()->getSize().y + msgPanelPaddingPx/2;
         if(N > 0)

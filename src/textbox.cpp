@@ -96,8 +96,7 @@ void CVTextBox::alignText()
                  i = 1;
 
     for(auto& text : displayText)
-    {
-        float lineHeight = (getLineCount(text) - 1) * getLineHeight(text);
+    {;
 
         textBounds = text.getGlobalBounds();
 
@@ -112,21 +111,46 @@ void CVTextBox::alignText()
         case ALIGN_CENTER_MIDLINE:
         {
             textPos.x = bounds.left + bounds.width/2 - textBounds.width/2;
-            textPos.y = bounds.top + i*bounds.height/numText - lineHeight / 2 - getTextCenterOffsetY(text);
+
+            if(getLineCount(text) > 1)
+            {
+                textPos.y = bounds.top + i*bounds.height/numText - textBounds.height/2 - getTextCenterOffsetY(text)/4;
+            }
+            else
+            {
+                textPos.y = bounds.top + i*bounds.height/numText - getTextCenterOffsetY(text);
+            }
+
             break;
         }
         case ALIGN_CENTER_BOTTOM:
         {
             textPos.x = bounds.left + bounds.width/2 - textBounds.width/2;
-            if(i > 1)
+
+            if(getLineCount(text) > 1)
             {
-                textPos.y = displayText[i-1].getGlobalBounds().top +
-                            displayText[i-1].getGlobalBounds().height +
-                            textPadding -
-                            lineHeight -
-                            getTextCenterOffsetY(text);
+                if(i > 1)
+                {
+                    textPos.y = displayText[i-1].getGlobalBounds().top +
+                                displayText[i-1].getGlobalBounds().height +
+                                textPadding -
+                                textBounds.height -
+                                getTextCenterOffsetY(text)/4;
+                }
+                else textPos.y = bounds.top + bounds.height - textPadding - textBounds.height - getTextCenterOffsetY(text)/4;
             }
-            else textPos.y = bounds.top + bounds.height - textPadding - lineHeight - getTextCenterOffsetY(text);
+            else
+            {
+                if(i > 1)
+                {
+                    textPos.y = displayText[i-1].getGlobalBounds().top +
+                                displayText[i-1].getGlobalBounds().height +
+                                textPadding -
+                                getTextCenterOffsetY(text);
+                }
+                else textPos.y = bounds.top + bounds.height - textPadding - getTextCenterOffsetY(text);
+            }
+
             break;
         }
         case ALIGN_RIGHT:
@@ -138,41 +162,91 @@ void CVTextBox::alignText()
         case ALIGN_RIGHT_MIDLINE:
         {
             textPos.x = bounds.left + bounds.width - textPadding - textBounds.width;
-            textPos.y = bounds.top + i*bounds.height/numText - lineHeight / 2 - getTextCenterOffsetY(text);
+
+            if(getLineCount(text) > 1)
+            {
+                textPos.y = bounds.top + i*bounds.height/numText - textBounds.height/2 - getTextCenterOffsetY(text)/4;
+            }
+            else
+            {
+                textPos.y = bounds.top + i*bounds.height/numText - getTextCenterOffsetY(text);
+            }
+
             break;
         }
         case ALIGN_RIGHT_BOTTOM:
         {
             textPos.x = bounds.left + bounds.width - textPadding - textBounds.width;
-            if(i > 1)
+
+            if(getLineCount(text) > 1)
             {
-                textPos.y = displayText[i-1].getGlobalBounds().top +
-                            displayText[i-1].getGlobalBounds().height +
-                            textPadding -
-                            lineHeight -
-                            getTextCenterOffsetY(text);
+                if(i > 1)
+                {
+                    textPos.y = displayText[i-1].getGlobalBounds().top +
+                                displayText[i-1].getGlobalBounds().height +
+                                textPadding -
+                                textBounds.height -
+                                getTextCenterOffsetY(text)/4;
+                }
+                else textPos.y = bounds.top + bounds.height - textPadding - textBounds.height - getTextCenterOffsetY(text)/4;
             }
-            else textPos.y = bounds.top + bounds.height - textPadding - lineHeight - getTextCenterOffsetY(text);
+            else
+            {
+                if(i > 1)
+                {
+                    textPos.y = displayText[i-1].getGlobalBounds().top +
+                                displayText[i-1].getGlobalBounds().height +
+                                textPadding -
+                                getTextCenterOffsetY(text);
+                }
+                else textPos.y = bounds.top + bounds.height - textPadding - getTextCenterOffsetY(text);
+            }
+
             break;
         }
         case ALIGN_LEFT_MIDLINE:
         {
             textPos.x = bounds.left + textPadding;
-            textPos.y = bounds.top + i*bounds.height/numText - lineHeight / 2 - getTextCenterOffsetY(text);
+
+            if(getLineCount(text) > 1)
+            {
+                textPos.y = bounds.top + i*bounds.height/numText - textBounds.height/2 - getTextCenterOffsetY(text)/4;
+            }
+            else
+            {
+                textPos.y = bounds.top + i*bounds.height/numText - getTextCenterOffsetY(text);
+            }
+
             break;
         }
         case ALIGN_LEFT_BOTTOM:
         {
             textPos.x = bounds.left + textPadding;
-            if(i > 1)
+
+            if(getLineCount(text) > 1)
             {
-                textPos.y = displayText[i-1].getGlobalBounds().top +
-                            displayText[i-1].getGlobalBounds().height +
-                            textPadding -
-                            lineHeight -
-                            getTextCenterOffsetY(text);
+                if(i > 1)
+                {
+                    textPos.y = displayText[i-1].getGlobalBounds().top +
+                                displayText[i-1].getGlobalBounds().height +
+                                textPadding -
+                                textBounds.height -
+                                getTextCenterOffsetY(text)/4;
+                }
+                else textPos.y = bounds.top + bounds.height - textPadding - textBounds.height - getTextCenterOffsetY(text)/4;
             }
-            else textPos.y = bounds.top + bounds.height - textPadding - lineHeight - getTextCenterOffsetY(text);
+            else
+            {
+                if(i > 1)
+                {
+                    textPos.y = displayText[i-1].getGlobalBounds().top +
+                                displayText[i-1].getGlobalBounds().height +
+                                textPadding -
+                                getTextCenterOffsetY(text);
+                }
+                else textPos.y = bounds.top + bounds.height - textPadding - getTextCenterOffsetY(text);
+            }
+
             break;
         }
         default:  // Left
