@@ -280,7 +280,7 @@ CVView::CVView(unsigned int x, unsigned int y, std::string winName,
     viewPort->setVerticalSyncEnabled(true);
 #endif
 
-    textureBuffer.setActive();
+    textureBuffer.setActive(false);
 
     mainApp->viewThreads.emplace_back(new std::thread([&, x, y, winName, style, screenPosition]()
     {
@@ -417,10 +417,12 @@ CVView::CVView(unsigned int x, unsigned int y, std::string winName,
 
 #ifndef __APPLE__
     // Wait for the view to be constructed
-    while(viewPort == nullptr)
+    while(!viewPort)
     {
         std::this_thread::sleep_for(std::chrono::duration<float>(0.01f));
     }
+
+    viewPort->setActive(true);
 #endif
 }
 
@@ -450,7 +452,7 @@ CVElement* CVView::getElementById(const std::string& tag)
 void CVView::activateWindow()
 {
 
-    viewPort->setActive(true);
+//    viewPort->setActive(false);
 
 }
 

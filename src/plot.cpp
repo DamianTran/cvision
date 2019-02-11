@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -102,18 +102,18 @@ CVPlot::CVPlot(CVView* View, const sf::Vector2f& position, const float& width, c
         axisLabels.emplace_back(View, sf::Vector2f(plotBounds.left + plotBounds.width/2,
                                                    plotBounds.top - plotBounds.height*0.25f),
                                 plotBounds.width, 30.0f,
-                                textEntry("Main Title", fontName, 22*fontScaling,
+                                textEntry("Main Title", fontName, 17*fontScaling,
                                           ALIGN_CENTER_MIDLINE, borderColor, sf::Text::Style::Bold),
                                 sf::Color::Transparent, sf::Color::Transparent, 0.0f, CV_OBJ_ANIM_SLIDE);
         axisLabels.emplace_back(View, sf::Vector2f(plotBounds.left + plotBounds.width/2,
                                                    plotBounds.top + plotBounds.height*1.2f),
                                 plotBounds.width, 30.0f,
-                                textEntry("x Label", fontName, 22*fontScaling,
+                                textEntry("x Label", fontName, 17*fontScaling,
                                           ALIGN_CENTER_MIDLINE, borderColor, sf::Text::Style::Bold),
                                 sf::Color::Transparent, sf::Color::Transparent, 0.0f, CV_OBJ_ANIM_SLIDE);
         axisLabels.emplace_back(View, sf::Vector2f(plotBounds.left - plotBounds.width*0.3f,
                                                    plotBounds.top + plotBounds.height/2),
-                                plotBounds.width, 30.0f, textEntry("y Label", fontName, 22*fontScaling,
+                                plotBounds.width, 30.0f, textEntry("y Label", fontName, 17*fontScaling,
                                                                    ALIGN_VERTICAL_INVERTED, borderColor),
                                 sf::Color::Transparent, sf::Color::Transparent, 0.0f, CV_OBJ_ANIM_SLIDE);
 
@@ -599,7 +599,8 @@ void CVPlot::axis::updateRenderLabels(){
         if(bTick){
             switch(dimension){
                 case DIMENSION_X:{
-                    lineTicks.emplace_back(sf::Vector2f(thickness, textPadding));
+                    lineTicks.emplace_back(sf::Vector2f(thickness, textPadding + thickness));
+                    lineTicks.back().setOrigin(thickness/2, thickness);
                     break;
                 }
                 case DIMENSION_Y:{

@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -42,6 +42,7 @@
 /////////////////////////////////////////////////////////////  **/
 
 #include "cvision/import.hpp"
+#include <iostream>
 
 namespace cvis
 {
@@ -64,6 +65,7 @@ bool FontManager::addFont(const void* binaries, const size_t& size, const std::s
     if(!fonts.back().loadFromMemory(binaries, size))
     {
         fonts.pop_back();
+        std::cout << "Failed to load font: " << tag << '\n';
         return false;
     }
     fontTags.push_back(tag);
@@ -108,6 +110,7 @@ bool ImageManager::addImage(std::string fileName, std::string tag)
     if(!images.back().loadFromFile(fileName))
     {
         images.pop_back();
+        std::cout << "Failed to load image: " << tag << '\n';
         return false;
     }
     imageTags.push_back(tag);
@@ -121,6 +124,7 @@ bool ImageManager::addTexture(std::string fileName, std::string tag)
     if(!textures.back().loadFromFile(fileName))
     {
         textures.pop_back();
+        std::cout << "Failed to load image: " << tag << '\n';
         return false;
     }
     textures.back().setSmooth(true);
