@@ -153,25 +153,26 @@ struct CVISION_API CVCaptureRef
 class CVISION_API CVEvent
 {
 public:
-    bool LMBhold,
-         RMBhold,
-         LMBreleased,
-         RMBreleased,
-         viewClosed,
-         viewHasFocus,
-         mouseCaptured,
-         focusCaptured,
-         viewResized,
-         eventsProcessed,
-         keyPressed,
-         closeSignal;
 
-    unsigned int LMBholdFrames,
-             RMBholdFrames,
-             LMBreleaseFrames,
-             RMBreleaseFrames,
-             maxMouseTrace,          // Buffer length for mouse frame positions
-             numFrameAvg;            // Number of frames to average the frame time over
+    bool                LMBhold;
+    bool                RMBhold;
+    bool                LMBreleased;
+    bool                RMBreleased;
+    bool                viewClosed;
+    bool                viewHasFocus;
+    bool                mouseCaptured;
+    bool                focusCaptured;
+    bool                viewResized;
+    bool                eventsProcessed;
+    bool                keyPressed;
+    bool                closeSignal;
+
+    unsigned int        LMBholdFrames;
+    unsigned int        RMBholdFrames;
+    unsigned int        LMBreleaseFrames;
+    unsigned int        RMBreleaseFrames;
+    unsigned int        maxMouseTrace;          // Buffer length for mouse frame positions
+    unsigned int        numFrameAvg;            // Number of frames to average the frame time over
 
     std::string keyLog;
     CVISION_API void clearKeys();       // Capture all keys
@@ -211,17 +212,17 @@ public:
     CVISION_API void releaseData(const unsigned char& cond = 0b11111111);
     CVISION_API void tossData(); // Remove data if conditions are met and not collected
 
-    float timeLastKey,
-          lastFrameTime,
-          zoomDelta,
-          avgFrameTime,
-          LMBholdTime,
-          RMBholdTime,
-          LMBreleaseTime,
-          RMBreleaseTime;
+    float           timeLastKey;
+    float           lastFrameTime;
+    float           zoomDelta;
+    float           avgFrameTime;
+    float           LMBholdTime;
+    float           RMBholdTime;
+    float           LMBreleaseTime;
+    float           RMBreleaseTime;
 
-    unsigned char zoomState,
-             wheelDirection;
+    unsigned char   zoomState;
+    unsigned char   wheelDirection;
 
     inline float avgFrameRate() const
     {
@@ -288,20 +289,23 @@ public:
     CVISION_API float mouseVelocity() const;
     CVISION_API float mouseMoveAngle() const;
 
-    sf::Vector2f viewResizeScale;
-    sf::Vector2f LMBpressPosition;
-    sf::Vector2f RMBpressPosition;
-    sf::Vector2f lastFrameMousePosition;
-    sf::Vector2f currentMousePosition;
-    sf::Vector2f LMBreleasePosition;
-    sf::Vector2f RMBreleasePosition;
-    sf::Vector2f mouseWheelDelta;
-    sf::Vector2f lastFrameGlobalMousePosition;
-    sf::Vector2f lastLMBpressPosition;
-    sf::Vector2f lastRMBpressPosition;
+    sf::Cursor::Type            awaitingCursorType;
+    inline void setCursor(const sf::Cursor::Type& newType){ awaitingCursorType = newType; }
 
-    std::vector<sf::Vector2f> mouseTraceBuffer; // Record of mouse positions for the last N frames
-    std::vector<std::string> drop_data;         // Enqueued drop data from the host OS
+    sf::Vector2f                viewResizeScale;
+    sf::Vector2f                LMBpressPosition;
+    sf::Vector2f                RMBpressPosition;
+    sf::Vector2f                lastFrameMousePosition;
+    sf::Vector2f                currentMousePosition;
+    sf::Vector2f                LMBreleasePosition;
+    sf::Vector2f                RMBreleasePosition;
+    sf::Vector2f                mouseWheelDelta;
+    sf::Vector2f                lastFrameGlobalMousePosition;
+    sf::Vector2f                lastLMBpressPosition;
+    sf::Vector2f                lastRMBpressPosition;
+
+    std::vector<sf::Vector2f>   mouseTraceBuffer; // Record of mouse positions for the last N frames
+    std::vector<std::string>    drop_data;         // Enqueued drop data from the host OS
 
     inline bool hasDropData() const
     {

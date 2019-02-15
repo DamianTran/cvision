@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -270,6 +270,7 @@ void CVEvent::reset()
     avgFrameTime = 0.0f;
     zoomState = CV_ZOOM_NONE;
     wheelDirection = CV_WHEEL_DIR_NONE;
+    awaitingCursorType = sf::Cursor::Arrow;
     viewResizeScale = sf::Vector2f(1.0f,1.0f);
     LMBpressPosition = sf::Vector2f(0.0f,0.0f);
     RMBpressPosition = sf::Vector2f(0.0f,0.0f);
@@ -297,6 +298,7 @@ void CVEvent::transfer(const CVEvent& other)
     RMBholdFrames = other.RMBholdFrames;
     LMBreleaseFrames = other.LMBreleaseFrames;
     RMBreleaseFrames = other.RMBreleaseFrames;
+    awaitingCursorType = other.awaitingCursorType;
     LMBpressPosition = other.LMBpressPosition;
     RMBpressPosition = other.RMBpressPosition;
     lastLMBpressPosition = other.lastLMBpressPosition;
@@ -349,6 +351,7 @@ CVEvent::CVEvent():
     RMBreleaseTime(0.0f),
     zoomState(CV_ZOOM_NONE),
     wheelDirection(CV_WHEEL_DIR_NONE),
+    awaitingCursorType(sf::Cursor::Arrow),
     viewResizeScale(1.0f,1.0f),
     LMBpressPosition(0.0f,0.0f),
     RMBpressPosition(0.0f,0.0f),

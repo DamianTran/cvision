@@ -361,6 +361,11 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
          mouseCaptured = false;
     unsigned int rangeBegin = 0, rangeEnd = displayText.back().getString().getSize();
 
+    if(!View->cursor_overriden() && event.focusFree() && bounds.contains(mousePos))
+    {
+        event.setCursor(sf::Cursor::Text);
+    }
+
     if(highlightable())
     {
         if((event.focusFree() && bounds.contains(event.lastFrameMousePosition)) || highlighted)

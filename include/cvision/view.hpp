@@ -155,6 +155,7 @@ private:
 protected:
 
     friend class CVApp;
+    friend class CVElement;
 
 #if defined WIN32 || defined _WIN32 || defined __WIN32
     CVDropTarget* dropTarget;
@@ -167,6 +168,8 @@ protected:
     bool bElasticSelect;
     bool bWindowCreateWaiting;
     bool bDropable;            // Signal to the OS that this window can accept drop input
+    bool bCursorOverride;      // Hide the native cursor and draw the cursor sprite instead
+    bool bShadow;              // Draw the shadow texture (usually bound to the cursor)
 
     float defaultViewScale; // Allow scaling based on view dimensions
 
@@ -175,6 +178,14 @@ protected:
     CVEvent eventTrace;
 
     sf::Color backgroundColor;
+
+    sf::Cursor          cursor_rep;        // Representation of current native cursor (non-iOS/Android)
+    sf::Cursor::Type    OS_cursor_type;    // Current native cursor type
+
+    sf::Sprite cursor;      // Cursor override if applicable
+    sf::Sprite shadow;      // Cursor shadow if applicable (ie drag and drop, etc.)
+
+    sf::Texture shadowTexture; // Storage for a dynamically-captured shadow texture (ie. drag-and-drop)
 
     std::string name;
     uint32_t style;
@@ -284,6 +295,39 @@ public:
     {
         return viewState;
     }
+
+    // Alter the window cursor state
+
+    CVISION_API void setCursor(const sf::Cursor::Type& newCursor); //  Switch the native cursor type
+    CVISION_API void setCursor(const sf::Texture* texture,  //  Replace the native cursor with a custom graphic
+                               const sf::Vector2f& size = sf::Vector2f(24.0f, 24.0f),
+                               const sf::Color& fillColor = sf::Color::White,
+                               const sf::Vector2f& origin = sf::Vector2f(0.0f, 0.0f));
+    CVISION_API void setCursor(const std::string& texture,  //  Replace the native cursor with a custom graphic
+                               const sf::Vector2f& size = sf::Vector2f(24.0f, 24.0f),
+                               const sf::Color& fillColor = sf::Color::White,
+                               const sf::Vector2f& origin = sf::Vector2f(0.0f, 0.0f));
+
+    CVISION_API void clearCursor();                         //  Clear the custom graphic and restore the native cursor
+    inline const bool& cursor_overriden() const
+    {
+        return bCursorOverride;
+    }
+
+    // Create a shadow for drag-and-drop effects, etc.
+
+    CVISION_API void setShadow(CVElement& element,
+                               const uint8_t& alpha = 180,
+                               const float& scale = 1.0f);
+    CVISION_API void setShadow(const sf::Texture* texture,
+                               const sf::Vector2f& size,
+                               const uint8_t& alpha = 180,
+                               const sf::Vector2f& origin = sf::Vector2f(NAN, NAN));
+    CVISION_API void setShadow(const std::string& texture,
+                          const sf::Vector2f& size,
+                          const uint8_t& alpha = 180,
+                          const sf::Vector2f& origin = sf::Vector2f(NAN, NAN));
+    CVISION_API void clearShadow();
 
     CVISION_API void setVisible(const unsigned int index, bool newVisibleState);
     CVISION_API void isolateVisible(const unsigned int index);

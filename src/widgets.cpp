@@ -58,7 +58,8 @@ CVTitleBar::CVTitleBar(CVView* View, const uint8_t& alignment, const float& widt
                    bMoveWindow(true),
                    bCanClose(true),
                    bCanResize(true),
-                   bCanMinimize(true){
+                   bCanMinimize(true),
+                   fGlowDistance(View->getHeight()/8){
 
     #ifdef __APPLE__
     const float logoPct = 0.6f,
@@ -84,12 +85,26 @@ CVTitleBar::CVTitleBar(CVView* View, const uint8_t& alignment, const float& widt
     minimizeButton->setSpriteColor(sf::Color(220,220,100));
     setMask(appTexture("gradient_linear"));
     #else
-    closeButton = new CVButton(View, sf::Vector2f(width - button_padding, height/2),
-                               height*buttonPct, height*buttonPct, "gen_x", 1, 0, true, nullptr);
-    resizeButton = new CVButton(View, sf::Vector2f(width - (button_padding + button_spacing), height/2),
-                                height*buttonPct, height*buttonPct, "resize_button", 2, 0, true, nullptr);
-    minimizeButton = new CVButton(View, sf::Vector2f(width - (button_padding + 2*button_spacing), height/2),
-                                  height*buttonPct, height*buttonPct, "bottom_line", 2, 0, true, nullptr);
+    closeButton = new CVButton(View, sf::Vector2f(width - height * 1.8f, 0.0f),
+                               height*1.8, height,
+                               textEntry("", ""), "gen_x", fillColor,
+                               outlineColor, outlineWidth);
+    closeButton->setSpriteColor(sf::Color(220,220,220,220));
+    closeButton->setSpriteScale(0.4f);
+
+    resizeButton = new CVButton(View, sf::Vector2f(closeButton->getPosition().x - height * 1.8f, 0.0f),
+                               height*1.8, height,
+                               textEntry("", ""), "resize_button", fillColor,
+                               outlineColor, outlineWidth);
+    resizeButton->setSpriteColor(sf::Color(220,220,220,220));
+    resizeButton->setSpriteScale(0.4f);
+
+    minimizeButton = new CVButton(View, sf::Vector2f(resizeButton->getPosition().x - height * 1.8f, 0.0f),
+                               height*1.8, height,
+                               textEntry("", ""), "bottom_line", fillColor,
+                               outlineColor, outlineWidth);
+    minimizeButton->setSpriteColor(sf::Color(220,220,220,220));
+    minimizeButton->setSpriteScale(0.4f);
     #endif
 
     #ifdef __APPLE__
@@ -175,20 +190,28 @@ void CVTitleBar::setMouseGlow(const bool& state, const std::string& texture){
         return;
     }
 
+    setDrawClipping(true);
+
     bMouseGlow = true;
     followGlow.setTexture(*appTexture(texture));
     followGlow.setOrigin(sf::Vector2f(appTexture(texture)->getSize())/2);
-    followGlow.setScale(sf::Vector2f(bounds.height*4, bounds.height*4)/appTexture(texture)->getSize());
+    followGlow.setScale(sf::Vector2f(getSize().y * 10, getSize().y * 10)/appTexture(texture)->getSize());
+    followGlow.setPosition(getPosition() + getSize()/2);
+    followGlow.setColor(sf::Color(255,255,255,0));
 }
 
 bool CVTitleBar::draw(sf::RenderTarget* target){
     if(!CVTextBox::draw(target)) return false;
+
+    CV_DRAW_CLIP_BEGIN
 
     if(bCanClose) closeButton->draw(target);
     if(bCanResize) resizeButton->draw(target);
     if(bCanMinimize) minimizeButton->draw(target);
 
     if(bMouseGlow) target->draw(followGlow);
+
+    CV_DRAW_CLIP_END
 
     return true;
 }
@@ -223,8 +246,15 @@ bool CVTitleBar::update(CVEvent& event, const sf::Vector2f& mousePos){
 
     }
 
-    if(bMouseGlow){
-        followGlow.setPosition(mousePos);
+    if(bMouseGlow && (mousePos.y - followGlow.getPosition().y < fGlowDistance)){
+        followGlow.setPosition(mousePos.x, followGlow.getPosition().y);
+        sf::Color tmp = followGlow.getColor();
+
+
+        float glowFactor = 1.0f - abs(mousePos.y - followGlow.getPosition().y)/fGlowDistance;
+        tmp.a = 60 * glowFactor;
+        followGlow.setColor(tmp);
+        followGlow.setScale(sf::Vector2f(getSize().y * 10, getSize().y * 10)/followGlow.getTexture()->getSize() * glowFactor);
     }
 
     return true;

@@ -253,8 +253,10 @@ CVView::CVView(unsigned int x, unsigned int y, std::string winName,
     bElasticSelect(false),
     bWindowCreateWaiting(false),
     bDropable(false),
+    bCursorOverride(false),
     defaultViewScale(1920.0f*1080.0f),
     backgroundColor(backgroundColor),
+    OS_cursor_type(sf::Cursor::Arrow),
     numPendingAnims(0),
     name(winName),
     style(style),
@@ -278,6 +280,7 @@ CVView::CVView(unsigned int x, unsigned int y, std::string winName,
     viewPort = new sf::RenderWindow();
     viewPort->setActive(false);
     viewPort->setVerticalSyncEnabled(true);
+    viewPort->setMouseCursor(cursor_rep);
 #endif
 
     textureBuffer.setActive(false);
@@ -290,6 +293,7 @@ CVView::CVView(unsigned int x, unsigned int y, std::string winName,
 #ifndef __APPLE__
         viewPort = new sf::RenderWindow();
         viewPort->setVerticalSyncEnabled(true);
+        viewPort->setMouseCursor(cursor_rep);
 #endif
 
         moveTarget = viewPort->getPosition();
@@ -381,6 +385,8 @@ CVView::CVView(unsigned int x, unsigned int y, std::string winName,
             }
 
             drawLock.unlock();
+
+            postDrawProcess();
 
             // Framerate limit cycle
 
@@ -550,6 +556,99 @@ void CVView::setState(uint8_t newState)
 
 }
 
+void CVView::setCursor(const sf::Cursor::Type& newCursor)
+{
+    cursor_rep.loadFromSystem(newCursor);
+    viewPort->setMouseCursor(cursor_rep);
+}
+
+void CVView::setCursor(const sf::Texture* texture,
+                       const sf::Vector2f& size,
+                       const sf::Color& fillColor,
+                       const sf::Vector2f& origin)
+{
+
+    cursor.setTexture(*texture);
+    cursor.setOrigin((origin * texture->getSize())/size);
+    cursor.setScale(size/texture->getSize());
+    cursor.setColor(fillColor);
+    bCursorOverride = true;
+    viewPort->setMouseCursorVisible(false);
+
+}
+
+void CVView::setCursor(const std::string& texture,
+                       const sf::Vector2f& size,
+                       const sf::Color& fillColor,
+                       const sf::Vector2f& origin)
+{
+    const sf::Texture* cursorTexture = mainApp->bitmaps.taggedTexture(texture);
+    if(cursorTexture)
+    {
+        setCursor(cursorTexture, size, fillColor, origin);
+    }
+}
+
+void CVView::clearCursor()
+{
+    bCursorOverride = false;
+    viewPort->setMouseCursorVisible(true);
+}
+
+void CVView::setShadow(CVElement& element,
+                       const uint8_t& alpha,
+                       const float& scale)
+{
+    element.getTexture(shadowTexture);
+
+    shadow.setTexture(shadowTexture);
+    shadow.setOrigin(element.getOrigin());
+    shadow.setScale(element.getSize()/shadowTexture.getSize() * scale);
+    shadow.setPosition(element.getPosition());
+    shadow.setColor(sf::Color(255,255,255,alpha));
+
+    bShadow = true;
+}
+
+void CVView::setShadow(const sf::Texture* texture,
+                       const sf::Vector2f& size,
+                       const uint8_t& alpha,
+                       const sf::Vector2f& origin)
+{
+
+    shadow.setTexture(*texture);
+
+    if(isnan(origin.x) || isnan(origin.y))
+    {
+        shadow.setOrigin(sf::Vector2f(texture->getSize())/2);
+    }
+    else
+    {
+        shadow.setOrigin(origin/size * texture->getSize());
+    }
+
+    shadow.setScale(size/texture->getSize());
+    shadow.setColor(sf::Color(255,255,255,alpha));
+
+}
+
+void CVView::setShadow(const std::string& texture,
+                       const sf::Vector2f& size,
+                       const uint8_t& alpha,
+                       const sf::Vector2f& origin)
+{
+    const sf::Texture* shadow_t = mainApp->bitmaps.taggedTexture(texture);
+    if(shadow_t)
+    {
+        setShadow(shadow_t, size, alpha, origin);
+    }
+}
+
+void CVView::clearShadow()
+{
+    bShadow = false;
+}
+
 bool CVView::contains(const CVElement& element)
 {
     sf::FloatRect viewBounds(0.0f,0.0f,width,height);
@@ -691,6 +790,14 @@ void CVView::draw(sf::RenderTarget* target)
         {
             if(item->isVisible()) item->draw(target);
         }
+        if(bShadow)
+        {
+            target->draw(shadow);
+        }
+        if(bCursorOverride)
+        {
+            target->draw(cursor);
+        }
         break;
     }
     default:
@@ -701,6 +808,13 @@ void CVView::draw(sf::RenderTarget* target)
 bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
     if(bClosed || (viewPort == nullptr) || !viewPort->isOpen()) return false;
+
+    // Handle cursor override
+
+    if(bCursorOverride)
+    {
+        cursor.setPosition(mousePos);
+    }
 
     // Handle drag and drop
 
@@ -765,8 +879,6 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
             ++i;
         }
     }
-
-    preDrawProcess();
 
 #ifndef __APPLE__
     if(!handleViewEvents(event)) return false;
@@ -915,6 +1027,9 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
     // Open the view focus to capture
     event.focusCaptured = false;
 
+    // Reset the native cursor type to default
+    event.awaitingCursorType = sf::Cursor::Arrow;
+
     for(int i = viewPanels.size() - 1; (i >= 0) && !viewPanels.empty(); --i)
     {
         if(viewPanels[i]->shouldDelete())
@@ -927,10 +1042,21 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
             viewPanels[i]->update(event, mousePos);
         }
     }
+
     if(event.closed())  // Check for a close signal
     {
         bClosed = true;
         return false;
+    }
+
+    if(OS_cursor_type != event.awaitingCursorType) // Only load the cursor if different from last frame
+    {
+        if(!bCursorOverride)
+        {
+            cursor_rep.loadFromSystem(event.awaitingCursorType);
+            viewPort->setMouseCursor(cursor_rep);
+        }
+        OS_cursor_type = event.awaitingCursorType;
     }
 
     event.moveCapturedShapes();
@@ -959,8 +1085,6 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
     {
         event.RMBreleaseTime += event.lastFrameTime;
     }
-
-    postDrawProcess();
 
     event.tossData(); // Toss data if conditions are met and not picked up
     event.eventsProcessed = false;

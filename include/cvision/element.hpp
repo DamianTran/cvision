@@ -177,7 +177,6 @@ protected:
     // ===================================================================== **/
 
     std::vector<sf::Sprite>         spriteList;         // Sprites under the control of this element, add to this list (ie. pawns)
-    sf::Texture                     shadowTexture;      // Texture storage for shadow item
     sf::Texture                     clipTexture;        // Texture draw target for clipping
 
     sf::Sprite                      shadow;             // Shadow of this item: use for drag and drop, etc.
@@ -222,6 +221,12 @@ protected:
 
 public:
 
+    /** ========================================================================
+
+        Cascade interaction
+
+    // ===================================================================== **/
+
     CVView* View;
     sf::RenderWindow* drawTarget;
     CVViewPanel* viewPanel;
@@ -232,6 +237,15 @@ public:
     CVISION_API const sf::Font* appFont(const std::string& font) const;
     CVISION_API const sf::Texture* appTexture(const std::string& tag) const;
     CVISION_API const sf::Image* appImage(const std::string& tag) const;
+
+    CVISION_API void setViewCursor(const sf::Texture* texture,
+                                   const sf::Vector2f& size = sf::Vector2f(24.0f, 24.0f),
+                                   const sf::Color& color = sf::Color::White,
+                                   const sf::Vector2f& origin = sf::Vector2f(0.0f, 0.0f));
+    CVISION_API void setViewCursor(const std::string& texture,
+                                   const sf::Vector2f& size = sf::Vector2f(24.0f, 24.0f),
+                                   const sf::Color& color = sf::Color::White,
+                                   const sf::Vector2f& origin = sf::Vector2f(0.0f, 0.0f));
 
     CVISION_API std::string getDefaultFont() const;
 
@@ -609,7 +623,7 @@ public:
     CVISION_API virtual bool draw(sf::RenderTarget* target);
 
     CVISION_API void getTexture(sf::Texture& output); // Get an image of the current draw state
-    CVISION_API void createShadow(const uint8_t& alpha, const sf::Vector2f& scale = sf::Vector2f(1.0f,1.0f)); // Create a shadow using a draw texture
+    CVISION_API void createShadow(const uint8_t& alpha, const float& drawScale = 1.0f); // Create a shadow using a draw texture
     CVISION_API void removeShadow();    // Disable shadow rendering
 
     virtual void sendData(CVEvent& event) const = 0;

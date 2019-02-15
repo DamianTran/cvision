@@ -169,6 +169,11 @@ bool CVButton::update(CVEvent& event, const sf::Vector2f& mousePos){
 
     if(!CVTextBox::update(event, mousePos)) return false;
 
+    if(!View->cursor_overriden() && event.focusFree() && bounds.contains(mousePos))
+    {
+        event.setCursor(sf::Cursor::Hand);
+    }
+
     if((responseEvent & CV_EVENT_LMB) &&
        bounds.contains(event.LMBpressPosition) &&
        bounds.contains(event.LMBreleasePosition)){
@@ -249,6 +254,8 @@ void CVButton::setState(const unsigned int& state){
 bool CVButton::draw(sf::RenderTarget* target){
     if(!target) return false;
 
+    CV_DRAW_CLIP_BEGIN
+
     if(!bSpriteOnly){
         for(auto& item : panel){
             target->draw(item);
@@ -270,6 +277,8 @@ bool CVButton::draw(sf::RenderTarget* target){
     }
 
     if(!active) target->draw(inactiveMask);
+
+    CV_DRAW_CLIP_END
 
     return true;
 }

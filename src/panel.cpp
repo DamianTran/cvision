@@ -94,11 +94,6 @@ bool CVBasicViewPanel::draw(sf::RenderTarget* target){
         if(bOutOfBoundsDraw || getBounds().intersects(panel->getBounds())) panel->draw(target);
     }
 
-    if(bHasShadow)
-    {
-        target->draw(shadow);
-    }
-
     if(is_closable())
     {
         closeButton->draw(target);
@@ -107,6 +102,18 @@ bool CVBasicViewPanel::draw(sf::RenderTarget* target){
     if(!active)
     {
         target->draw(inactiveMask);
+    }
+
+    if(bHasShadow)
+    {
+        if(View->viewPort && View->viewPort->isOpen())
+        {
+            View->viewPort->draw(shadow);
+        }
+        else
+        {
+            target->draw(shadow);
+        }
     }
 
     CV_DRAW_CLIP_END

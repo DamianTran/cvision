@@ -425,11 +425,12 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     if(bDragAndDrop && active)
     {
-        if(!bHasShadow && event.LMBhold && (event.LMBholdTime > 0.3f) &&
+        if(event.LMBhold && (event.LMBholdTime > 0.15f) &&
                 bounds.contains(event.LMBpressPosition) &&
                 event.focusFree() && event.captureMouse())
         {
             createShadow(180);
+            View->shadow.move(mousePos - event.LMBpressPosition);
             event.mouse_capture(shadow);
             setFocus(true);
         }
@@ -500,6 +501,26 @@ const sf::Image* CVElement::appImage(const std::string& tag) const
 {
     if(mainApp()) return mainApp()->bitmaps.taggedImage(tag);
     return nullptr;
+}
+
+void CVElement::setViewCursor(const sf::Texture* texture,
+                              const sf::Vector2f& size,
+                              const sf::Color& color,
+                              const sf::Vector2f& origin)
+{
+    View->setCursor(texture, size, color, origin);
+}
+
+void CVElement::setViewCursor(const std::string& texture,
+                              const sf::Vector2f& size,
+                              const sf::Color& color,
+                              const sf::Vector2f& origin)
+{
+    const sf::Texture* cursorTexture = mainApp()->bitmaps.taggedTexture(texture);
+    if(cursorTexture)
+    {
+        setViewCursor(texture, size, color, origin);
+    }
 }
 
 float CVElement::viewScale() const
@@ -638,22 +659,16 @@ void CVElement::getTexture(sf::Texture& outTex)
 
 }
 
-void CVElement::createShadow(const uint8_t& alpha, const sf::Vector2f& scale)
+void CVElement::createShadow(const uint8_t& alpha, const float& drawScale)
 {
-
+    View->setShadow(*this, alpha, drawScale);
     bHasShadow = true;
-    getTexture(shadowTexture);
-
-    shadow.setTexture(shadowTexture);
-    shadow.setOrigin(origin);
-    shadow.setPosition(getPosition());
-    shadow.setColor(sf::Color(255,255,255,alpha));
-
 }
 
 void CVElement::removeShadow()
 {
     bHasShadow = false;
+    View->clearShadow();
 }
 
 void CVElement::updateBounds()

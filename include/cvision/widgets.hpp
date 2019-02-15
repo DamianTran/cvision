@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -67,25 +67,18 @@ namespace cvis{
 class CVButton;
 
 class CVTitleBar: public CVTextBox{
-
-    uint8_t alignment;
-
-    CVButton* closeButton,
-            * resizeButton,
-            * minimizeButton;
-
-    bool bMoveWindow,
-        bCanClose,
-        bCanResize,
-        bCanMinimize,
-        bMouseGlow;
-
-    sf::Sprite followGlow;
-
 public:
 
+    CVISION_API CVTitleBar(CVView* View, const uint8_t& alignment, const float& height, const float& width,
+               const textEntry& textInfo, const std::string& logo = "", const sf::Color& fillColor = sf::Color(128,128,128),
+               const sf::Color& outlineColor = sf::Color(60,60,60), const float& outlineWidth = 1.0f);
+
+    CVISION_API ~CVTitleBar();
+
     CVISION_API void align(const uint8_t& newAlignment);
-    inline const uint8_t& getAlignment() const{ return alignment; }
+    inline const uint8_t& getAlignment()                    const{ return alignment; }
+
+    inline void setGlowDistance(const float& newDistance)        { fGlowDistance = newDistance; }
 
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
     CVISION_API bool draw(sf::RenderTarget* target);
@@ -93,33 +86,35 @@ public:
     CVISION_API void setMouseGlow(const bool& state = true,
                     const std::string& texture = "gradient_radial");
 
-    CVISION_API CVTitleBar(CVView* View, const uint8_t& alignment, const float& height, const float& width,
-               const textEntry& textInfo, const std::string& logo = "", const sf::Color& fillColor = sf::Color(128,128,128),
-               const sf::Color& outlineColor = sf::Color(60,60,60), const float& outlineWidth = 1.0f);
+protected:
 
-    CVISION_API ~CVTitleBar();
+    uint8_t     alignment;
+
+    CVButton *  closeButton;
+    CVButton *  resizeButton;
+    CVButton *  minimizeButton;
+
+    bool        bMoveWindow;
+    bool        bCanClose;
+    bool        bCanResize;
+    bool        bCanMinimize;
+    bool        bMouseGlow;
+
+    sf::Sprite  followGlow;
+
+    float       fGlowDistance;
+
 };
 
 class CVISION_API CVScrollBar: public CVBox{
-protected:
-    sf::Vector2f anchorBegin,
-                anchorEnd;
-    float scrollPos,
-            scrollMax,
-            panelSize,
-            scrollAngle,
-            scrollSpeed,
-            minLength,
-            sensitivity;
-    uint8_t animType,
-            responseDir;
-    bool bCanScroll,
-        bReleaseOnEnd;
-    sf::FloatRect mouseHighlightBounds;
-
-    CVISION_API void calcHighlightBounds();
-
 public:
+
+    CVISION_API CVScrollBar(CVView* parentView, const sf::Vector2f& anchorBegin,
+                const sf::Vector2f& anchorEnd, const float& panelLength,
+                const float& width, const sf::Color& fillColor,
+                const sf::Color& borderColor, const float& borderWidth,
+                const float& scrollSpeed = 1000.0f,
+                const uint8_t& animType = CV_OBJ_ANIM_FADE_IN);
 
     CVISION_API bool scroll(const float& delta);
     CVISION_API void setScrollOffset(const float& newOffset);
@@ -157,12 +152,27 @@ public:
 
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
 
-    CVISION_API CVScrollBar(CVView* parentView, const sf::Vector2f& anchorBegin,
-                const sf::Vector2f& anchorEnd, const float& panelLength,
-                const float& width, const sf::Color& fillColor,
-                const sf::Color& borderColor, const float& borderWidth,
-                const float& scrollSpeed = 1000.0f,
-                const uint8_t& animType = CV_OBJ_ANIM_FADE_IN);
+protected:
+
+    sf::Vector2f    anchorBegin;
+    sf::Vector2f    anchorEnd;
+
+    float           scrollPos;
+    float           scrollMax;
+    float           panelSize;
+    float           scrollAngle;
+    float           scrollSpeed;
+    float           minLength;
+    float           sensitivity;
+
+    uint8_t         animType;
+    uint8_t         responseDir;
+
+    bool            bCanScroll;
+    bool            bReleaseOnEnd;
+    sf::FloatRect   mouseHighlightBounds;
+
+    CVISION_API void calcHighlightBounds();
 
 };
 

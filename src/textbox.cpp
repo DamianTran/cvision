@@ -644,11 +644,6 @@ bool CVTextBox::draw(sf::RenderTarget* target)
         target->draw(text);
     }
 
-    if(bHasShadow)
-    {
-        target->draw(shadow);
-    }
-
     if(is_closable())
     {
         closeButton->draw(target);
@@ -660,6 +655,18 @@ bool CVTextBox::draw(sf::RenderTarget* target)
     }
 
     CV_DRAW_CLIP_END
+
+    if(bHasShadow)
+    {
+        if(View->viewPort && View->viewPort->isOpen())
+        {
+            View->viewPort->draw(shadow);
+        }
+        else
+        {
+            target->draw(shadow);
+        }
+    }
 
     return true;
 }
