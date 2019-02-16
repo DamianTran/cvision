@@ -73,16 +73,21 @@ protected:
 
     std::vector<CVElement*> selected;
 
+    std::vector<std::string> assemblyStateTags;     // The state information associated with new assembly items
+    uint8_t                  defaultAssemblyState;  // The state to set new assembly items to
+
     class assembly : public CVBox{
     protected:
 
-        CVAssemblyPanel* host;
-        float itemPadding,
-            outerPadding;
+        CVAssemblyPanel*    host;
 
-        CVTypeBox label;
-        CVButton acceptButton,
-                cancelButton;
+        float               itemPadding;
+        float               outerPadding;
+
+        CVTypeBox           label;
+
+        CVButton            acceptButton;
+        CVButton            cancelButton;
 
         std::vector<std::stringstream> assembly_info;
 
@@ -120,39 +125,42 @@ protected:
 
 public:
 
-    bool update(CVEvent& event, const sf::Vector2f& mousePos);
-    bool draw(sf::RenderTarget* target);
+    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
+    CVISION_API bool draw(sf::RenderTarget* target);
 
-    void setTracks(const bool& status);
+    CVISION_API void setTracks(const bool& status);
 
-    bool getAssemblyInfo(std::ostream& output);
-    void addAssemblyItem(const sf::Vector2f& position, const std::string& label = "", const unsigned int& state = 0);
+    CVISION_API bool getAssemblyInfo(std::ostream& output);
+    CVISION_API void addAssemblyItem(const sf::Vector2f& position, const std::string& label = "", const unsigned int& state = 0);
 
-    void newAssembly(const std::vector<CVElement*>& members = std::vector<CVElement*>());
-    void detachMember(CVElement* member);       // Detach from all assemblies
-    assembly* getAssembly(CVElement* member);   // Get the assembly this member is a part of if applicable
-    void removeAssembly(assembly* asmb);
+    CVISION_API void setAssemblyTags(const std::vector<std::string>& newTags);
+    CVISION_API void setInitialAssemblyState(const uint8_t& initialState);
+
+    CVISION_API void newAssembly(const std::vector<CVElement*>& members = std::vector<CVElement*>());
+    CVISION_API void detachMember(CVElement* member);       // Detach from all assemblies
+    CVISION_API assembly* getAssembly(CVElement* member);   // Get the assembly this member is a part of if applicable
+    CVISION_API void removeAssembly(assembly* asmb);
 
     inline void setAssemblyType(const unsigned char& newType){ assemblyType = newType; }
 
-    void setPanelItemSize(const sf::Vector2f& newSize);
-    void setMaxLabelLength(const unsigned int& newLength);
+    CVISION_API void setPanelItemSize(const sf::Vector2f& newSize);
+    CVISION_API void setMaxLabelLength(const unsigned int& newLength);
 
-    void getAssemblyTags(std::vector<std::vector<std::string>>& output);
+    CVISION_API void getAssemblyTags(std::vector<std::vector<std::string>>& output);
 
-    void setPosition(const sf::Vector2f& newPosition);
+    CVISION_API void setPosition(const sf::Vector2f& newPosition);
     inline void setPosition(const float& x, const float& y){
         setPosition(sf::Vector2f(x, y));
     }
-    void move(const sf::Vector2f& distance);
+    CVISION_API void move(const sf::Vector2f& distance);
     inline void move(const float& x, const float& y){
         move(sf::Vector2f(x, y));
     }
 
-    CVAssemblyPanel(CVView* parentView, std::string panelTag = "", sf::Color backgroundColor = sf::Color::Transparent,
+    CVISION_API CVAssemblyPanel(CVView* parentView, std::string panelTag = "", sf::Color backgroundColor = sf::Color::Transparent,
                      const sf::Vector2f& size = sf::Vector2f(NAN, NAN), bool bFitToWindow = true,
                      const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
-    ~CVAssemblyPanel();
+    CVISION_API ~CVAssemblyPanel();
 
 };
 

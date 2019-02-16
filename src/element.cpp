@@ -615,6 +615,11 @@ void CVElement::highlight(const bool& state)
     }
 }
 
+void CVElement::setState(const uint8_t& newState)
+{
+    state = newState;
+}
+
 void CVElement::setFade(const uint8_t& alpha, const int& rate, const unsigned char& flags)
 {
     bFade = true;

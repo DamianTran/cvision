@@ -400,7 +400,7 @@ void CVTextBox::updateBounds()
 
 void CVTextBox::sendData(CVEvent& event) const
 {
-    std::string cpyData = getText();
+    std::string cpyData = textInfo.text;
     event.sendData(cpyData.c_str(), cpyData.size(), CV_EVENT_LMB);
 }
 
@@ -439,7 +439,7 @@ void CVTextBox::addTextEntry(textEntry newText, float padding, bool regular)
 
     sf::Vector2f newTextPosition;
     sf::Rect<float> lastTextBounds;
-    if(displayText.size() > 0)
+    if(!displayText.empty())
     {
         if(regular) lastTextBounds = averageTextSize(displayText);
         else
@@ -447,8 +447,14 @@ void CVTextBox::addTextEntry(textEntry newText, float padding, bool regular)
             lastTextBounds = displayText.back().getLocalBounds();
         }
         newTextPosition = displayText.back().getPosition();
+
+        textInfo.text += '\n' + newText.text;
     }
-    else newTextPosition = getPosition();
+    else
+    {
+        newTextPosition = getPosition();
+        textInfo = newText;
+    }
 
     if(appFont(newText.font))
     {
@@ -499,6 +505,15 @@ void CVTextBox::addTextEntry(textEntry newText, float padding, bool regular)
 
 void CVTextBox::addTextEntry(const textEntry& newText, const sf::Vector2f& position)
 {
+
+    if(displayText.empty())
+    {
+        textInfo = newText;
+    }
+    else
+    {
+        textInfo.text += '\n' + newText.text;
+    }
 
     if(appFont(newText.font))
     {

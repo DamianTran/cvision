@@ -49,11 +49,12 @@
 #include <EZC/toolkit/string.hpp>
 
 using namespace EZC;
+using namespace std;
 
 namespace cvis
 {
 
-CVAssemblyPanel::CVAssemblyPanel(CVView* parentView, std::string panelTag, sf::Color backgroundColor,
+CVAssemblyPanel::CVAssemblyPanel(CVView* parentView, string panelTag, sf::Color backgroundColor,
                      const sf::Vector2f& size, bool bFitToWindow,
                      const sf::Vector2f& position):
                          CVBasicViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position),
@@ -66,11 +67,13 @@ CVAssemblyPanel::CVAssemblyPanel(CVView* parentView, std::string panelTag, sf::C
                          itemSize(60.0f,80.0f),
                          scrollBarY(parentView,
                                     sf::Vector2f(bounds.left + bounds.width - scrollBarPadding/2,
-                                   bounds.top + 2*scrollBarPadding),
+                                                 bounds.top + 2*scrollBarPadding),
                                     sf::Vector2f(bounds.left + bounds.width - scrollBarPadding/2,
-                                                        bounds.top + bounds.height - 2*scrollBarPadding),
-                      size.y, 5.0f, sf::Color(140,140,140), sf::Color::Transparent, 0.0f,
-                      1000.0f, CV_OBJ_ANIM_FADE_IN){
+                                                 bounds.top + bounds.height - 2*scrollBarPadding),
+                                    size.y, 5.0f, sf::Color(140,140,140), sf::Color::Transparent, 0.0f,
+                                    1000.0f, CV_OBJ_ANIM_FADE_IN),
+                         assemblyStateTags({ "Ascending", "Descending" }),
+                         defaultAssemblyState(0){
 
     IDtag = "AssemblyPanel";
 
@@ -81,7 +84,17 @@ CVAssemblyPanel::CVAssemblyPanel(CVView* parentView, std::string panelTag, sf::C
 
 }
 
-CVAssemblyPanel::assembly::assembly(const std::vector<CVElement*>& members,
+void CVAssemblyPanel::setAssemblyTags(const vector<string>& newTags)
+{
+    assemblyStateTags = newTags;
+}
+
+void CVAssemblyPanel::setInitialAssemblyState(const uint8_t& newState)
+{
+    defaultAssemblyState = newState;
+}
+
+CVAssemblyPanel::assembly::assembly(const vector<CVElement*>& members,
                                     CVAssemblyPanel& host):
     CVBox(host.View, host.getPosition(), 0.0f,0.0f,host.highlightColor, sf::Color::Transparent, 0.0f),
     host(&host),
@@ -234,7 +247,7 @@ void CVAssemblyPanel::assembly::swapMembers(CVElement* firstMember, CVElement* o
     }
 
     if((firstIndex != UINT_MAX) && (secondIndex != UINT_MAX)){
-        std::swap(members[firstIndex], members[secondIndex]);
+        swap(members[firstIndex], members[secondIndex]);
     }
 }
 
@@ -300,16 +313,7 @@ bool CVAssemblyPanel::assembly::update(CVEvent& event, const sf::Vector2f& mouse
             assembly_info.emplace_back();
             assembly_info.back() << label.getTypeString() << '\n';
             for(size_t i = 0; i < members.size(); ++i){
-                switch(members[i]->getCurrentState()){
-                    case 1:{
-                        assembly_info.back() << "Descending";
-                        break;
-                    }
-                    default:{
-                        assembly_info.back() << "Ascending";
-                        break;
-                    }
-                }
+                assembly_info.back() << host->assemblyStateTags[members[i]->getCurrentState()];
                 assembly_info.back() << '\t' << members[i]->tag();
                 if(i < members.size() - 1) assembly_info.back() << '\n';
             }
@@ -355,7 +359,7 @@ bool CVAssemblyPanel::assembly::draw(sf::RenderTarget* target){
     return true;
 }
 
-bool CVAssemblyPanel::assembly::getAssemblyInfo(std::ostream& output){
+bool CVAssemblyPanel::assembly::getAssemblyInfo(ostream& output){
     if(!assembly_info.empty()){
         output << assembly_info.front().str();
         assembly_info.erase(assembly_info.begin());
@@ -423,18 +427,18 @@ void CVAssemblyPanel::removeAssembly(assembly* asmb){
     }
 }
 
-bool CVAssemblyPanel::getAssemblyInfo(std::ostream& output){
+bool CVAssemblyPanel::getAssemblyInfo(ostream& output){
     for(auto& asmb : groups){
         if(asmb->getAssemblyInfo(output)) return true;
     }
     return false;
 }
 
-void CVAssemblyPanel::addAssemblyItem(const sf::Vector2f& position, const std::string& label, const unsigned int& state){
+void CVAssemblyPanel::addAssemblyItem(const sf::Vector2f& position, const string& label, const unsigned int& state){
 
-    std::string inputData = label;
+    string inputData = label;
     if(inputData.size() > maxLabelLength - 5){
-        std::string tmp;
+        string tmp;
         tmp.assign(inputData.begin() + inputData.size() - (maxLabelLength/2 - 3), inputData.end());
         inputData.erase(inputData.begin() + maxLabelLength/2 - 2, inputData.end());
         inputData += " ... " + tmp;
@@ -448,6 +452,7 @@ void CVAssemblyPanel::addAssemblyItem(const sf::Vector2f& position, const std::s
     newBox->setHighlightColor(sf::Color(15, 150, 255, 160));
     newBox->setTextWrap(true);
     newBox->setRounding(itemSize.y/16);
+    newBox->setTag(label);
 
     newBox->setDraggableStatus(true);
     newBox->setPosition(position - newBox->getSize()/2);
@@ -465,7 +470,7 @@ void CVAssemblyPanel::addAssemblyItem(const sf::Vector2f& position, const std::s
 
     newBox->setResponseEvent(CV_EVENT_RMB);
 
-    newBox->setState(state);
+    newBox->setState(defaultAssemblyState);
 
     for(size_t i = 0; i < numPanels(); ++i){
         if(viewPanelElements[i]->getBounds().intersects(newBox->getBounds())){
@@ -496,7 +501,7 @@ bool CVAssemblyPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
                     panelBounds;
 
     if(bounds.contains(event.LMBreleasePosition)){
-        std::string inputData;
+        string inputData;
         while(event.getData(inputData)){
             addAssemblyItem(event.LMBreleasePosition, inputData);
         }
@@ -560,19 +565,10 @@ bool CVAssemblyPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
             switch(key){
                 case 'c':{
                     if(ctrlPressed() && !selected.empty()){
-                        std::stringstream cpyData;
+                        stringstream cpyData;
                         for(size_t i = 0; i < selected.size(); ++i){
-                            switch(selected[i]->getCurrentState()){
-                                case 1:{
-                                    cpyData << "Descending";
-                                    break;
-                                }
-                                default:{
-                                    cpyData << "Ascending";
-                                    break;
-                                }
-                            }
-                            cpyData << '\t' << selected[i]->tag();
+                            cpyData << assemblyStateTags[selected[i]->getCurrentState()]
+                                    << '\t' << selected[i]->tag();
                             if(i < selected.size() - 1) cpyData << '\n';
                         }
                         copyToClipboard(cpyData.str());
@@ -581,19 +577,18 @@ bool CVAssemblyPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
                 }
                 case 'v':{
                     if(ctrlPressed()){
-                        std::string data = getClipboardText();
-                        std::stringstream ss(data);
+                        string data = getClipboardText();
+                        stringstream ss(data);
                         unsigned int state = 0;
                         if(!data.empty()){
-                            while(std::getline(ss, data)){
+                            while(getline(ss, data)){
                                 for(size_t i = 0; i < data.size();){
                                     if(data[i] == '\t'){
-                                        std::string stateStr;
+                                        string stateStr;
                                         stateStr.assign(data.begin(), data.begin() + i);
 
-                                        if(cmpString(stateStr, "Descending")) state = 1;
-                                        else if(cmpString(stateStr, "Ascending")) state = 0;
-                                        else break; // Not suitable data format
+                                        state = getMatchingIndex(stateStr, assemblyStateTags);
+                                        if(state == UINT_MAX) break;
 
                                         data.erase(data.begin(), data.begin() + i + 1);
                                         i = 0;
@@ -729,7 +724,7 @@ bool CVAssemblyPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
     return true;
 }
 
-void CVAssemblyPanel::newAssembly(const std::vector<CVElement*>& members){
+void CVAssemblyPanel::newAssembly(const vector<CVElement*>& members){
     groups.emplace_back(new assembly(members, *this));
     groups.back()->setDraggableStatus(true);
 }
@@ -740,7 +735,7 @@ void CVAssemblyPanel::setTracks(const bool& status){
 
 void CVAssemblyPanel::setPanelItemSize(const sf::Vector2f& newSize){
     if((newSize.x == itemSize.x) && (newSize.y == itemSize.y)) return;
-    std::vector<CVElement*> remaining = viewPanelElements;
+    vector<CVElement*> remaining = viewPanelElements;
     for(auto& asmb : groups){
         sf::Vector2f sizeDiff;
         if(!asmb->empty()){
@@ -768,7 +763,7 @@ void CVAssemblyPanel::setMaxLabelLength(const unsigned int& newLength){
     for(auto& item : viewPanelElements){
         if(dynamic_cast<CVTextBox*>(item) == nullptr) continue;
 
-        std::string newLabel = item->tag();
+        string newLabel = item->tag();
         if(newLabel.size() > maxLabelLength){
             newLabel.erase(newLabel.begin() + maxLabelLength, newLabel.end());
             newLabel += "...";

@@ -330,10 +330,8 @@ public:
     {
         return state;
     };
-    inline void setState(uint8_t newState)
-    {
-        state = newState;
-    }
+
+    CVISION_API void setState(const uint8_t& newState); // Toggle to a new state
     CVISION_API void setFade(const uint8_t& alpha, const int& rate, const unsigned char& flags = CV_LAYER_ALL);
     inline void setFadeStatus(const bool& state, const unsigned char& flags = CV_LAYER_ALL)
     {
