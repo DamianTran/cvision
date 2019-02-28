@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -101,7 +101,8 @@ public:
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
 
     CVISION_API void addTextElement(const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f), textEntry textInfo = textEntry());
-    CVISION_API void getText(std::vector<std::string>& output);
+    CVISION_API void getText(std::vector<std::string>& output) const;
+    CVISION_API std::string getText() const;
     CVISION_API void setText(const std::vector<std::string>& newText);
 
     CVISION_API void setTextSize(const unsigned int& newSize);

@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -81,6 +81,11 @@ public:
     CVISION_API ColorTheme(const std::vector<sf::Color>& colors);
 
 };
+
+inline std::ostream& operator<<(std::ostream& output, const sf::Color& input)
+{
+    return output << "r: " << (int)input.r << " g: " << (int)input.g << " b: " << (int)input.b << " a: " << (int)input.a;
+}
 
 template<typename T>
 sf::Color operator-(const sf::Color& color, const T& other){

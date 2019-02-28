@@ -294,6 +294,8 @@ CVView::CVView(unsigned int x, unsigned int y, std::string winName,
         viewPort = new sf::RenderWindow();
         viewPort->setVerticalSyncEnabled(true);
         viewPort->setMouseCursor(cursor_rep);
+#elif defined __APPLE__
+        sf::Context threadContext;
 #endif
 
         moveTarget = viewPort->getPosition();
@@ -524,6 +526,39 @@ void CVView::getTexture(sf::Texture& texture)
     texture = textureBuffer.getTexture();
 
     captureLock.unlock();
+}
+
+const sf::Font* CVView::appFont(const std::string& font) const
+{
+    if(mainApp) return mainApp->fonts[font];
+    return nullptr;
+}
+
+const sf::Texture* CVView::appTexture(const std::string& tag) const
+{
+    if(mainApp) return mainApp->bitmaps.taggedTexture(tag);
+    return nullptr;
+}
+
+const sf::Image* CVView::appImage(const std::string& tag) const
+{
+    if(mainApp) return mainApp->bitmaps.taggedImage(tag);
+    return nullptr;
+}
+
+const sf::Color& CVView::appColor(const std::string& tag) const
+{
+    if(mainApp)
+    {
+        try
+        {
+            return mainApp->colors.at(tag);
+        }catch(...)
+        {
+            throw std::invalid_argument("CVView: no color to map to tag \"" + tag + "\"");
+        }
+    }
+    throw std::invalid_argument("CVVuiew: No app available to derive color from tag");
 }
 
 void CVView::setVisible(const unsigned int index, bool newVisibleState)
@@ -848,7 +883,6 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     if(dropTarget)
     {
-        eventTrace.clearDropData();
         dropTarget->getWaitingData(eventTrace.drop_data);
     }
 
@@ -1227,37 +1261,44 @@ bool CVView::handleViewEvents(CVEvent& event)
                 switch(SFevent.key.code)
                 {
                 case sf::Keyboard::Delete:
-                {
-                    event.keyLog += static_cast<char>(CV_KEY_DELETE);
-                    break;
-                }
+                    {
+                        event.keyLog += static_cast<char>(CV_KEY_DELETE);
+                        break;
+                    }
                 case sf::Keyboard::Left:
-                {
-                    event.keyLog += static_cast<char>(CV_KEY_LEFT);
-                    break;
-                }
+                    {
+                        event.keyLog += static_cast<char>(CV_KEY_LEFT);
+                        break;
+                    }
                 case sf::Keyboard::Right:
-                {
-                    event.keyLog += static_cast<char>(CV_KEY_RIGHT);
-                    break;
-                }
+                    {
+                        event.keyLog += static_cast<char>(CV_KEY_RIGHT);
+                        break;
+                    }
                 case sf::Keyboard::Up:
-                {
-                    event.keyLog += static_cast<char>(CV_KEY_UP);
-                    break;
-                }
+                    {
+                        event.keyLog += static_cast<char>(CV_KEY_UP);
+                        break;
+                    }
                 case sf::Keyboard::Down:
-                {
-                    event.keyLog += static_cast<char>(CV_KEY_DOWN);
-                    break;
-                }
+                    {
+                        event.keyLog += static_cast<char>(CV_KEY_DOWN);
+                        break;
+                    }
                 case sf::Keyboard::Return:
-                {
-                    event.keyLog += static_cast<char>(CV_KEY_RETURN);
-                    break;
-                }
+                    {
+                        event.keyLog += static_cast<char>(CV_KEY_RETURN);
+                        break;
+                    }
+                case sf::Keyboard::Tab:
+                    {
+                        event.keyLog += static_cast<char>(CV_KEY_TAB);
+                        break;
+                    }
                 default:
-                    break;
+                    {
+                        break;
+                    }
                 }
                 break;
             }

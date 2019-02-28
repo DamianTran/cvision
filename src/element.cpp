@@ -73,6 +73,7 @@ namespace cvis
         bClipBounds(false),\
         bDelete(false),\
         bTriggered(false),\
+        bDropShadow(false),\
         bStatic(false),\
         bNoInteract(false),\
         closeButton(nullptr),\
@@ -503,6 +504,21 @@ const sf::Image* CVElement::appImage(const std::string& tag) const
     return nullptr;
 }
 
+const sf::Color& CVElement::appColor(const std::string& tag) const
+{
+    if(mainApp())
+    {
+        try
+        {
+            return mainApp()->colors.at(tag);
+        }catch(...)
+        {
+            throw std::invalid_argument("CVElement: no color to map to tag \"" + tag + "\"");
+        }
+    }
+    throw std::invalid_argument("CVElement: No app available to derive color from tag");
+}
+
 void CVElement::setViewCursor(const sf::Texture* texture,
                               const sf::Vector2f& size,
                               const sf::Color& color,
@@ -542,6 +558,36 @@ void CVElement::setSpriteScale(const float& newScale)
     }
 }
 
+void CVElement::setDropShadow(const bool& state,
+                              const int& radius,
+                              const uint8_t& alpha,
+                              const sf::Vector2f& offset,
+                              const sf::Vector2f& scale)
+{
+
+    if(!bDropShadow && state)
+    {
+        getTexture(dropShadowTexture);
+
+        sf::Image tmp = dropShadowTexture.copyToImage();
+
+        modulate(tmp, sf::Color::Black);
+        expand_canvas(tmp, sf::Vector2i(radius*2, radius*2), sf::Color::Red);
+//        gaussianBlur(tmp, radius);
+
+        dropShadowTexture.loadFromImage(tmp);
+
+        dropShadow.setTexture(dropShadowTexture);
+        dropShadow.setOrigin(sf::Vector2f(-offset.x, -offset.y));
+        dropShadow.setPosition(getPosition());
+        dropShadow.setScale(getSize() / dropShadowTexture.getSize() * scale);
+        dropShadow.setColor(sf::Color(255,255,255,alpha));
+
+    }
+
+    bDropShadow = state;
+}
+
 std::string CVElement::take_trigger(const std::string& tag)
 {
     std::string output;
@@ -558,6 +604,11 @@ std::string CVElement::take_trigger(const std::string& tag)
             trim_all(output);
 
             incoming_triggers.erase(incoming_triggers.begin() + i);
+
+            if(output.empty())
+            {
+                output = "TRUE";
+            }
 
             return output;
         }
@@ -583,6 +634,11 @@ void CVElement::sendTriggers() const
         }
     }
 
+}
+
+void CVElement::sendTrigger(CVElement* target, const std::string& signal)
+{
+    target->receive_trigger(signal);
 }
 
 void CVElement::setDrawClipping(const bool& status)
@@ -638,9 +694,9 @@ bool CVElement::draw(sf::RenderTarget* target)
         target->draw(sprite);
     }
 
-    if(bHasShadow)
+    if(bDropShadow)
     {
-        target->draw(shadow);
+        target->draw(dropShadow);
     }
 
     return true;
@@ -651,6 +707,8 @@ void CVElement::getTexture(sf::Texture& outTex)
 
     View->captureLock.lock();
 
+    View->textureBuffer.setActive(true);
+
     View->textureBuffer.create(bounds.width, bounds.height);
     View->textureBuffer.setView(sf::View(bounds));
     View->textureBuffer.clear(sf::Color::Transparent);
@@ -659,6 +717,8 @@ void CVElement::getTexture(sf::Texture& outTex)
 
     View->textureBuffer.display();
     outTex = View->textureBuffer.getTexture();
+
+    View->textureBuffer.setActive(false);
 
     View->captureLock.unlock();
 

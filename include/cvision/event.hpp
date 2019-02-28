@@ -77,6 +77,7 @@
 #define CV_KEY_UP                       3
 #define CV_KEY_DOWN                     4
 #define CV_KEY_BACKSPACE                8
+#define CV_KEY_TAB                      9
 #define CV_KEY_RETURN                   10
 #define CV_KEY_DELETE                   127
 

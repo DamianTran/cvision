@@ -98,12 +98,12 @@ public:
     CVISION_API CVTextLogMsg(CVView* View,
                              const textEntry& newTheme = textEntry("", ""));
 
-    bool bUser;
-    bool bMsg;
+    bool        bUser;
+    bool        bMsg;
 
-    TimePoint time;
+    TimePoint   time;
 
-    size_t textLogIndex;
+    size_t      textLogIndex;
 
 };
 
@@ -555,6 +555,21 @@ public:
         setPosition(sf::Vector2f(x, y));
     }
 
+    inline void setJumpTarget(CVElement* target)
+    {
+        jumpTarget = target;
+    }
+
+    inline CVElement* getJumpTarget()
+    {
+        return jumpTarget;
+    }
+
+    inline void clearJumpTarget()
+    {
+        jumpTarget = nullptr;
+    }
+
 protected:
 
     std::string         typeString;
@@ -590,9 +605,10 @@ protected:
     unsigned int        selectionLineStart;
     unsigned int        selectionLineEnd;
 
-    sf::RectangleShape cursor;
+    sf::RectangleShape  cursor;
 
-    CVTextLog* textLog;
+    CVTextLog*          textLog;
+    CVElement*          jumpTarget; // Target to send focus to on tab press if applicable
 
 private:
 

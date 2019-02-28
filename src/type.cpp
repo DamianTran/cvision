@@ -89,7 +89,8 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
     selectionLineStart(0),
     selectionLineEnd(0),
     bEnterLine(false),
-    textLog(nullptr)
+    textLog(nullptr),
+    jumpTarget(nullptr)
 {
 
     this->textInfo = textInfo;
@@ -803,7 +804,9 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
 
         for(auto& key : event.keyLog)
         {
-            if((key == CV_KEY_RETURN) || ((key > 31) && (key < 127)))  // ASCII non-white space
+            if((key == CV_KEY_RETURN) ||
+               (key == CV_KEY_TAB) ||
+               ((key > 31) && (key < 127)))  // ASCII non-white space
             {
                 if(ctrlPressed())
                 {
@@ -906,7 +909,26 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                                 goto skipInsertKey;
                             }
                         }
-                        else if(textFitType == CV_TEXT_FIT_LATERAL) goto skipInsertKey;
+                        else if(textFitType == CV_TEXT_FIT_LATERAL)
+                        {
+                            sendTriggers();
+                            goto skipInsertKey;
+                        }
+                    }
+                    else if(key == CV_KEY_TAB)  // Tab key
+                    {
+                        if(jumpTarget)
+                        {
+
+                            setFocus(false);
+                            event.keyLog.clear();
+                            suggested.clear();
+
+                            jumpTarget->setFocus(true);
+
+                            return true;
+                        }
+
                     }
 
                     insertKey:;
@@ -1090,7 +1112,7 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
             }
         }
 
-        if(event.keyLog.size() > 0)
+        if(!event.keyLog.empty())
         {
             cursorChanged = true;
             bTypeStringChanged = true;

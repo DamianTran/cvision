@@ -246,6 +246,11 @@ public:
 
     CVApp* mainApp;
 
+    CVISION_API const sf::Font* appFont(const std::string& font) const;
+    CVISION_API const sf::Texture* appTexture(const std::string& tag) const;
+    CVISION_API const sf::Image* appImage(const std::string& tag) const;
+    CVISION_API const sf::Color& appColor(const std::string& tag) const;
+
     sf::Vector2f mousePos;
 
     virtual void preDrawProcess(){ }        // Override to insert update events before the draw cycle

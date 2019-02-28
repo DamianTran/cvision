@@ -50,6 +50,7 @@
 #include <string>
 #include <thread>
 #include <mutex>
+#include <map>
 
 #include <SFML/Graphics.hpp>
 
@@ -72,10 +73,13 @@ private:
     CVApp& operator=(const CVApp& other) = delete;
 
 protected:
+
     bool running;
     std::thread* mainUpdateThread;
     std::string defaultFont;
     std::mutex appSyncLock;
+
+    sf::Context appGLContext;
 
     std::vector<std::string> unhandledEvents;
 
@@ -124,6 +128,7 @@ public:
 
     FontManager fonts;
     ImageManager bitmaps;
+    std::map<std::string, sf::Color> colors;
 
     inline const std::string& getDefaultFont() const
     {

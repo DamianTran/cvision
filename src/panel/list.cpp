@@ -360,6 +360,14 @@ void CVListPanel::setListHighlightable(const bool& state)
 }
 
 void CVListPanel::addPanelElement(CVElement* newElement, std::string newTag, const unsigned int& index){
+
+    float outerPaddingActual = outerPadding;
+
+    if(newElement->getSize().x + 2*outerPadding > bounds.width)
+    {
+        outerPaddingActual = (getSize().x - newElement->getSize().x)/2;
+    }
+
     if(numPanels() == 0){
         newElement->setPosition(bounds.left + outerPadding,
                                bounds.top + outerPadding);
@@ -368,20 +376,18 @@ void CVListPanel::addPanelElement(CVElement* newElement, std::string newTag, con
         if(index < numPanels()){
             newElement->setPosition(viewPanelElements[index]->getPosition());
             for(size_t i = index; i < numPanels(); ++i){
-                viewPanelElements[index]->move(0.0f, newElement->getBounds().height + listPadding);
+                viewPanelElements[index]->anim_move(sf::Vector2f(0.0f, newElement->getBounds().height + listPadding), 1100);
             }
         }
         else{
-            newElement->setPosition(bounds.left + outerPadding,
+            newElement->setPosition(bounds.left + outerPaddingActual,
                                    viewPanelElements.back()->getBounds().top +
                                    viewPanelElements.back()->getBounds().height + listPadding);
         }
     }
 
-    if(bListItemHighlight){
-        newElement->setHighlightableStatus(true);
-        newElement->setHighlightColor(getListHighlightColor());
-    }
+    newElement->setHighlightableStatus(bListItemHighlight);
+    newElement->setHighlightColor(getListHighlightColor());
 
     newElement->setDragAndDrop(true);
 

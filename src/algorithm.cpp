@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -195,7 +195,7 @@ bool copyToClipboard(const std::string& cpyString){
     }
     memcpy(GlobalLock(hg), cpyString.c_str(), cpyString.size()+1);
     GlobalUnlock(hg);
-    if( ::SetClipboardData(CF_TEXT, hg) == NULL){
+    if(SetClipboardData(CF_TEXT, hg) == NULL){
         std::cout << ">> Unable to set clipboard data\n";
         return false;
     }
@@ -487,6 +487,108 @@ sf::Vector2f internal_arc(const sf::Vector2f& origin,
     }
 
     return output;
+}
+
+void modulate(sf::Image& image, const sf::Color& newColor)
+{
+
+    sf::Color tmp;
+    for(size_t x = 0, y, xL = image.getSize().x, yL = image.getSize().y; x < xL; ++x)
+    {
+        for(y = 0; y < yL; ++y)
+        {
+            tmp = image.getPixel(x, y);
+            tmp.r = newColor.r;
+            tmp.g = newColor.g;
+            tmp.b = newColor.b;
+            image.setPixel(x, y, tmp);
+        }
+    }
+
+}
+
+void expand_canvas(sf::Image& image, const sf::Vector2i& distance, const sf::Color& background)
+{
+
+    sf::Image tmp;
+    tmp.create(image.getSize().x + distance.x,
+               image.getSize().y + distance.y);
+
+    tmp.copy(image, distance.x/2, distance.y/2, sf::IntRect(0,0,0,0), true);
+
+    image = tmp;
+
+}
+
+void gaussianBlur(sf::Image& image, const int& radius)
+{
+
+    sf::Color tmp;
+
+    int x;
+    int y;
+    int xs;
+    int xmin;
+    int xmax;
+    int ys;
+    int ymin;
+    int ymax;
+
+    int xL = image.getSize().x;
+    int yL = image.getSize().y;
+    int rs = ceil(radius * 2.57); // Radius where integral drops to ~0
+
+    double wsum;
+    double weight;
+    double dsq;
+
+    double _2rsq = 2 * radius * radius;
+    double PI2rsq = PI * _2rsq;
+
+    double r;
+    double g;
+    double b;
+    double a;
+
+    for(x = 0; x < xL; ++x)
+    {
+        for(y = 0; y < yL; ++y)
+        {
+            r = 0;
+            g = 0;
+            b = 0;
+            a = 0;
+
+            wsum = 0.0;
+
+            xmin = x - rs < 0 ? 0 : x - rs;
+            xmax = x + rs < xL ? x + rs : xL;
+            ymin = y - rs < 0 ? 0 : y - rs;
+            ymax = y + rs < yL ? y + rs : yL;
+
+            for(xs = xmin; xs < xmax; ++xs)
+            {
+                for(ys = ymin; ys < ymax; ++ys)
+                {
+                    tmp = image.getPixel(x, y);
+
+                    dsq = (xs - x)*(xs - x) + (ys - y)*(ys - y);
+                    weight = exp(-dsq/_2rsq)/PI2rsq;
+
+                    r += weight * tmp.r;
+                    g += weight * tmp.g;
+                    b += weight * tmp.b;
+                    a += weight * tmp.a;
+
+                    wsum += weight;
+
+                }
+            }
+
+            image.setPixel(x, y, sf::Color(round(r/wsum), round(g/wsum), round(b/wsum), round(a/wsum)));
+        }
+    }
+
 }
 
 }

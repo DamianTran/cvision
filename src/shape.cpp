@@ -65,6 +65,11 @@ void CVShape::move(const sf::Vector2f& offset)
 
     if(bStatic) return;
 
+    if(bDropShadow)
+    {
+        dropShadow.move(offset);
+    }
+
     for(auto& sprite : spriteList)
     {
         sprite.move(offset);

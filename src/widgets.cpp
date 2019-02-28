@@ -59,6 +59,7 @@ CVTitleBar::CVTitleBar(CVView* View, const uint8_t& alignment, const float& widt
                    bCanClose(true),
                    bCanResize(true),
                    bCanMinimize(true),
+                   bMouseGlow(false),
                    fGlowDistance(View->getHeight()/8){
 
     #ifdef __APPLE__
@@ -182,6 +183,35 @@ void CVTitleBar::align(const uint8_t& alignment){
         }
     }
 
+}
+
+void CVTitleBar::setGlowColor(const sf::Color& color)
+{
+    followGlow.setColor(color);
+}
+
+void CVTitleBar::setButtonColor(const sf::Color& color)
+{
+    if(bCanClose)
+    {
+        closeButton->setSpriteColor(color);
+    }
+    if(bCanMinimize)
+    {
+        minimizeButton->setSpriteColor(color);
+    }
+    if(bCanResize)
+    {
+        resizeButton->setSpriteColor(color);
+    }
+}
+
+void CVTitleBar::setIconColor(const sf::Color& color)
+{
+    for(auto& sprite : spriteList)
+    {
+        sprite.setColor(color);
+    }
 }
 
 void CVTitleBar::setMouseGlow(const bool& state, const std::string& texture){

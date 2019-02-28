@@ -70,6 +70,15 @@
                     CVBasicViewPanel(parentView, panelTag, backgroundColor,     \
                                        size, bFitToWindow, position)
 
+#define CV_PANEL_PARAMS \
+    CVView* parentView, const std::string& panelTag,               \
+    const sf::Color& backgroundColor, const sf::Vector2f& size,    \
+    bool bFitToWindow, const sf::Vector2f& position
+
+#define CV_PANEL_PARAM_NAMES \
+    parentView, panelTag, backgroundColor,     \
+    size, bFitToWindow, position
+
 namespace cvis{
 
 class CVEvent;

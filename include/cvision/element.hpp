@@ -152,6 +152,7 @@ protected:
     bool bClipBounds;        // Clip draw region to bounds
     bool bDelete;            // A close call has been ordered on this element
     bool bTriggered;         // Has a generic trigger event been initiated on this element?
+    bool bDropShadow;        // Does this item have a drop shadow?
 
     bool bStatic;            // Cannot be moved
     bool bNoInteract;        // Skip update cycles (enhance performance with many elements)
@@ -178,9 +179,11 @@ protected:
 
     std::vector<sf::Sprite>         spriteList;         // Sprites under the control of this element, add to this list (ie. pawns)
     sf::Texture                     clipTexture;        // Texture draw target for clipping
+    sf::Texture                     dropShadowTexture;  // Texture for drop shadow if applicable
 
     sf::Sprite                      shadow;             // Shadow of this item: use for drag and drop, etc.
     sf::Sprite                      drawMask;           // Clipping mask if region outside of bounds is to be excluded from the render
+    sf::Sprite                      dropShadow;         // Rastered drop shadow based on draw texture
 
     ColorTheme                      colorTheme;         // Main element colors
     sf::Color                       highlightColor;     // Highlight color if applicable
@@ -237,6 +240,7 @@ public:
     CVISION_API const sf::Font* appFont(const std::string& font) const;
     CVISION_API const sf::Texture* appTexture(const std::string& tag) const;
     CVISION_API const sf::Image* appImage(const std::string& tag) const;
+    CVISION_API const sf::Color& appColor(const std::string& tag) const;
 
     CVISION_API void setViewCursor(const sf::Texture* texture,
                                    const sf::Vector2f& size = sf::Vector2f(24.0f, 24.0f),
@@ -277,6 +281,7 @@ public:
         incoming_triggers.emplace_back(newTrigger);
     }
     CVISION_API std::string take_trigger(const std::string& newTrigger); // Attempt to get a trigger and extract its information
+    inline bool trigger_waiting() const{ return !incoming_triggers.empty(); }
 
     inline void addTriggerTarget(CVElement* target,
                                  const std::string& signal,
@@ -285,6 +290,7 @@ public:
         trigger_targets.emplace_back(target, signal, state);
     }
     CVISION_API void sendTriggers() const;
+    CVISION_API void sendTrigger(CVElement* target, const std::string& signal);
 
     inline bool getTrigger(){
         if(bTriggered){
@@ -439,6 +445,12 @@ public:
         bFollowMouseX = followX;
         bFollowMouseY = followY;
     }
+
+    CVISION_API void setDropShadow(const bool& state = true,
+                                   const int& radius = 6,
+                                   const uint8_t& alpha = 100,
+                                   const sf::Vector2f& offset = sf::Vector2f(4.0f, 4.0f),
+                                   const sf::Vector2f& scale = sf::Vector2f(1.0f, 1.0f));
 
     /** ========================================================================
 

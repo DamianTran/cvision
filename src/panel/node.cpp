@@ -148,7 +148,6 @@ bool CVNodePanel::update(CVEvent& event, const sf::Vector2f& mousePos){
        (hasFocus() && ((event.LMBreleaseTime < 2.0f) || (event.timeLastKey < 2.0f)))){
         if(bNodeOpened){
             sf::Vector2f onscreen_arc = internal_arc(anchorPoint, View->getBounds(), nodeDistance);
-//            std::cout << nodeDistance << ' ' << onscreen_arc.x << ' ' << onscreen_arc.y << "       \r";
             for(size_t i = 0; i < numPanels(); ++i){
                 if(viewPanelElements[i] == center) continue;
                 float angle = -(i*2*PI/(numPanels()-1));

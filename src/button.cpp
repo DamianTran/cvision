@@ -174,6 +174,11 @@ bool CVButton::update(CVEvent& event, const sf::Vector2f& mousePos){
         event.setCursor(sf::Cursor::Hand);
     }
 
+    if(take_trigger("Toggle") == "TRUE")
+    {
+        toggle();
+    }
+
     if((responseEvent & CV_EVENT_LMB) &&
        bounds.contains(event.LMBpressPosition) &&
        bounds.contains(event.LMBreleasePosition)){
@@ -184,6 +189,7 @@ bool CVButton::update(CVEvent& event, const sf::Vector2f& mousePos){
                 toggle();
        }
     }
+
     if((responseEvent & CV_EVENT_RMB) &&
        bounds.contains(event.RMBpressPosition) &&
        bounds.contains(event.RMBreleasePosition)){
@@ -252,9 +258,14 @@ void CVButton::setState(const unsigned int& state){
 }
 
 bool CVButton::draw(sf::RenderTarget* target){
-    if(!target) return false;
+    if(!target || !visible) return false;
 
     CV_DRAW_CLIP_BEGIN
+
+    if(bDropShadow)
+    {
+        target->draw(dropShadow);
+    }
 
     if(!bSpriteOnly){
         for(auto& item : panel){

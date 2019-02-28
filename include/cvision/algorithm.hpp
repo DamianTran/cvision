@@ -489,6 +489,14 @@ template<typename T> void rotate(sf::Rect<T>& rect, const sf::Vector2f& origin, 
 
 }
 
+// Graphics
+
+CVISION_API void modulate(sf::Image& image, const sf::Color& newColor);
+CVISION_API void expand_canvas(sf::Image& image,
+                               const sf::Vector2i& distance,
+                               const sf::Color& background = sf::Color::Transparent);
+CVISION_API void gaussianBlur(sf::Image& image, const int& radius = 6);
+
 }
 
 #endif // CVIS_ALGORITHM

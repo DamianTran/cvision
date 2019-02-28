@@ -55,6 +55,11 @@ bool CVBox::draw(sf::RenderTarget* target)
 
     CV_DRAW_CLIP_BEGIN
 
+    if(bDropShadow)
+    {
+        target->draw(dropShadow);
+    }
+
     if(!bSpriteOnly)
     {
         for(auto& item : panel)

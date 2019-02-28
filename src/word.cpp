@@ -318,10 +318,24 @@ void CVTypePanel::addTextElement(const sf::Vector2f& position, textEntry textInf
                               CV_TEXT_FIT_WRAP, CV_TEXT_EXPAND_BOTTOM);
 }
 
-void CVTypePanel::getText(StringVector& output){
+void CVTypePanel::getText(StringVector& output) const{
     for(auto& text : typeElements){
         output.emplace_back(text.getTypeString());
     }
+}
+
+std::string CVTypePanel::getText() const
+{
+    std::stringstream ss;
+    for(size_t i = 0, L = typeElements.size(); i < L; ++i)
+    {
+        ss << typeElements[i].getTypeString();
+        if(i < L - 1)
+        {
+            ss << '\n';
+        }
+    }
+    return ss.str();
 }
 
 void CVTypePanel::setText(const StringVector& newText){

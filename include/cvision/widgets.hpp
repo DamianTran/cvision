@@ -80,6 +80,10 @@ public:
 
     inline void setGlowDistance(const float& newDistance)        { fGlowDistance = newDistance; }
 
+    CVISION_API void setButtonColor(const sf::Color& color);
+    CVISION_API void setIconColor(const sf::Color& color);
+    CVISION_API void setGlowColor(const sf::Color& color);
+
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
     CVISION_API bool draw(sf::RenderTarget* target);
 

@@ -306,8 +306,19 @@ bool CVSwitchPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
     {
         triggerInfo = take_trigger("SwitchNext");
 
-        if(!triggerInfo.empty())
+        if(triggerInfo == "TRUE")
         {
+            switch_next();
+        }
+        else
+        {
+
+            triggerInfo = take_trigger("SwitchPrevious");
+
+            if(triggerInfo == "TRUE")
+            {
+                switch_previous();
+            }
 
         }
     }
