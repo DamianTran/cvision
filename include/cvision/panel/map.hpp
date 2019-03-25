@@ -71,7 +71,7 @@ protected:
     float outerSelectDist, // Distance from outer border where row-wise selection is instigated
             zoomLevel,
             zoomMax, zoomMin;
-    unsigned int textEntryIndex,
+    unsigned int TextEntryIndex,
                     extraInfoIndex;
 
     sf::RectangleShape highlight,

@@ -48,11 +48,12 @@
 #include "EZC/toolkit/string.hpp"
 
 using namespace EZC;
+using namespace std;
 
 namespace cvis
 {
 
-CVTextLogMsg::CVTextLogMsg(CVView* View, const textEntry& newEntry):
+CVTextLogMsg::CVTextLogMsg(CVView* View, const TextEntry& newEntry):
     CVTextBox(View, sf::Vector2f(0.0f,0.0f), 2.0f, 2.0f, newEntry,
               sf::Color::Transparent, sf::Color::Transparent, 0.0f),
                   bUser(false),
@@ -63,11 +64,11 @@ CVTextLogMsg::CVTextLogMsg(CVView* View, const textEntry& newEntry):
 }
 
 CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float width, const float height,
-                     const textEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
+                     const TextEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
                      const float borderWidth, const uint8_t& animType, const uint8_t& textFitType,
                      const uint8_t& expandType, const float& expandRate):
     CVTextBox(View, position, width, height, fillColor, borderColor, borderWidth),
-    bkgString(textInfo.text),
+    bkgString(UTF8_to_UTF16(textInfo.text)),
     timeLastBlink(0.0f),
     blinkFreq(1.0f),
     expandRate(expandRate),
@@ -211,7 +212,17 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
 
 }
 
-void CVTypeBox::setTypeString(std::string newString)
+void CVTypeBox::setBackgroundString(const std::string& newString)
+{
+    bkgString = UTF8_to_UTF16(newString);
+}
+
+void CVTypeBox::setTypeString(const string& newString)
+{
+   setTypeString(UTF8_to_UTF16(newString));
+}
+
+void CVTypeBox::setTypeString(wstring newString)
 {
 
     if(textFitType == CV_TEXT_FIT_WRAP)
@@ -223,18 +234,20 @@ void CVTypeBox::setTypeString(std::string newString)
         }
         else
         {
-            displayText.back().setString(std::string(newString.size(), '*'));
+            displayText.back().setString(string(newString.size(), '*'));
         }
 
         cvis::wrapText(displayText.back(), bounds, textPadding);
         alignText();
+
+        updateBounds();
+
     }
     else if(textFitType == CV_TEXT_FIT_LATERAL)
     {
         for(size_t i = 0; i < newString.size();)
         {
-            if(!isTypeChar(newString[i])) newString.erase(newString.begin() + i);
-            else if(newString[i] == '\n')
+            if(newString[i] == '\n')
             {
                 bool nextChar = true;
                 while((i < newString.size() - 1) && (newString[i+1] == '\n'))
@@ -250,24 +263,29 @@ void CVTypeBox::setTypeString(std::string newString)
     }
     else
     {
-        for(size_t i = 0; i < newString.size();)
-        {
-            if(!isTypeChar(newString[i])) newString.erase(newString.begin() + i);
-            else ++i;
-        }
         displayText.back().setString(newString);
     }
+
 
     this->typeString = newString;
     selectionStart = UINT_MAX;
     typeFrameStart = 0;
-    typeFrameEnd = newString.size();
+    typeFrameEnd = this->typeString.size();
     bTypeStringChanged = true;
-    if(newString.size() > 0) cursorPos = newString.size()-1;
+    if(!this->typeString.empty()) cursorPos = this->typeString.size()-1;
+    else
+    {
+        cursorPos = 0;
+    }
 
 }
 
-void CVTypeBox::make_suggestion(const std::string& text)
+std::string CVTypeBox::getTypeString() const
+{
+    return UTF16_to_UTF8(typeString);
+}
+
+void CVTypeBox::make_suggestion(const string& text)
 {
     suggested = text;
 }
@@ -282,9 +300,9 @@ const bool& CVTypeBox::can_suggest() const
     return bAcceptSuggestions;
 }
 
-std::string CVTypeBox::string_at_cursor() const
+string CVTypeBox::string_at_cursor() const
 {
-    std::string output;
+    string output;
     if(typeString.empty() || (cursorPos > typeString.size())) return output;
 
     int i = cursorPos - 1;
@@ -324,6 +342,15 @@ void CVTypeBox::setColor(const sf::Color& newColor)
         spr.setColor(newColor);
     }
 
+}
+
+void CVTypeBox::enterString()
+{
+    enteredString = UTF16_to_UTF8(typeString);
+    selectionStart = UINT_MAX;
+    typeString.clear();
+    bTypeStringChanged = true;
+    cursorPos = 0;
 }
 
 void CVTypeBox::setFillColor(const sf::Color& newColor)
@@ -488,7 +515,7 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
             bool cursorFound = false,
                  selectionFound = false;
 
-            if((event.LMBholdTime < 0.2f) || (mousePos != event.lastFrameMousePosition))
+            if(!typeString.empty() && ((event.LMBholdTime < 0.2f) || (mousePos != event.lastFrameMousePosition)))
             {
                 if(textInfo.alignment == ALIGN_VERTICAL_INVERTED)
                 {
@@ -688,6 +715,12 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                 slideCursor = false;
                 cursorChanged = true;
             }
+            else if(typeString.empty())
+            {
+                cursorPos = 0;
+                typeFrameEnd = 0;
+                typeFrameStart = 0;
+            }
         }
         else if(bounds.contains(event.LMBpressPosition))  // Dragging off the boundaries
         {
@@ -744,7 +777,7 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                     if(mousePos.x < bounds.left)
                     {
                         if(cursorPos > typeFrameStart) --cursorPos;
-                        else if(typeFrameStart > 0)
+                        else if(typeFrameStart)
                         {
                             --cursorPos;
                             --typeFrameStart;
@@ -804,28 +837,131 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
 
         for(auto& key : event.keyLog)
         {
-            if((key == CV_KEY_RETURN) ||
-               (key == CV_KEY_TAB) ||
-               ((key > 31) && (key < 127)))  // ASCII non-white space
+            if(key == CV_KEY_BACKSPACE)
+            {
+                if(bCanEdit && (!typeString.empty()))  // Backspace
+                {
+                    if(selectionStart != UINT_MAX)
+                    {
+                        if(selectionStart < cursorPos)
+                        {
+                            if(cursorPos > typeString.size()) cursorPos = typeString.size();
+                            typeString.erase(typeString.begin() + selectionStart, typeString.begin() + cursorPos);
+                            cursorPos = selectionStart;
+                        }
+                        else if(selectionStart > cursorPos)
+                        {
+                            if(selectionStart > typeString.size()) selectionStart = typeString.size();
+                            typeString.erase(typeString.begin() + cursorPos, typeString.begin() + selectionStart);
+                        }
+                        selectionStart = UINT_MAX;
+                    }
+                    else if(cursorPos > 0)
+                    {
+                        --cursorPos;
+                        --typeFrameEnd;
+                        typeString.erase(typeString.begin() + cursorPos);
+                    }
+                    clear_suggestion();
+                    bAcceptSuggestions = false;
+                }
+            }
+            else if(key == CV_KEY_DELETE)
+            {
+                if(bCanEdit && !typeString.empty())  // Delete
+                {
+                    if(selectionStart != UINT_MAX)
+                    {
+                        if(selectionStart < cursorPos)
+                        {
+                            if(cursorPos > typeString.size()) cursorPos = typeString.size();
+                            typeString.erase(typeString.begin() + selectionStart, typeString.begin() + cursorPos);
+                            cursorPos = selectionStart;
+                        }
+                        else if(selectionStart > cursorPos)
+                        {
+                            if(selectionStart > typeString.size()) selectionStart = typeString.size();
+                            typeString.erase(typeString.begin() + cursorPos, typeString.begin() + selectionStart);
+                        }
+                        selectionStart = UINT_MAX;
+                    }
+                    else if(cursorPos < typeString.size())
+                    {
+                        if(typeFrameStart == 0) --typeFrameEnd;
+                        else
+                        {
+                            --typeFrameStart;
+                            --typeFrameEnd;
+                        }
+                        typeString.erase(typeString.begin() + cursorPos);
+                    }
+                    clear_suggestion();
+                    bAcceptSuggestions = false;
+                }
+            }
+            else if(key == CV_KEY_LEFT)
+            {
+
+                if((selectionStart != UINT_MAX) && (suggested.size() > 0))
+                {
+                    if(selectionStart > typeString.size()) selectionStart = typeString.size();
+                    typeString.erase(typeString.begin() + cursorPos, typeString.begin() + selectionStart);
+                }
+
+                if(!shiftPressed()) selectionStart = UINT_MAX;
+                else if(selectionStart == UINT_MAX) selectionStart = cursorPos;
+
+                if(cursorPos > typeFrameStart) --cursorPos;
+                else if((textFitType == CV_TEXT_FIT_LATERAL) && (typeFrameStart > 0))
+                {
+                    --cursorPos;
+                    --typeFrameStart;
+                    --typeFrameEnd;
+                }
+
+                bAcceptSuggestions = false;
+            }
+            else if(key == CV_KEY_RIGHT)
+            {
+
+                if(!suggested.empty())
+                {
+                    cursorPos = selectionStart;
+                }
+
+                if(!shiftPressed()) selectionStart = UINT_MAX;
+                else if(selectionStart == UINT_MAX) selectionStart = cursorPos;
+
+                if(cursorPos < typeFrameEnd) ++cursorPos;
+                else if((textFitType == CV_TEXT_FIT_LATERAL) && (typeFrameEnd < typeString.size()))
+                {
+                    ++cursorPos;
+                    ++typeFrameEnd;
+                    ++typeFrameStart;
+                }
+                bAcceptSuggestions = false;
+            }
+            else
             {
                 if(ctrlPressed())
                 {
                     if(key == 'c')
                     {
-                        std::string tmp;
+                        wstring tmp;
                         if(selectionStart != UINT_MAX)
                         {
                             if(selectionStart < cursorPos) tmp.assign(typeString.begin() + selectionStart, typeString.begin() + cursorPos);
                             else if(selectionStart > cursorPos) tmp.assign(typeString.begin() + cursorPos, typeString.begin() + selectionStart);
 
-                            if(selectionStart != cursorPos) copyToClipboard(tmp);
+                            if(selectionStart != cursorPos) copyToClipboard(UTF16_to_UTF8(tmp));
                         }
                     }
                     else if(bCanEdit && (key == 'v'))
                     {
-                        std::string tmp = getClipboardText();
+                        string data = getClipboardText();
+                        wstring tmp = UTF8_to_UTF16(data);
 
-                        if(tmp.size() > 0)
+                        if(!tmp.empty())
                         {
                             if(textFitType != CV_TEXT_FIT_WRAP)
                             {
@@ -841,15 +977,6 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                                             ++i;
                                         }
                                     }
-                                    else if(!isTypeChar(tmp[i])) tmp.erase(tmp.begin() + i);
-                                    else ++i;
-                                }
-                            }
-                            else
-                            {
-                                for(size_t i = 0; i < tmp.size();)
-                                {
-                                    if(!isTypeChar(tmp[i])) tmp.erase(tmp.begin() + i);
                                     else ++i;
                                 }
                             }
@@ -889,11 +1016,12 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                 {
                     if(key == CV_KEY_RETURN)  // Return key
                     {
-                        if(bCanEdit && suggested.size() > 0)
+                        if(bCanEdit && !suggested.empty())
                         {
                             typeString.erase(typeString.begin() + cursorPos, typeString.end());
                             clear_suggestion();
                         }
+
                         if(bEnterLine)
                         {
                             if(((textFitType == CV_TEXT_FIT_WRAP) ||
@@ -905,7 +1033,12 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                             {
                                 enterString();
                                 logTextIndex = 0;
-                                if(textLog != nullptr) sendEnteredString();
+
+                                if(textLog)
+                                {
+                                    sendEnteredString();
+                                }
+
                                 goto skipInsertKey;
                             }
                         }
@@ -957,7 +1090,7 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                             selectionStart = UINT_MAX;
                         }
 
-                        typeString.insert(typeString.begin() + cursorPos, key);
+                        typeString.insert(typeString.begin() + cursorPos, wchar_t(key));
 
                         ++cursorPos;
                         ++typeFrameEnd;
@@ -966,104 +1099,6 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
 
                     skipInsertKey:;
                 }
-            }
-            else if(bCanEdit && (key == CV_KEY_BACKSPACE) && (typeString.size() > 0))  // Backspace
-            {
-                if(selectionStart != UINT_MAX)
-                {
-                    if(selectionStart < cursorPos)
-                    {
-                        if(cursorPos > typeString.size()) cursorPos = typeString.size();
-                        typeString.erase(typeString.begin() + selectionStart, typeString.begin() + cursorPos);
-                        cursorPos = selectionStart;
-                    }
-                    else if(selectionStart > cursorPos)
-                    {
-                        if(selectionStart > typeString.size()) selectionStart = typeString.size();
-                        typeString.erase(typeString.begin() + cursorPos, typeString.begin() + selectionStart);
-                    }
-                    selectionStart = UINT_MAX;
-                }
-                else if(cursorPos > 0)
-                {
-                    --cursorPos;
-                    --typeFrameEnd;
-                    typeString.erase(typeString.begin() + cursorPos);
-                }
-                clear_suggestion();
-                bAcceptSuggestions = false;
-            }
-            else if(bCanEdit && (key == CV_KEY_DELETE) && (typeString.size() > 0))  // Delete
-            {
-                if(selectionStart != UINT_MAX)
-                {
-                    if(selectionStart < cursorPos)
-                    {
-                        if(cursorPos > typeString.size()) cursorPos = typeString.size();
-                        typeString.erase(typeString.begin() + selectionStart, typeString.begin() + cursorPos);
-                        cursorPos = selectionStart;
-                    }
-                    else if(selectionStart > cursorPos)
-                    {
-                        if(selectionStart > typeString.size()) selectionStart = typeString.size();
-                        typeString.erase(typeString.begin() + cursorPos, typeString.begin() + selectionStart);
-                    }
-                    selectionStart = UINT_MAX;
-                }
-                else if(cursorPos < typeString.size())
-                {
-                    if(typeFrameStart == 0) --typeFrameEnd;
-                    else
-                    {
-                        --typeFrameStart;
-                        --typeFrameEnd;
-                    }
-                    typeString.erase(typeString.begin() + cursorPos);
-                }
-                clear_suggestion();
-                bAcceptSuggestions = false;
-            }
-            else if(key == CV_KEY_LEFT)
-            {
-
-                if((selectionStart != UINT_MAX) && (suggested.size() > 0))
-                {
-                    if(selectionStart > typeString.size()) selectionStart = typeString.size();
-                    typeString.erase(typeString.begin() + cursorPos, typeString.begin() + selectionStart);
-                }
-
-                if(!shiftPressed()) selectionStart = UINT_MAX;
-                else if(selectionStart == UINT_MAX) selectionStart = cursorPos;
-
-                if(cursorPos > typeFrameStart) --cursorPos;
-                else if((textFitType == CV_TEXT_FIT_LATERAL) && (typeFrameStart > 0))
-                {
-                    --cursorPos;
-                    --typeFrameStart;
-                    --typeFrameEnd;
-                }
-
-                bAcceptSuggestions = false;
-            }
-            else if(key == CV_KEY_RIGHT)
-            {
-
-                if(suggested.size() > 0)
-                {
-                    cursorPos = selectionStart;
-                }
-
-                if(!shiftPressed()) selectionStart = UINT_MAX;
-                else if(selectionStart == UINT_MAX) selectionStart = cursorPos;
-
-                if(cursorPos < typeFrameEnd) ++cursorPos;
-                else if((textFitType == CV_TEXT_FIT_LATERAL) && (typeFrameEnd < typeString.size()))
-                {
-                    ++cursorPos;
-                    ++typeFrameEnd;
-                    ++typeFrameStart;
-                }
-                bAcceptSuggestions = false;
             }
 
             if(has_text_target() && (textFitType == CV_TEXT_FIT_LATERAL))
@@ -1087,7 +1122,7 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                 if((key == CV_KEY_UP) && (cursorPos > 0))
                 {
                     size_t i = cursorPos - 1;
-                    std::string strBuff = displayText.back().getString();
+                    wstring strBuff = displayText.back().getString();
                     while((i > 0) && (strBuff[i] != '\n')) --i;
                     while((i > 0) &&
                             (displayText.back().findCharacterPos(i).x >
@@ -1097,7 +1132,7 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                 else if(key == CV_KEY_DOWN)
                 {
                     size_t i = cursorPos;
-                    std::string strBuff = displayText.back().getString();
+                    wstring strBuff = displayText.back().getString();
                     unsigned int L = strBuff.size();
                     while((i < L) && (strBuff[i] != '\n')) ++i;
                     ++i;
@@ -1190,12 +1225,12 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
         }
         else
         {
-            displayText.back().setString(std::string(typeString.size(), '*'));
+            displayText.back().setString(string(typeString.size(), '*'));
         }
 
         if(textFitType == CV_TEXT_FIT_LATERAL)  // Fit laterally only
         {
-            std::string typeFrameStr;
+            wstring typeFrameStr;
 
             if(displayText.back().getGlobalBounds().width > bounds.width - 2*xPadding)
             {
@@ -1410,7 +1445,7 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
 
             textHighlightColor = displayText.front().getFillColor();
             textHighlightColor.a = displayText.front().getFillColor().a/4;
-            std::string stringBuff = displayText.back().getString();
+            wstring stringBuff = displayText.back().getString();
 
             if(selectionStart < cursorPos)
             {
@@ -1595,7 +1630,15 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
 void CVTypeBox::setSize(const sf::Vector2f& newSize)
 {
 
-    CVTextBox::setSize(newSize);
+    CVBox::setSize(newSize);
+
+    if(textFitType == CV_TEXT_FIT_WRAP)
+    {
+        wrapText();
+    }
+
+    alignText();
+
     initBounds = bounds;
 
 }
@@ -1664,8 +1707,8 @@ bool CVTypeBox::draw(sf::RenderTarget* target)
 }
 
 CVTextLog::CVTextLog(CVView* View, const sf::Vector2f& position, const float& width, const float& height,
-                     const textEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
-                     const float& borderWidth, const uint8_t& animType, const std::string& logFile,
+                     const TextEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
+                     const float& borderWidth, const uint8_t& animType, const string& logFile,
                      CVTypeBox* userEntrySource):
     CVTextBox(View, position, width, height, fillColor, borderColor, borderWidth),
     usrEntryBox(userEntrySource),
@@ -2145,7 +2188,7 @@ bool CVTextLog::update(CVEvent& event, const sf::Vector2f& mousePos)
 
 }
 
-void CVTextLog::addLogEntry(const std::string& text, bool userEntry, float updateDelay)
+void CVTextLog::addLogEntry(const string& text, bool userEntry, float updateDelay)
 {
     printLock.lock();
     waitingText.push_back(text);
@@ -2156,7 +2199,7 @@ void CVTextLog::addLogEntry(const std::string& text, bool userEntry, float updat
     printLock.unlock();
 }
 
-void CVTextLog::addToLastEntry(const std::string& text, bool userEntry)
+void CVTextLog::addToLastEntry(const string& text, bool userEntry)
 {
     if(!waitingText.empty() && (textLogUserWaiting.back() == userEntry))
     {
@@ -2190,7 +2233,7 @@ void CVTextLog::addToLastEntry(const std::string& text, bool userEntry)
     }
 }
 
-void CVTextLog::editLastEntry(const std::string& text, bool userEntry)
+void CVTextLog::editLastEntry(const string& text, bool userEntry)
 {
     if(!waitingText.empty() && (textLogUserWaiting.back() == userEntry))
     {
@@ -2263,8 +2306,8 @@ bool CVTextLog::load()
 
     if(access(logFile.c_str(), F_OK))
     {
-        std::cout << "Error loading text log from " << logFile << '\n';
-        std::cout << "Error: " << std::strerror(errno) << '\n';
+        cout << "Error loading text log from " << logFile << '\n';
+        cout << "Error: " << strerror(errno) << '\n';
         return false;
     }
 
@@ -2318,7 +2361,7 @@ bool CVTextLog::load()
         if(date != newDate)  // Show the date when days change
         {
 
-            std::string dateString;
+            string dateString;
             TimePoint time_now;
 
             if(newDate == time_now.year() * time_now.month() * time_now.day()) dateString = "Today";
@@ -2440,9 +2483,9 @@ bool CVTextLog::load()
 
 }
 
-std::string CVTextLog::getReadableLog() const
+string CVTextLog::getReadableLog() const
 {
-    std::stringstream output;
+    stringstream output;
 
     for(size_t i = 0; i < textLog.size(); ++i)
     {
@@ -2465,7 +2508,7 @@ std::string CVTextLog::getReadableLog() const
     return output.str();
 }
 
-std::string CVTextLog::getUserLogText(const unsigned int& index, bool lastEntered) const
+string CVTextLog::getUserLogText(const unsigned int& index, bool lastEntered) const
 {
     unsigned int j = 0;
     if(lastEntered)
@@ -2491,10 +2534,10 @@ std::string CVTextLog::getUserLogText(const unsigned int& index, bool lastEntere
             }
         }
     }
-    return std::string();
+    return string();
 }
 
-std::string CVTextLog::getOtherLogText(const unsigned int& index, bool lastEntered) const
+string CVTextLog::getOtherLogText(const unsigned int& index, bool lastEntered) const
 {
     unsigned int j = 0;
     if(lastEntered)
@@ -2520,11 +2563,11 @@ std::string CVTextLog::getOtherLogText(const unsigned int& index, bool lastEnter
             }
         }
     }
-    return std::string();
+    return string();
 }
 
-void CVTextLog::replaceLastMessage(const std::string& search,
-                                   const std::string& substitute,
+void CVTextLog::replaceLastMessage(const string& search,
+                                   const string& substitute,
                                    bool user)
 {
 

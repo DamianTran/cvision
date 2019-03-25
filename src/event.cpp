@@ -387,12 +387,19 @@ std::ostream& operator<<(std::ostream& output, const CVEvent& event)
            "\nLast frame time: " << event.lastFrameTime <<
            "\nZoom delta: " << event.mouseWheelDelta.y <<
            "\nZoom state: " << (int)event.zoomState <<
-           "\nKey log: " << event.keyLog <<
-           "\nView resize scale: " << event.viewResizeScale.x << ' ' << event.viewResizeScale.y <<
+           "\nKey log: ";
+
+   for(auto& key : event.keyLog)
+   {
+       output << wchar_t(key);
+   }
+
+   output << "\nView resize scale: " << event.viewResizeScale.x << ' ' << event.viewResizeScale.y <<
            "\nLMB press position: " << event.LMBpressPosition.x << ' ' << event.LMBpressPosition.y <<
            "\nRMB press position: " << event.RMBpressPosition.x << ' ' << event.RMBpressPosition.y <<
            "\nLast frame mouse pos: " << event.lastFrameMousePosition.x << ' ' << event.lastFrameMousePosition.y <<
            "\nCurrent frame mouse pos: " << event.currentMousePosition.x << ' ' << event.currentMousePosition.y;
+
     return output;
 }
 

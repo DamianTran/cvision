@@ -86,6 +86,17 @@ void CVApp::clearEvents()
 
 }
 
+const sf::Font* CVApp::getTypeFont(const std::string& type) const
+{
+    try
+    {
+        return fonts[font_panel.at(type)];
+    }catch(...)
+    {
+        throw std::invalid_argument("CVApp: failed to find font matching requested type \"" + type + "\"");
+    }
+}
+
 #ifdef __APPLE__
 void CVApp::handleViewEvents()
 {
@@ -131,17 +142,6 @@ void CVApp::mainUpdate()
 void CVApp::closeView(const unsigned int viewIndex)
 {
     viewList[viewIndex]->close();
-
-    viewList[viewIndex]->appThread->join();
-
-    for(size_t i = 0; i < viewThreads.size(); ++i)
-    {
-        if(viewThreads[i] == viewList[viewIndex]->appThread)
-        {
-            delete(viewThreads[i]);
-            viewThreads.erase(viewThreads.begin() + i);
-        }
-    }
 
     delete(viewList[viewIndex]);
     viewList.erase(viewList.begin() + viewIndex);
@@ -239,7 +239,7 @@ bool CVApp::addView(CVView* View, const std::string& viewTag)
 
     }
 
-    else return false;
+    return false;
 
 }
 

@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -61,15 +61,21 @@ class CVISION_API CVTogglePanel : public CVBasicViewPanel
 {
 public:
 
-    CVISION_API CVTogglePanel(CVView* parentView, std::string panelTag = "", sf::Color backgroundColor = sf::Color::Transparent,
-                     const sf::Vector2f& size = sf::Vector2f(NAN, NAN), bool bFitToWindow = true,
-                     const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
+    CVISION_API CVTogglePanel(CVView* parentView,
+                              const std::string& panelTag = "",
+                              const sf::Color& backgroundColor = sf::Color::Transparent,
+                              const sf::Vector2f& size = sf::Vector2f(NAN, NAN),
+                              const bool& bFitToWindow = true,
+                              const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
 
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& position) override;
-    CVISION_API bool draw(sf::RenderTarget* target) override;
 
     CVISION_API void switch_to(const size_t& index);
     CVISION_API void switch_to(const std::string& tag);
+
+    CVISION_API void addPanelElement(CVElement* newElement,
+                                     const std::string& tag = "",
+                                     const unsigned int& index = UINT_MAX);
 
 protected:
 

@@ -336,6 +336,12 @@ void CVSwitchPanel::setCenter(const int& index){
     else{
         viewIndex = index;
     }
+
+    if(viewIndex < numPanels())
+    {
+        sendTrigger(viewPanelElements[viewIndex], "focus");
+    }
+
     bAutoPan = true;
 }
 

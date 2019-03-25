@@ -49,84 +49,94 @@
 
 #include <boost/range/adaptor/reversed.hpp>
 
-namespace cvis{
-
+using namespace std;
 using namespace EZC;
 
+namespace cvis
+{
+
 CVPlot::CVPlot(CVView* View, const sf::Vector2f& position, const float& width, const float& height,
-           const sf::Color& fillColor, const sf::Color& borderColor,
-           const sf::Color& plotColor, const float& borderWidth, const std::string& plotSprite,
-           const std::string& fontName):
-               CVTextBox(View, position, width, height, fillColor, borderColor, borderWidth),
-               updateState(CV_PLOT_UPDATE_NONE),
-               bReqPlotUpdate(true),
-               bReqAxisUpdate(true),
-               bUseVertGrid(false),
-               bUseHorizGrid(false),
-               bAnimSprites(true),
-               bShowSprites(true),
-               bPlotBoundary(false),
-               plotTypeID(CV_PLOT_ID_NONE),
-               dataPointNum(0),
-               framesLastChange(0),
-               labelFontSize(16),
-               animSpriteSpeed(400.0f),
-               spriteSize(5.0f),
-               spriteScaling(1.0f),
-               plotBoundaryThickness(2.0f),
-               plotColors({ plotColor }),
-               plotHighlightColor(sf::Color::Red),
-               axisTextColor(borderColor),
-               axisLineColor(borderColor),
-               fontName(fontName),
-               plotBounds(bounds.left + bounds.width*0.05f, bounds.top + bounds.height*0.05f,
-                            bounds.width*0.9f, bounds.height*0.9f),
-               plotSpriteTexture(View->mainApp->bitmaps.taggedTexture(plotSprite)),
-               plotFont(View->mainApp->fonts[fontName]){
+               const sf::Color& fillColor, const sf::Color& borderColor,
+               const sf::Color& plotColor, const float& borderWidth, const string& plotSprite,
+               const string& fontName):
+    CVTextBox(View, position, width, height, fillColor, borderColor, borderWidth),
+    updateState(CV_PLOT_UPDATE_NONE),
+    bReqPlotUpdate(true),
+    bReqAxisUpdate(true),
+    bUseVertGrid(false),
+    bUseHorizGrid(false),
+    bAnimSprites(true),
+    bShowSprites(true),
+    bPlotBoundary(false),
+    plotTypeID(CV_PLOT_ID_NONE),
+    dataPointNum(0),
+    framesLastChange(0),
+    labelFontSize(16),
+    animSpriteSpeed(400.0f),
+    spriteSize(5.0f),
+    spriteScaling(1.0f),
+    plotBoundaryThickness(2.0f),
+    plotColors(
+{
+    plotColor
+}),
+plotHighlightColor(sf::Color::Red),
+axisTextColor(borderColor),
+axisLineColor(borderColor),
+fontName(fontName),
+plotBounds(bounds.left + bounds.width*0.05f, bounds.top + bounds.height*0.05f,
+           bounds.width*0.9f, bounds.height*0.9f),
+plotSpriteTexture(View->mainApp->bitmaps.taggedTexture(plotSprite)),
+plotFont(View->mainApp->fonts[fontName])
+{
 
-        setClearFill();
+    setClearFill();
 
-        sf::Glyph refLetter = View->mainApp->fonts[mainApp()->getDefaultFont()]->getGlyph(65, 12, false, 0),
-                testLetter = View->mainApp->fonts[fontName]->getGlyph(65, 12, false, 0);
+    sf::Glyph refLetter = View->mainApp->fonts[mainApp()->getDefaultFont()]->getGlyph(65, 12, false, 0),
+              testLetter = View->mainApp->fonts[fontName]->getGlyph(65, 12, false, 0);
 
-        fontScaling = (refLetter.bounds.height*refLetter.bounds.width)/(testLetter.bounds.height*testLetter.bounds.width);
+    fontScaling = (refLetter.bounds.height*refLetter.bounds.width)/(testLetter.bounds.height*testLetter.bounds.width);
 
-        plotBoundary.setSize(sf::Vector2f(plotBounds.width, plotBounds.height));
-        plotBoundary.setOutlineThickness(plotBoundaryThickness);
-        plotBoundary.setOutlineColor(borderColor);
-        plotBoundary.setFillColor(sf::Color::Transparent);
-        plotBoundary.setPosition(plotBounds.left, plotBounds.top);
+    plotBoundary.setSize(sf::Vector2f(plotBounds.width, plotBounds.height));
+    plotBoundary.setOutlineThickness(plotBoundaryThickness);
+    plotBoundary.setOutlineColor(borderColor);
+    plotBoundary.setFillColor(sf::Color::Transparent);
+    plotBoundary.setPosition(plotBounds.left, plotBounds.top);
 
-        colorTheme.emplace_back(plotColor);
+    colorTheme.emplace_back(plotColor);
 
-        axisLabels.emplace_back(View, sf::Vector2f(plotBounds.left + plotBounds.width/2,
-                                                   plotBounds.top - plotBounds.height*0.25f),
-                                plotBounds.width, 30.0f,
-                                textEntry("Main Title", fontName, 17*fontScaling,
-                                          ALIGN_CENTER_MIDLINE, borderColor, sf::Text::Style::Bold),
-                                sf::Color::Transparent, sf::Color::Transparent, 0.0f, CV_OBJ_ANIM_SLIDE);
-        axisLabels.emplace_back(View, sf::Vector2f(plotBounds.left + plotBounds.width/2,
-                                                   plotBounds.top + plotBounds.height*1.2f),
-                                plotBounds.width, 30.0f,
-                                textEntry("x Label", fontName, 17*fontScaling,
-                                          ALIGN_CENTER_MIDLINE, borderColor, sf::Text::Style::Bold),
-                                sf::Color::Transparent, sf::Color::Transparent, 0.0f, CV_OBJ_ANIM_SLIDE);
-        axisLabels.emplace_back(View, sf::Vector2f(plotBounds.left - plotBounds.width*0.3f,
-                                                   plotBounds.top + plotBounds.height/2),
-                                plotBounds.width, 30.0f, textEntry("y Label", fontName, 17*fontScaling,
-                                                                   ALIGN_VERTICAL_INVERTED, borderColor),
-                                sf::Color::Transparent, sf::Color::Transparent, 0.0f, CV_OBJ_ANIM_SLIDE);
+    axisLabels.emplace_back(View, sf::Vector2f(plotBounds.left + plotBounds.width/2,
+                            plotBounds.top - plotBounds.height*0.25f),
+                            plotBounds.width, 30.0f,
+                            TextEntry("Main Title", fontName, 17*fontScaling,
+                                      ALIGN_CENTER_MIDLINE, borderColor, sf::Text::Style::Bold),
+                            sf::Color::Transparent, sf::Color::Transparent, 0.0f, CV_OBJ_ANIM_SLIDE);
+    axisLabels.emplace_back(View, sf::Vector2f(plotBounds.left + plotBounds.width/2,
+                            plotBounds.top + plotBounds.height*1.2f),
+                            plotBounds.width, 30.0f,
+                            TextEntry("x Label", fontName, 17*fontScaling,
+                                      ALIGN_CENTER_MIDLINE, borderColor, sf::Text::Style::Bold),
+                            sf::Color::Transparent, sf::Color::Transparent, 0.0f, CV_OBJ_ANIM_SLIDE);
+    axisLabels.emplace_back(View, sf::Vector2f(plotBounds.left - plotBounds.width*0.3f,
+                            plotBounds.top + plotBounds.height/2),
+                            plotBounds.width, 30.0f, TextEntry("y Label", fontName, 17*fontScaling,
+                                    ALIGN_VERTICAL_INVERTED, borderColor),
+                            sf::Color::Transparent, sf::Color::Transparent, 0.0f, CV_OBJ_ANIM_SLIDE);
 
 }
 
-CVPlot::Dataset::Dataset(const std::vector<std::vector<float>>& matrix, const std::vector<unsigned int>& indices,
-                         const std::string& name, const StringVector& pointTags, CVPlot* plot):
+CVPlot::Dataset::Dataset(const vector<vector<float>>& matrix, const vector<unsigned int>& indices,
+                         const string& name, const StringVector& pointTags, CVPlot* plot):
     plot(plot),
     dimensionDataTypes(matrix.size(), DATA_TYPE_NUMERIC),
     matrix(matrix),
-    indices({indices}),
-    name(name),
-    colors({plot->plotColor(plot->datasets.size())}){
+    indices(
+{
+    indices
+}),
+name(name),
+colors({plot->plotColor(plot->datasets.size())})
+{
 
     if(indices.size() < 1) this->indices.front() = vseq(0U, size() - 1);
 
@@ -136,7 +146,8 @@ CVPlot::Dataset::Dataset(const std::vector<std::vector<float>>& matrix, const st
     while(plot->scalePadding.size() < matrix.size()) plot->scalePadding.emplace_back(0.0f,0.0f);
     while(plot->scaleAutoPadding.size() < matrix.size()) plot->scaleAutoPadding.push_back(false);
 
-    for(size_t i = 0; i < matrix.size(); ++i){
+    for(size_t i = 0; i < matrix.size(); ++i)
+    {
         matrixScale.x = min(matrix[i]);
         matrixScale.y = max(matrix[i]);
 
@@ -145,37 +156,46 @@ CVPlot::Dataset::Dataset(const std::vector<std::vector<float>>& matrix, const st
     }
 
     size_t L = size(), D = matrix.size();
-    std::vector<float> dimValues(matrix.size(), NAN);
+    vector<float> dimValues(matrix.size(), NAN);
 
-    for(size_t i = 0; i < L; ++i){
-        for(size_t j = 0; j < D; ++j){
+    for(size_t i = 0; i < L; ++i)
+    {
+        for(size_t j = 0; j < D; ++j)
+        {
             dimValues[j] = matrix[j][i];
             if(isnan(dimValues[j])) goto nextPoint;
         }
 
-        if(i < pointTags.size()){
+        if(i < pointTags.size())
+        {
             points.emplace_back(dimValues, this, this->indices.front()[i], StringVector({ pointTags[i] }));
         }
-        else{
+        else
+        {
             points.emplace_back(dimValues, this, this->indices.front()[i]);
         }
 
-        nextPoint:;
+nextPoint:
+        ;
     }
 
     plot->callUpdate();
 }
 
-CVPlot::Dataset::Dataset(const std::vector<float>& x, const std::vector<float>& y,
-                         const std::vector<unsigned int>& indices,
-                         const std::string& name, const StringVector& pointTags,
-                        CVPlot* plot):
+CVPlot::Dataset::Dataset(const vector<float>& x, const vector<float>& y,
+                         const vector<unsigned int>& indices,
+                         const string& name, const StringVector& pointTags,
+                         CVPlot* plot):
     plot(plot),
     dimensionDataTypes(2, DATA_TYPE_NUMERIC),
-    matrix({x, y}),
-    indices({indices}),
-    name(name),
-    colors({plot->plotColor(plot->datasets.size())}){
+    matrix(
+{
+    x, y
+}),
+indices({indices}),
+name(name),
+colors({plot->plotColor(plot->datasets.size())})
+{
 
     if(indices.size() < 1) this->indices.front() = vseq(0U, size()-1);
     while(plot->scaleAutoPadding.size() < matrix.size()) plot->scaleAutoPadding.push_back(false);
@@ -197,13 +217,16 @@ CVPlot::Dataset::Dataset(const std::vector<float>& x, const std::vector<float>& 
     if(isnan(plot->dimScales[DIMY].y) || (matrixScale.y > plot->dimScales[DIMY].y)) plot->dimScales[DIMY].y = matrixScale.y;
 
     size_t L = size();
-    for(size_t i = 0; i < L; ++i){
+    for(size_t i = 0; i < L; ++i)
+    {
         if(isnan(x[i]) || isnan(y[i])) continue;
 
-        if(i < pointTags.size()){
+        if(i < pointTags.size())
+        {
             points.emplace_back(x[i], y[i], this, this->indices.front()[i], StringVector({ pointTags[i] }));
         }
-        else{
+        else
+        {
             points.emplace_back(x[i], y[i], this, this->indices.front()[i]);
         }
     }
@@ -212,17 +235,21 @@ CVPlot::Dataset::Dataset(const std::vector<float>& x, const std::vector<float>& 
 
 }
 
-CVPlot::Dataset::Dataset(const StringVector& xLabels, const std::vector<std::vector<float>>& y,
-                         const std::vector<std::vector<unsigned int>>& indices,
-                         const std::string& name,
-                        CVPlot* plot):
+CVPlot::Dataset::Dataset(const StringVector& xLabels, const vector<vector<float>>& y,
+                         const vector<vector<unsigned int>>& indices,
+                         const string& name,
+                         CVPlot* plot):
     plot(plot),
-    dimensionDataTypes({DATA_TYPE_VERBAL, DATA_TYPE_NUMERIC}),
-    matrix(2),
-    labels({ xLabels }),
-    indices(indices),
-    name(name),
-    colors({plot->plotColor(plot->datasets.size())}){
+    dimensionDataTypes(
+{
+    DATA_TYPE_VERBAL, DATA_TYPE_NUMERIC
+}),
+matrix(2),
+labels({ xLabels }),
+indices(indices),
+name(name),
+colors({plot->plotColor(plot->datasets.size())})
+{
 
     while(plot->scalePadding.size() < 2) plot->scalePadding.emplace_back(0.0f, 0.0f);
     while(plot->dimScales.size() < 2) plot->dimScales.emplace_back(NAN,NAN);
@@ -239,9 +266,11 @@ CVPlot::Dataset::Dataset(const StringVector& xLabels, const std::vector<std::vec
     if(isnan(plot->dimScales[DIMY].x) || (matrixScale.x < plot->dimScales[DIMY].x)) plot->dimScales[DIMY].x = matrixScale.x;
     if(isnan(plot->dimScales[DIMY].y) || (matrixScale.y > plot->dimScales[DIMY].y)) plot->dimScales[DIMY].y = matrixScale.y;
 
-    for(size_t i = 0; i < y.size(); ++i){
+    for(size_t i = 0; i < y.size(); ++i)
+    {
         append(matrix[DIMY], y[i]);
-        for(size_t j = 0; j < y[i].size(); ++j){
+        for(size_t j = 0; j < y[i].size(); ++j)
+        {
             if(indices.size() > 0) points.emplace_back(xLabels[i], y[i][j], this, indices[i][j]);
             else points.emplace_back(xLabels[i], y[i][j], this, UINT_MAX);
         }
@@ -251,17 +280,21 @@ CVPlot::Dataset::Dataset(const StringVector& xLabels, const std::vector<std::vec
 
 }
 
-CVPlot::Dataset::Dataset(const std::vector<std::vector<float>>& x, const StringVector& yLabels,
-                         const std::vector<std::vector<unsigned int>>& indices,
-                         const std::string& name,
-                        CVPlot* plot):
+CVPlot::Dataset::Dataset(const vector<vector<float>>& x, const StringVector& yLabels,
+                         const vector<vector<unsigned int>>& indices,
+                         const string& name,
+                         CVPlot* plot):
     plot(plot),
-    dimensionDataTypes({DATA_TYPE_NUMERIC, DATA_TYPE_VERBAL}),
-    matrix(1),
-    labels({ yLabels }),
-    indices(indices),
-    name(name),
-    colors({plot->plotColor(plot->datasets.size())}){
+    dimensionDataTypes(
+{
+    DATA_TYPE_NUMERIC, DATA_TYPE_VERBAL
+}),
+matrix(1),
+labels({ yLabels }),
+indices(indices),
+name(name),
+colors({plot->plotColor(plot->datasets.size())})
+{
 
     while(plot->scalePadding.size() < 2) plot->scalePadding.emplace_back(0.0f, 0.0f);
     while(plot->dimScales.size() < 2) plot->dimScales.emplace_back(NAN,NAN);
@@ -275,9 +308,11 @@ CVPlot::Dataset::Dataset(const std::vector<std::vector<float>>& x, const StringV
     if(isnan(plot->dimScales[DIMX].x) || (matrixScale.x < plot->dimScales[DIMX].x)) plot->dimScales[DIMX].x = matrixScale.x;
     if(isnan(plot->dimScales[DIMX].y) || (matrixScale.y > plot->dimScales[DIMX].y)) plot->dimScales[DIMX].y = matrixScale.y;
 
-    for(size_t i = 0; i < x.size(); ++i){
+    for(size_t i = 0; i < x.size(); ++i)
+    {
         append(matrix[DIMX], x[i]);
-        for(size_t j = 0; j < x[i].size(); ++j){
+        for(size_t j = 0; j < x[i].size(); ++j)
+        {
             if(indices.size() > 0) points.emplace_back(x[i][j], yLabels[i], this, indices[i][j]);
             else points.emplace_back(x[i][j], yLabels[i], this, UINT_MAX);
         }
@@ -287,38 +322,49 @@ CVPlot::Dataset::Dataset(const std::vector<std::vector<float>>& x, const StringV
 
 }
 
-void CVPlot::Dataset::rm_dimension(const unsigned int& dimension){
+void CVPlot::Dataset::rm_dimension(const unsigned int& dimension)
+{
     if(dimension < matrix.size()) matrix.erase(matrix.begin() + dimension);
     if(dimension < labels.size()) labels.erase(labels.begin() + dimension);
     if(dimension < indices.size()) indices.erase(indices.begin() + dimension);
-    for(auto& point : points){
-        if(dimension < point.dimValues.size()){
+    for(auto& point : points)
+    {
+        if(dimension < point.dimValues.size())
+        {
             point.dimValues.erase(point.dimValues.begin() + dimension);
         }
     }
 }
 
-void CVPlot::Dataset::update(){
+void CVPlot::Dataset::update()
+{
     size_t L = size();
 
-    std::vector<unsigned int> allIdx;
-    for(auto& idx : indices){
+    vector<unsigned int> allIdx;
+    for(auto& idx : indices)
+    {
         EZC::append(allIdx, idx);
     }
 
-    for(size_t i = 0; i < L; ++i){
-        for(auto& point : points){
-            if(point.dataIndex == allIdx[i]){
+    for(size_t i = 0; i < L; ++i)
+    {
+        for(auto& point : points)
+        {
+            if(point.dataIndex == allIdx[i])
+            {
                 point.dimValues = EZC::getCrossSection(i, matrix);
             }
         }
     }
 
-    for(size_t i = 0; i < L; ++i){
-        if(subset.size() > 0){
+    for(size_t i = 0; i < L; ++i)
+    {
+        if(subset.size() > 0)
+        {
             if(!EZC::anyEqual(points[i].dataIndex, subset)) points[i].visible = false;
         }
-        if(plot->subset.size() > 0){
+        if(plot->subset.size() > 0)
+        {
             if(!EZC::anyEqual(points[i].dataIndex, plot->subset)) points[i].visible = false;
         }
     }
@@ -327,20 +373,26 @@ void CVPlot::Dataset::update(){
 
 }
 
-std::vector<float> CVPlot::Dataset::getSubsetData(const unsigned int& dimension) const{
+vector<float> CVPlot::Dataset::getSubsetData(const unsigned int& dimension) const
+{
     if((plot->subset.size() == 0) && (subset.size() == 0)) return matrix[dimension];
 
-    std::vector<float> output;
-    for(auto point : points){
-        if(this->subset.size() == 0){
+    vector<float> output;
+    for(auto point : points)
+    {
+        if(this->subset.size() == 0)
+        {
             if(plot->subset.size() == 0) return matrix[dimension];
-            else if(EZC::anyEqual(point.dataIndex, plot->subset)){
+            else if(EZC::anyEqual(point.dataIndex, plot->subset))
+            {
                 output.push_back(point[dimension]);
             }
         }
-        else{
+        else
+        {
             if(plot->subset.size() == 0) return matrix[dimension];
-            else if(EZC::anyEqual(point.dataIndex, plot->subset) && EZC::anyEqual(point.dataIndex, this->subset)){
+            else if(EZC::anyEqual(point.dataIndex, plot->subset) && EZC::anyEqual(point.dataIndex, this->subset))
+            {
                 output.push_back(point[dimension]);
             }
         }
@@ -349,11 +401,14 @@ std::vector<float> CVPlot::Dataset::getSubsetData(const unsigned int& dimension)
     return output;
 }
 
-std::vector<CVPlot::dataPoint*> CVPlot::Dataset::getSubsetPoints(){
-    std::vector<CVPlot::dataPoint*> output;
-    if((plot->subset.size() == 0) && (subset.size() == 0)){
+vector<CVPlot::dataPoint*> CVPlot::Dataset::getSubsetPoints()
+{
+    vector<CVPlot::dataPoint*> output;
+    if((plot->subset.size() == 0) && (subset.size() == 0))
+    {
         output.reserve(this->size());
-        for(auto& point : points){
+        for(auto& point : points)
+        {
             output.push_back(&point);
         }
         return output;
@@ -361,14 +416,19 @@ std::vector<CVPlot::dataPoint*> CVPlot::Dataset::getSubsetPoints(){
 
     output.reserve(plot->subset.size());
 
-    for(auto& point : points){
-        if(this->subset.size() < 1){
-            if(EZC::anyEqual(point.dataIndex, plot->subset)){
+    for(auto& point : points)
+    {
+        if(this->subset.size() < 1)
+        {
+            if(EZC::anyEqual(point.dataIndex, plot->subset))
+            {
                 output.push_back(&point);
             }
         }
-        else{
-            if(EZC::anyEqual(point.dataIndex, plot->subset) && EZC::anyEqual(point.dataIndex, this->subset)){
+        else
+        {
+            if(EZC::anyEqual(point.dataIndex, plot->subset) && EZC::anyEqual(point.dataIndex, this->subset))
+            {
                 output.push_back(&point);
             }
         }
@@ -377,10 +437,13 @@ std::vector<CVPlot::dataPoint*> CVPlot::Dataset::getSubsetPoints(){
     return output;
 }
 
-std::vector<CVPlot::dataPoint*> CVPlot::Dataset::getLabelledPoints(const std::string& tag){
-    std::vector<CVPlot::dataPoint*> output;
-    for(auto& point : points){
-        if(EZC::anyEqual(tag, point.labels)){
+vector<CVPlot::dataPoint*> CVPlot::Dataset::getLabelledPoints(const string& tag)
+{
+    vector<CVPlot::dataPoint*> output;
+    for(auto& point : points)
+    {
+        if(EZC::anyEqual(tag, point.labels))
+        {
             if((plot->subset.size() > 0) && !EZC::anyEqual(point.dataIndex, plot->subset)) continue;
             output.push_back(&point);
         }
@@ -388,10 +451,13 @@ std::vector<CVPlot::dataPoint*> CVPlot::Dataset::getLabelledPoints(const std::st
     return output;
 }
 
-std::vector<float> CVPlot::Dataset::getLabelledData(const std::string& tag, const unsigned int& dimension){
-    std::vector<float> output;
-    for(auto& point : points){
-        if(EZC::anyEqual(tag, point.labels)){
+vector<float> CVPlot::Dataset::getLabelledData(const string& tag, const unsigned int& dimension)
+{
+    vector<float> output;
+    for(auto& point : points)
+    {
+        if(EZC::anyEqual(tag, point.labels))
+        {
             if((plot->subset.size() > 0) && !EZC::anyEqual(point.dataIndex, plot->subset)) continue;
             output.push_back(point[dimension]);
         }
@@ -399,12 +465,14 @@ std::vector<float> CVPlot::Dataset::getLabelledData(const std::string& tag, cons
     return output;
 }
 
-sf::Vector2f CVPlot::Dataset::getScale(const unsigned int& dimension) const{
+sf::Vector2f CVPlot::Dataset::getScale(const unsigned int& dimension) const
+{
     if(dimension >= matrix.size()) return sf::Vector2f(NAN, NAN);
     if(dimensionDataTypes[dimension] != DATA_TYPE_NUMERIC) return sf::Vector2f(NAN, NAN);
 
-    if((plot->subset.size() > 0) || (subset.size() > 0)){
-        std::vector<float> subsetData = getSubsetData(dimension);
+    if((plot->subset.size() > 0) || (subset.size() > 0))
+    {
+        vector<float> subsetData = getSubsetData(dimension);
         return sf::Vector2f(EZC::min(subsetData), EZC::max(subsetData));
     }
 
@@ -417,44 +485,52 @@ size_t CVPlot::Dataset::size() const
 }
 
 CVPlot::axis::axis(const float& pos, const unsigned int& dimension, CVPlot* plot,
-             const StringVector& labels,
-             const UINT8& dataType, const float& thickness,
-             const float& offset,
-             const sf::Color& lineColor,
-             const textEntry& textInfo,
-             const float& textPadding):
-                 plot(plot),
-                 textInfo(textInfo),
-                 label(nullptr),
-                 bTick(true),
-                 bAutoUpdateScale(true),
-                 bSpanLabels(false),
-                 pos(pos),
-                 thickness(thickness),
-                 textPadding(textPadding),
-                 offset(offset),
-                 dimension(dimension),
-                 labels(labels),
-                 dataType(dataType),
-                 lineColor(lineColor){
+                   const StringVector& labels,
+                   const UINT8& dataType, const float& thickness,
+                   const float& offset,
+                   const sf::Color& lineColor,
+                   const TextEntry& textInfo,
+                   const float& textPadding):
+    plot(plot),
+    textInfo(textInfo),
+    label(nullptr),
+    bTick(true),
+    bAutoUpdateScale(true),
+    bSpanLabels(false),
+    pos(pos),
+    thickness(thickness),
+    textPadding(textPadding),
+    offset(offset),
+    dimension(dimension),
+    labels(labels),
+    dataType(dataType),
+    lineColor(lineColor)
+{
     update();
     plot->callUpdate();
 }
 
-const static std::vector<float> AXIS_INT = { 1.0f, 3.0f, 5.0f, 8.0f };
+const static vector<float> AXIS_INT = { 1.0f, 3.0f, 5.0f, 8.0f };
 
-float CVPlot::axis::getLabelPosition(const std::string& label) const{
+float CVPlot::axis::getLabelPosition(const string& label) const
+{
     unsigned int index = 0;
-    for(auto& L : labels){
-        if(L == label){
-            switch(dimension){
-                case DIMX:{
-                    return renderLabels[index].getPosition().x;
-                }
-                case DIMY:{
-                    return renderLabels[index].getPosition().y;
-                }
-                default: break;
+    for(auto& L : labels)
+    {
+        if(L == label)
+        {
+            switch(dimension)
+            {
+            case DIMX:
+            {
+                return renderLabels[index].getPosition().x;
+            }
+            case DIMY:
+            {
+                return renderLabels[index].getPosition().y;
+            }
+            default:
+                break;
             }
         }
         ++index;
@@ -463,7 +539,8 @@ float CVPlot::axis::getLabelPosition(const std::string& label) const{
     return NAN;
 }
 
-void CVPlot::axis::getNumericLabels(const unsigned int& numDecimals){
+void CVPlot::axis::getNumericLabels(const unsigned int& numDecimals)
+{
 
     labels.clear();
     axisIntervals.clear();
@@ -477,16 +554,19 @@ void CVPlot::axis::getNumericLabels(const unsigned int& numDecimals){
 
     float axisIncrement = 0.0f;
 
-    if(dataRange == 0.0f){
+    if(dataRange == 0.0f)
+    {
         labels.push_back(strDigits(plot->dimScales[dimension].x, numDecimals));
         axisIntervals.push_back(plot->dimScales[dimension].x);
         updateRenderLabels();
         return;
     }
-    else{
+    else
+    {
+
         float testRange = dataRange;
-        if(dimension == DIMX) testRange /= 0.5f*pow(plot->widthScale(), (1.0f)/3);
-        else if(dimension == DIMY) testRange /= 0.5f*pow(plot->heightScale(), (1.0f)/3);
+        if(dimension == DIMX) testRange /= 0.6f*pow(plot->widthScale(), 0.333333333f);
+        else if(dimension == DIMY) testRange /= 0.6f*pow(plot->heightScale(), 0.333333333f);
 
         int power = floor(log10(testRange));
         float axisTest = closest(getFirstDigit(testRange), AXIS_INT);
@@ -499,28 +579,36 @@ void CVPlot::axis::getNumericLabels(const unsigned int& numDecimals){
 
     int multBegin, multEnd;
 
-    if(dimension < plot->scalePadding.size()){
+    if(dimension < plot->scalePadding.size())
+    {
         multBegin = int(floor((plot->dimScales[dimension].x - (dataRange*plot->scalePadding[dimension].x))/axisIncrement)) - 1;
         multEnd = int(ceil((plot->dimScales[dimension].y + (dataRange*plot->scalePadding[dimension].y))/axisIncrement)) + 1;
     }
-    else{
+    else
+    {
         multBegin = int(floor((plot->dimScales[dimension].x - dataRange)/axisIncrement)) - 1;
         multEnd = int(ceil((plot->dimScales[dimension].y + dataRange)/axisIncrement)) + 1;
     }
 
-    if(dataRange <= 60.0f){
-        for(int i = multBegin; i <= multEnd; ++i){
-            if(axisIncrement < 1.0f){
+    if(dataRange <= 60.0f)
+    {
+        for(int i = multBegin; i <= multEnd; ++i)
+        {
+            if(axisIncrement < 1.0f)
+            {
                 labels.push_back(strDigits(i*axisIncrement, numDecimals - (int)log10(axisIncrement)));
             }
-            else{
+            else
+            {
                 labels.push_back(strDigits(i*axisIncrement, numDecimals));
             }
             axisIntervals.push_back(i*axisIncrement);
         }
     }
-    else{
-        for(int i = multBegin; i <= multEnd; ++i){
+    else
+    {
+        for(int i = multBegin; i <= multEnd; ++i)
+        {
             labels.push_back(sigFigs(i*axisIncrement));
             axisIntervals.push_back(i*axisIncrement);
         }
@@ -528,53 +616,67 @@ void CVPlot::axis::getNumericLabels(const unsigned int& numDecimals){
 
 }
 
-void CVPlot::axis::updateRenderLabels(){
+void CVPlot::axis::updateRenderLabels()
+{
 
-    switch(dataType){
-        case DATA_TYPE_VERBAL:{
-            labels.clear();
-            for(auto& set : plot->datasets){
-                for(auto& label : set.labels[dimension]){
-                    if(!anyEqual(label, labels) &&
-                       !set.getLabelledData(label, dimension).empty()) labels.push_back(label);
-                }
+    switch(dataType)
+    {
+    case DATA_TYPE_VERBAL:
+    {
+        labels.clear();
+        for(auto& set : plot->datasets)
+        {
+            for(auto& label : set.labels[dimension])
+            {
+                if(!anyEqual(label, labels) &&
+                        !set.getLabelledData(label, dimension).empty()) labels.push_back(label);
             }
-            break;
         }
-        default: break;
+        break;
+    }
+    default:
+        break;
     }
 
     renderLabels.resize(labels.size());
     lineTicks.clear();
 
     unsigned int index = 0;
-    for(auto& text : renderLabels){
+    for(auto& text : renderLabels)
+    {
         text.setFont(*plot->View->mainApp->fonts[textInfo.font]);
         text.setString(labels[index]);
         text.setFillColor(textInfo.textColor);
         text.setCharacterSize(plot->labelFontSize*plot->fontScaling*pow(plot->areaScale(), (1.0f/3)));
 
-        switch(dimension){
-            case DIMX:{
-                switch(dataType){
-                    case DATA_TYPE_VERBAL:{
-                        text.setOrigin(-6.0f,0.0f);
-                        text.setRotation(45);
-                        break;
-                    }
-                    default:{
-                        text.setOrigin(text.getGlobalBounds().width/2,0.0f);
-                        break;
-                    }
-                }
+        switch(dimension)
+        {
+        case DIMX:
+        {
+            switch(dataType)
+            {
+            case DATA_TYPE_VERBAL:
+            {
+                text.setOrigin(-6.0f,0.0f);
+                text.setRotation(45);
                 break;
             }
-            case DIMY:{
-                text.setOrigin(text.getGlobalBounds().width + thickness,
-                               getTextRelativeCenterY(text));
+            default:
+            {
+                text.setOrigin(text.getGlobalBounds().width/2,0.0f);
                 break;
             }
-            default: break;
+            }
+            break;
+        }
+        case DIMY:
+        {
+            text.setOrigin(text.getGlobalBounds().width + thickness,
+                           getTextCenterOffsetY(text));
+            break;
+        }
+        default:
+            break;
         }
         ++index;
     }
@@ -582,222 +684,273 @@ void CVPlot::axis::updateRenderLabels(){
     size_t labelSIZE = labels.size();
     sf::Vector2f axisCoord(0.0f, 0.0f);
 
-    switch(dimension){
-        case DIMENSION_X:{
-            axisCoord.y = line.getPosition().y + thickness + textPadding;
-            break;
-        }
-        case DIMENSION_Y:{
-            axisCoord.x = line.getPosition().x - thickness - textPadding;
-            break;
-        }
-        default: return;
+    switch(dimension)
+    {
+    case DIMENSION_X:
+    {
+        axisCoord.y = line.getPosition().y + thickness + textPadding;
+        break;
+    }
+    case DIMENSION_Y:
+    {
+        axisCoord.x = line.getPosition().x - thickness - textPadding;
+        break;
+    }
+    default:
+        return;
     }
 
-    for(size_t i = 0; i < labelSIZE;){
+    for(size_t i = 0; i < labelSIZE;)
+    {
 
-        if(bTick){
-            switch(dimension){
-                case DIMENSION_X:{
-                    lineTicks.emplace_back(sf::Vector2f(thickness, textPadding + thickness));
-                    lineTicks.back().setOrigin(thickness/2, thickness);
-                    break;
-                }
-                case DIMENSION_Y:{
-                    lineTicks.emplace_back(sf::Vector2f(textPadding, thickness));
-                    lineTicks.back().setOrigin(thickness, thickness/2);
-                    break;
-                }
-                default: lineTicks.emplace_back();
+        if(bTick)
+        {
+            switch(dimension)
+            {
+            case DIMENSION_X:
+            {
+                lineTicks.emplace_back(sf::Vector2f(thickness, textPadding + thickness));
+                lineTicks.back().setOrigin(thickness/2, thickness);
+                break;
+            }
+            case DIMENSION_Y:
+            {
+                lineTicks.emplace_back(sf::Vector2f(textPadding, thickness));
+                lineTicks.back().setOrigin(thickness, thickness/2);
+                break;
+            }
+            default:
+                lineTicks.emplace_back();
             }
 
             lineTicks.back().setFillColor(line.getFillColor());
         }
 
         float numCast = 0.0f;
-        switch(dataType){
-            case DATA_TYPE_NUMERIC:{
-                switch(dimension){
-                    case DIMENSION_X:{
-                        axisCoord.x = plot->getPlotXPos(axisIntervals[i]);
+        switch(dataType)
+        {
+        case DATA_TYPE_NUMERIC:
+        {
+            switch(dimension)
+            {
+            case DIMENSION_X:
+            {
+                axisCoord.x = plot->getPlotXPos(axisIntervals[i]);
 
-                        if((axisCoord.x < plot->plotBounds.left - thickness)
-                           || (axisCoord.x > plot->plotBounds.left + plot->plotBounds.width + thickness)){
-                            if((dimension > plot->scaleAutoPadding.size()) || !plot->scaleAutoPadding[dimension]){
-                                removeLabel(i);
-                                --labelSIZE;
-                                continue;
-                            }
-                        }
-
-                        if(bTick) lineTicks.back().setPosition(axisCoord.x, line.getPosition().y + thickness);
-
-                        break;
+                if((axisCoord.x < plot->plotBounds.left - thickness)
+                        || (axisCoord.x > plot->plotBounds.left + plot->plotBounds.width + thickness))
+                {
+                    if((dimension > plot->scaleAutoPadding.size()) || !plot->scaleAutoPadding[dimension])
+                    {
+                        removeLabel(i);
+                        --labelSIZE;
+                        continue;
                     }
-                    case DIMENSION_Y:{
-                        axisCoord.y = plot->getPlotYPos(axisIntervals[i]);
-
-                        if(!plot->scaleAutoPadding[dimension] && ((axisCoord.y < plot->plotBounds.top - thickness)
-                           || (axisCoord.y > plot->plotBounds.top + plot->plotBounds.height + thickness))){
-                            if((dimension > plot->scaleAutoPadding.size()) || !plot->scaleAutoPadding[dimension]){
-                                removeLabel(i);
-                                --labelSIZE;
-                                continue;
-                            }
-                        }
-
-                        if(bTick) lineTicks.back().setPosition(line.getPosition().x - textPadding, axisCoord.y);
-
-                        break;
-                    }
-                    default: break;
                 }
 
-                renderLabels[i].setPosition(axisCoord);
-                ++i;
+                if(bTick) lineTicks.back().setPosition(axisCoord.x, line.getPosition().y + thickness);
 
                 break;
             }
-            case DATA_TYPE_VERBAL:{
-                switch(dimension){
-                    case DIMENSION_X:{
-                        axisCoord.x = plot->plotBounds.left +
-                                    plot->plotBounds.width*(i+1)/(labelSIZE+1);
-                        if(bTick) lineTicks.back().setPosition(axisCoord.x, line.getPosition().y + thickness);
+            case DIMENSION_Y:
+            {
+                axisCoord.y = plot->getPlotYPos(axisIntervals[i]);
 
-                        if(plot->axisLabels.size() > 0){
-                            float labelExtent = plot->xLabelBox().getPosition().y,
-                                axisExtent = renderLabels[i].getPosition().y + renderLabels[i].getGlobalBounds().height;
-                            if(axisExtent > labelExtent)
-                                plot->xLabelBox().move(sf::Vector2f(0.0f, axisExtent + plot->plotBounds.height*0.02f - labelExtent));
-                        }
-                        break;
+                if(!plot->scaleAutoPadding[dimension] && ((axisCoord.y < plot->plotBounds.top - thickness)
+                        || (axisCoord.y > plot->plotBounds.top + plot->plotBounds.height + thickness)))
+                {
+                    if((dimension > plot->scaleAutoPadding.size()) || !plot->scaleAutoPadding[dimension])
+                    {
+                        removeLabel(i);
+                        --labelSIZE;
+                        continue;
                     }
-                    case DIMENSION_Y:{
-                        axisCoord.y = plot->plotBounds.top + plot->plotBounds.height -
-                                    plot->plotBounds.width*(i+1)/(labelSIZE+1);
-                        if(bTick) lineTicks.back().setPosition(line.getPosition().x - textPadding, axisCoord.y);
-                        break;
-                    }
-                    default: break;
                 }
 
-                renderLabels[i].setPosition(axisCoord);
-                ++i;
+                if(bTick) lineTicks.back().setPosition(line.getPosition().x - textPadding, axisCoord.y);
+
                 break;
             }
-            default:{
-                ++i; break;
+            default:
+                break;
             }
+
+            renderLabels[i].setPosition(axisCoord);
+            ++i;
+
+            break;
+        }
+        case DATA_TYPE_VERBAL:
+        {
+            switch(dimension)
+            {
+            case DIMENSION_X:
+            {
+                axisCoord.x = plot->plotBounds.left +
+                              plot->plotBounds.width*(i+1)/(labelSIZE+1);
+                if(bTick) lineTicks.back().setPosition(axisCoord.x, line.getPosition().y + thickness);
+
+                if(plot->axisLabels.size() > 0)
+                {
+                    float labelExtent = plot->xLabelBox().getPosition().y,
+                          axisExtent = renderLabels[i].getPosition().y + renderLabels[i].getGlobalBounds().height;
+                    if(axisExtent > labelExtent)
+                        plot->xLabelBox().move(sf::Vector2f(0.0f, axisExtent + plot->plotBounds.height*0.02f - labelExtent));
+                }
+                break;
+            }
+            case DIMENSION_Y:
+            {
+                axisCoord.y = plot->plotBounds.top + plot->plotBounds.height -
+                              plot->plotBounds.width*(i+1)/(labelSIZE+1);
+                if(bTick) lineTicks.back().setPosition(line.getPosition().x - textPadding, axisCoord.y);
+                break;
+            }
+            default:
+                break;
+            }
+
+            renderLabels[i].setPosition(axisCoord);
+            ++i;
+            break;
+        }
+        default:
+        {
+            ++i;
+            break;
+        }
         }
     }
 }
 
-void CVPlot::axis::setLabelColor(const sf::Color& newColor){
+void CVPlot::axis::setLabelColor(const sf::Color& newColor)
+{
     textInfo.textColor = newColor;
-    for(auto& txt : renderLabels){
+    for(auto& txt : renderLabels)
+    {
         txt.setFillColor(newColor);
     }
 }
 
-void CVPlot::axis::setLineColor(const sf::Color& newColor){
+void CVPlot::axis::setLineColor(const sf::Color& newColor)
+{
     lineColor = newColor;
     line.setFillColor(newColor);
-    for(auto& tick : lineTicks){
+    for(auto& tick : lineTicks)
+    {
         tick.setFillColor(newColor);
     }
 }
 
-void CVPlot::axis::update(){
+void CVPlot::axis::update()
+{
 
     line.setFillColor(lineColor);
 
-    switch(dataType){
-        case DATA_TYPE_NUMERIC:{
-            if((dimension < plot->scaleAutoPadding.size()) && plot->scaleAutoPadding[dimension]){
-                plot->scalePadding[dimension].x = 0.0f;
-                plot->scalePadding[dimension].y = 0.0f;
+    switch(dataType)
+    {
+    case DATA_TYPE_NUMERIC:
+    {
+        if((dimension < plot->scaleAutoPadding.size()) && plot->scaleAutoPadding[dimension])
+        {
+            plot->scalePadding[dimension].x = 0.0f;
+            plot->scalePadding[dimension].y = 0.0f;
 
-                getNumericLabels();
+            getNumericLabels();
 
-                plot->scalePadding[dimension].x = abs(plot->dimScales[dimension].x - min(axisIntervals))/plot->getDataRange(dimension);
-                plot->scalePadding[dimension].y = abs(max(axisIntervals) - plot->dimScales[dimension].y)/plot->getDataRange(dimension);
-            }
-            else getNumericLabels();
-            break;
+            plot->scalePadding[dimension].x = abs(plot->dimScales[dimension].x - min(axisIntervals))/plot->getDataRange(dimension);
+            plot->scalePadding[dimension].y = abs(max(axisIntervals) - plot->dimScales[dimension].y)/plot->getDataRange(dimension);
         }
-        default: break;
+        else getNumericLabels();
+        break;
+    }
+    default:
+        break;
     }
 
     updateRenderLabels();
 
-    switch(dimension){
+    switch(dimension)
+    {
         float anchorStart, anchorEnd;
 
-        case DIMENSION_X:{
-            if(bSpanLabels){
-                anchorStart = getLabelPosition(labels.front());
-                anchorEnd = getLabelPosition(labels.back()) + thickness;
-            }else{
-                anchorStart = plot->plotBounds.left;
-                anchorEnd = plot->plotBounds.left + plot->plotBounds.width;
-            }
+    case DIMENSION_X:
+    {
+        if(bSpanLabels)
+        {
+            anchorStart = getLabelPosition(labels.front());
+            anchorEnd = getLabelPosition(labels.back()) + thickness;
+        }
+        else
+        {
+            anchorStart = plot->plotBounds.left;
+            anchorEnd = plot->plotBounds.left + plot->plotBounds.width;
+        }
 
-            line.setSize(sf::Vector2f(anchorEnd - anchorStart, thickness));
-            if(!isnan(pos)){
-                line.setPosition(sf::Vector2f(anchorStart, plot->getPlotYPos(pos) + offset));
-            }
-            else line.setPosition(sf::Vector2f(anchorStart, plot->plotBounds.top + plot->plotBounds.height + offset));
+        line.setSize(sf::Vector2f(anchorEnd - anchorStart, thickness));
+        if(!isnan(pos))
+        {
+            line.setPosition(sf::Vector2f(anchorStart, plot->getPlotYPos(pos) + offset));
+        }
+        else line.setPosition(sf::Vector2f(anchorStart, plot->plotBounds.top + plot->plotBounds.height + offset));
 
-            if(plot->axisLabels.size() > 1){
-                label = &plot->xLabelBox();
-                label->setFontSize(label->getTextInfo().fontSize*pow(plot->areaScale(), 1.0f/3));
-                label->setPosition(plot->plotBounds.left + plot->plotBounds.width/2 - label->getBounds().width/2,
+        if(plot->axisLabels.size() > 1)
+        {
+            label = &plot->xLabelBox();
+            label->setFontSize(label->getTextInfo().fontSize*pow(plot->areaScale(), 1.0f/3));
+            label->setPosition(plot->plotBounds.left + plot->plotBounds.width/2 - label->getBounds().width/2,
                                plot->plotBounds.top + plot->plotBounds.height + 1.1f*maxTextHeight(renderLabels) +
                                plot->xLabelBox().getBounds().height + offset);
-            }
-            else label = nullptr;
-
-            break;
         }
-        case DIMENSION_Y:{
+        else label = nullptr;
 
-            if(bSpanLabels){
-                anchorStart = getLabelPosition(labels.back());
-                anchorEnd = getLabelPosition(labels.front()) + thickness;
-                line.setOrigin(thickness, thickness/2);
-            }else{
-                anchorStart = plot->plotBounds.top;
-                anchorEnd = plot->plotBounds.top + plot->plotBounds.height + 3*thickness/2;
-                line.setOrigin(thickness, thickness/2);
-            }
+        break;
+    }
+    case DIMENSION_Y:
+    {
 
-            line.setSize(sf::Vector2f(thickness, anchorEnd - anchorStart));
-
-            if(!isnan(pos)){
-                line.setPosition(sf::Vector2f(plot->getPlotXPos(pos) - offset, anchorStart));
-            }
-            else line.setPosition(sf::Vector2f(plot->plotBounds.left - offset, anchorStart));
-
-            if(plot->axisLabels.size() > 2){
-                label = &plot->yLabelBox();
-                label->setFontSize(label->getTextInfo().fontSize*pow(plot->areaScale(), 1.0f/3));
-                label->setPosition(plot->plotBounds.left - offset -
-                                   1.2f*maxTextWidth(renderLabels) - 1.5f*plot->yLabelBox().getBounds().width,
-                                   plot->plotBounds.top + plot->plotBounds.height/2);
-            }
-            else label = nullptr;
-
-            break;
+        if(bSpanLabels)
+        {
+            anchorStart = getLabelPosition(labels.back());
+            anchorEnd = getLabelPosition(labels.front()) + thickness;
+            line.setOrigin(thickness, thickness/2);
         }
-        default: break;
+        else
+        {
+            anchorStart = plot->plotBounds.top;
+            anchorEnd = plot->plotBounds.top + plot->plotBounds.height + 3*thickness/2;
+            line.setOrigin(thickness, thickness/2);
+        }
+
+        line.setSize(sf::Vector2f(thickness, anchorEnd - anchorStart));
+
+        if(!isnan(pos))
+        {
+            line.setPosition(sf::Vector2f(plot->getPlotXPos(pos) - offset, anchorStart));
+        }
+        else line.setPosition(sf::Vector2f(plot->plotBounds.left - offset, anchorStart));
+
+        if(plot->axisLabels.size() > 2)
+        {
+            label = &plot->yLabelBox();
+            label->setFontSize(label->getTextInfo().fontSize*pow(plot->areaScale(), 1.0f/3));
+            label->setPosition(plot->plotBounds.left - offset -
+                               1.2f*maxTextWidth(renderLabels) - 1.5f*plot->yLabelBox().getBounds().width,
+                               plot->plotBounds.top + plot->plotBounds.height/2);
+        }
+        else label = nullptr;
+
+        break;
+    }
+    default:
+        break;
     }
 }
 
-CVPlot::dataPoint::dataPoint(const std::vector<float>& dimValues,
-          Dataset* dataset, const unsigned int& dataIndex,
-          const StringVector& labels,
-          bool hover, const sf::Vector2f& animSource):
+CVPlot::dataPoint::dataPoint(const vector<float>& dimValues,
+                             Dataset* dataset, const unsigned int& dataIndex,
+                             const StringVector& labels,
+                             bool hover, const sf::Vector2f& animSource):
     dataset(dataset),
     plot(dataset->plot),
     selected(false),
@@ -809,10 +962,13 @@ CVPlot::dataPoint::dataPoint(const std::vector<float>& dimValues,
     labels(labels),
     dimValues(dimValues),
     offset(0.0f,0.0f),
-    spriteColor(dataset->mainColor()){
+    spriteColor(dataset->mainColor())
+{
 
-    for(auto& val : dimValues){
-        if(isnan(val)){
+    for(auto& val : dimValues)
+    {
+        if(isnan(val))
+        {
             return;
         }
     }
@@ -824,12 +980,15 @@ CVPlot::dataPoint::dataPoint(const std::vector<float>& dimValues,
         plot->getSpriteSize()/texSize.y);
     sprite.setColor(spriteColor);
 
-    if(plot->bAnimSprites){
-        if(isnan(animSource.x) || isnan(animSource.y)){
+    if(plot->bAnimSprites)
+    {
+        if(isnan(animSource.x) || isnan(animSource.y))
+        {
             sprite.setPosition(plot->plotBounds.left,
-                                plot->plotBounds.top + plot->plotBounds.height);
+                               plot->plotBounds.top + plot->plotBounds.height);
         }
-        else{
+        else
+        {
             sprite.setPosition(animSource.x, animSource.y);
         }
         sf::Vector2f plotPos = plot->getPlotPos(x(), y());
@@ -838,7 +997,8 @@ CVPlot::dataPoint::dataPoint(const std::vector<float>& dimValues,
 
 //        plot->View->anim_to(&sprite, plotPos, plot->animSpriteSpeed, false);
     }
-    else{
+    else
+    {
         sprite.setPosition(plot->getPlotPos(x(), y()));
     }
 
@@ -847,9 +1007,9 @@ CVPlot::dataPoint::dataPoint(const std::vector<float>& dimValues,
 }
 
 CVPlot::dataPoint::dataPoint(const float& x, const float& y,
-          Dataset* dataset, const unsigned int& dataIndex,
-          const StringVector& labels,
-          bool hover, const sf::Vector2f& animSource):
+                             Dataset* dataset, const unsigned int& dataIndex,
+                             const StringVector& labels,
+                             bool hover, const sf::Vector2f& animSource):
     dataset(dataset),
     plot(dataset->plot),
     selected(false),
@@ -859,11 +1019,16 @@ CVPlot::dataPoint::dataPoint(const float& x, const float& y,
     dataIndex(dataIndex),
     sprite(*plot->plotSpriteTexture),
     labels(labels),
-    dimValues({x, y, NAN}),
-    offset(0.0f,0.0f),
-    spriteColor(dataset->mainColor()){
+    dimValues(
+{
+    x, y, NAN
+}),
+offset(0.0f,0.0f),
+spriteColor(dataset->mainColor())
+{
 
-    if(isnan(x) || isnan(y)){
+    if(isnan(x) || isnan(y))
+    {
         return;
     }
 
@@ -874,11 +1039,14 @@ CVPlot::dataPoint::dataPoint(const float& x, const float& y,
         plot->getSpriteSize()/texSize.y);
     sprite.setColor(spriteColor);
 
-    if(plot->bAnimSprites){
-        if(isnan(animSource.x) || isnan(animSource.y)){
+    if(plot->bAnimSprites)
+    {
+        if(isnan(animSource.x) || isnan(animSource.y))
+        {
             sprite.setPosition(plot->plotBounds.left, plot->plotBounds.top + plot->plotBounds.height);
         }
-        else{
+        else
+        {
             sprite.setPosition(animSource.x, animSource.y);
         }
         sf::Vector2f plotPos = plot->getPlotPos(x, y);
@@ -887,7 +1055,8 @@ CVPlot::dataPoint::dataPoint(const float& x, const float& y,
 
 //        plot->View->anim_to(&sprite, plotPos, plot->animSpriteSpeed, false);
     }
-    else{
+    else
+    {
         sprite.setPosition(plot->getPlotPos(x, y));
     }
 
@@ -895,9 +1064,9 @@ CVPlot::dataPoint::dataPoint(const float& x, const float& y,
 
 }
 
-CVPlot::dataPoint::dataPoint(const std::string& xLabel, const float& y,
-          Dataset* dataset, const unsigned int& dataIndex,
-          bool hover, const sf::Vector2f& animSource):
+CVPlot::dataPoint::dataPoint(const string& xLabel, const float& y,
+                             Dataset* dataset, const unsigned int& dataIndex,
+                             bool hover, const sf::Vector2f& animSource):
     dataset(dataset),
     plot(dataset->plot),
     selected(false),
@@ -906,13 +1075,18 @@ CVPlot::dataPoint::dataPoint(const std::string& xLabel, const float& y,
     showHoverDisplay(hover),
     dataIndex(dataIndex),
     sprite(*plot->plotSpriteTexture),
-    labels({xLabel}),
-    animSpeed(400.0f),
-    dimValues({NAN, y, NAN}),
-    offset(0.0f,0.0f),
-    spriteColor(dataset->mainColor()){
+    labels(
+{
+    xLabel
+}),
+animSpeed(400.0f),
+dimValues({NAN, y, NAN}),
+offset(0.0f,0.0f),
+spriteColor(dataset->mainColor())
+{
 
-    if(isnan(y)){
+    if(isnan(y))
+    {
         return;
     }
 
@@ -924,14 +1098,17 @@ CVPlot::dataPoint::dataPoint(const std::string& xLabel, const float& y,
 
     sprite.setColor(spriteColor);
 
-    if(plot->bAnimSprites){
+    if(plot->bAnimSprites)
+    {
 
-        if(isnan(animSource.y) || isnan(animSource.x)){
+        if(isnan(animSource.y) || isnan(animSource.x))
+        {
             float xPos = plot->xAxis().getLabelPosition(xLabel);
             if(isnan(xPos)) xPos = plot->plotBounds.left + plot->plotBounds.width/2;
             sprite.setPosition(xPos, plot->plotBounds.top + plot->plotBounds.height);
         }
-        else{
+        else
+        {
             sprite.setPosition(animSource.x, animSource.y);
         }
 
@@ -944,7 +1121,8 @@ CVPlot::dataPoint::dataPoint(const std::string& xLabel, const float& y,
 
 //        plot->View->anim_to(&sprite, plotPos, plot->animSpriteSpeed, false);
     }
-    else{
+    else
+    {
         float xPos = plot->xAxis().getLabelPosition(xLabel);
         if(isnan(xPos)) xPos = plot->plotBounds.left + plot->plotBounds.width/2;
 
@@ -953,9 +1131,9 @@ CVPlot::dataPoint::dataPoint(const std::string& xLabel, const float& y,
 
 }
 
-CVPlot::dataPoint::dataPoint(const float& x, const std::string& yLabel,
-          Dataset* dataset, const unsigned int& dataIndex,
-          bool hover, const sf::Vector2f& animSource):
+CVPlot::dataPoint::dataPoint(const float& x, const string& yLabel,
+                             Dataset* dataset, const unsigned int& dataIndex,
+                             bool hover, const sf::Vector2f& animSource):
     dataset(dataset),
     plot(dataset->plot),
     selected(false),
@@ -964,13 +1142,18 @@ CVPlot::dataPoint::dataPoint(const float& x, const std::string& yLabel,
     showHoverDisplay(hover),
     dataIndex(dataIndex),
     sprite(*plot->plotSpriteTexture),
-    labels({yLabel}),
-    animSpeed(400.0f),
-    dimValues({x, NAN, NAN}),
-    offset(0.0f,0.0f),
-    spriteColor(dataset->mainColor()){
+    labels(
+{
+    yLabel
+}),
+animSpeed(400.0f),
+dimValues({x, NAN, NAN}),
+offset(0.0f,0.0f),
+spriteColor(dataset->mainColor())
+{
 
-    if(isnan(x)){
+    if(isnan(x))
+    {
         return;
     }
 
@@ -981,12 +1164,15 @@ CVPlot::dataPoint::dataPoint(const float& x, const std::string& yLabel,
         plot->getSpriteSize()/texSize.y);
     sprite.setColor(spriteColor);
 
-    if(plot->bAnimSprites){
-        if(isnan(animSource.y)){
+    if(plot->bAnimSprites)
+    {
+        if(isnan(animSource.y))
+        {
             sprite.setPosition(plot->plotBounds.left,
-                                plot->yAxis().getLabelPosition(yLabel));
+                               plot->yAxis().getLabelPosition(yLabel));
         }
-        else{
+        else
+        {
             sprite.setPosition(animSource.x, animSource.y);
         }
         sf::Vector2f plotPos(plot->getPlotXPos(x), plot->yAxis().getLabelPosition(yLabel));
@@ -995,13 +1181,15 @@ CVPlot::dataPoint::dataPoint(const float& x, const std::string& yLabel,
 
 //        plot->View->anim_to(&sprite, plotPos, plot->animSpriteSpeed, false);
     }
-    else{
+    else
+    {
         sprite.setPosition(plot->getPlotXPos(x), plot->yAxis().getLabelPosition(yLabel));
     }
 
 }
 
-void CVPlot::dataPoint::update(){
+void CVPlot::dataPoint::update()
+{
 
     if(!valid()) return;
 
@@ -1012,60 +1200,72 @@ void CVPlot::dataPoint::update(){
         plot->getSpriteSize()/texSize.x,
         plot->getSpriteSize()/texSize.y);
 
-    switch(plot->xAxis().dataType){
-        case DATA_TYPE_VERBAL:{
-            pos.x = plot->xAxis().getLabelPosition(labels[DIMX]) + offset.x;
-            break;
-        }
-        default:{
-            pos.x = plot->getPlotXPos(x()) + offset.x;
-            break;
-        }
+    switch(plot->xAxis().dataType)
+    {
+    case DATA_TYPE_VERBAL:
+    {
+        pos.x = plot->xAxis().getLabelPosition(labels[DIMX]) + offset.x;
+        break;
+    }
+    default:
+    {
+        pos.x = plot->getPlotXPos(x()) + offset.x;
+        break;
+    }
     }
 
-    switch(plot->yAxis().dataType){
-        case DATA_TYPE_VERBAL:{
-            if(labels.size() > 1)
-                pos.y = plot->yAxis().getLabelPosition(labels[DIMY]) + offset.y;
-            break;
-        }
-        default:{
-            pos.y = plot->getPlotYPos(y()) + offset.y;
-            break;
-        }
+    switch(plot->yAxis().dataType)
+    {
+    case DATA_TYPE_VERBAL:
+    {
+        if(labels.size() > 1)
+            pos.y = plot->yAxis().getLabelPosition(labels[DIMY]) + offset.y;
+        break;
+    }
+    default:
+    {
+        pos.y = plot->getPlotYPos(y()) + offset.y;
+        break;
+    }
     }
 
     sprite.setPosition(pos);
 }
 
-void CVPlot::dataPoint::setSelection(const bool& state){
-        if(state){
-            if(!selected){
-                sprite.setColor(plot->plotHighlightColor);
-                selected = true;
-                plot->selectedPoints.push_back(this);
-            }
-        }
-        else{
-            if(selected){
-                sprite.setColor(spriteColor);
-                selected = false;
-                EZC::remove(this, plot->selectedPoints);
-            }
+void CVPlot::dataPoint::setSelection(const bool& state)
+{
+    if(state)
+    {
+        if(!selected)
+        {
+            sprite.setColor(plot->plotHighlightColor);
+            selected = true;
+            plot->selectedPoints.push_back(this);
         }
     }
+    else
+    {
+        if(selected)
+        {
+            sprite.setColor(spriteColor);
+            selected = false;
+            EZC::remove(this, plot->selectedPoints);
+        }
+    }
+}
 
-sf::Vector2f CVPlot::getPlotPos(const sf::Vector2f& dataPoint){ // Turn scale units to view draw coordinates
+sf::Vector2f CVPlot::getPlotPos(const sf::Vector2f& dataPoint)  // Turn scale units to view draw coordinates
+{
 
     if((scalePadding.size() < 2) || (dimScales.size() < 2) ||
-       isnan(dataPoint.x) || isnan(dataPoint.y)) return sf::Vector2f(NAN, NAN);
+            isnan(dataPoint.x) || isnan(dataPoint.y)) return sf::Vector2f(NAN, NAN);
 
     float scaleMinX = dimScales[DIMX].x,
-            scaleMaxX = dimScales[DIMX].y,
-            scaleMinY = dimScales[DIMY].x,
-            scaleMaxY = dimScales[DIMY].y,
-            dataRangeX = scaleMaxX - scaleMinX,
-            dataRangeY = scaleMaxY - scaleMinY;
+          scaleMaxX = dimScales[DIMX].y,
+          scaleMinY = dimScales[DIMY].x,
+          scaleMaxY = dimScales[DIMY].y,
+          dataRangeX = scaleMaxX - scaleMinX,
+          dataRangeY = scaleMaxY - scaleMinY;
 
     scaleMinX -= dataRangeX*scalePadding[DIMX].x;
     scaleMinY -= dataRangeY*scalePadding[DIMY].x;
@@ -1074,14 +1274,16 @@ sf::Vector2f CVPlot::getPlotPos(const sf::Vector2f& dataPoint){ // Turn scale un
     dataRangeY *= (1.0f + scalePadding[DIMY].x + scalePadding[DIMY].y);
 
     sf::Vector2f output;
-    if(dataRangeX == 0.0f){
+    if(dataRangeX == 0.0f)
+    {
         output.x = plotBounds.left + plotBounds.width/2;
     }
     else output.x = plotBounds.left +
                         plotBounds.width*(dataPoint.x - scaleMinX)/
                         (dataRangeX);
 
-    if(dataRangeY == 0.0f){
+    if(dataRangeY == 0.0f)
+    {
         output.y = plotBounds.top + plotBounds.height/2;
     }
     else output.y = plotBounds.top + plotBounds.height*(1.0f-
@@ -1090,35 +1292,39 @@ sf::Vector2f CVPlot::getPlotPos(const sf::Vector2f& dataPoint){ // Turn scale un
     return output;
 
 }
-sf::Vector2f CVPlot::getPlotPos(const float& x, const float& y){
+sf::Vector2f CVPlot::getPlotPos(const float& x, const float& y)
+{
     return getPlotPos(sf::Vector2f(x, y));
 }
-float CVPlot::getPlotYPos(const float& dataY){
+float CVPlot::getPlotYPos(const float& dataY)
+{
     if(isnan(dataY)) return NAN;
     float scaleRange = dimScales[DIMY].y - dimScales[DIMY].x;
     if(scaleRange == 0.0f) return plotBounds.top + plotBounds.height/2;
 
     return plotBounds.top + plotBounds.height*(1.0f-
-                 (dataY - dimScales[DIMY].x + scaleRange*scalePadding[DIMY].x)/
-                 (scaleRange*(1.0f + scalePadding[DIMY].x + scalePadding[DIMY].y)));
+            (dataY - dimScales[DIMY].x + scaleRange*scalePadding[DIMY].x)/
+            (scaleRange*(1.0f + scalePadding[DIMY].x + scalePadding[DIMY].y)));
 }
-float CVPlot::getPlotXPos(const float& dataX){
+float CVPlot::getPlotXPos(const float& dataX)
+{
     if(isnan(dataX)) return NAN;
     float scaleRange = dimScales[DIMX].y - dimScales[DIMX].x;
     if(scaleRange == 0.0f) return plotBounds.left + plotBounds.width/2;
 
     return plotBounds.left + plotBounds.width*
-                 (dataX - dimScales[DIMX].x + scaleRange*scalePadding[DIMX].x)/
-                 (scaleRange*(1.0f + scalePadding[DIMX].x + scalePadding[DIMX].y));
+           (dataX - dimScales[DIMX].x + scaleRange*scalePadding[DIMX].x)/
+           (scaleRange*(1.0f + scalePadding[DIMX].x + scalePadding[DIMX].y));
 }
 
-sf::Vector2f CVPlot::getScalePos(const sf::Vector2f& pos){ // Turn view window coordinates to data scale coordinates
+sf::Vector2f CVPlot::getScalePos(const sf::Vector2f& pos)  // Turn view window coordinates to data scale coordinates
+{
     float scaleMinX = dimScales[DIMX].x,
-            scaleMaxX = dimScales[DIMX].y,
-            scaleMinY = dimScales[DIMY].x,
-            scaleMaxY = dimScales[DIMY].y,
-            dataRangeX = scaleMaxX - scaleMinX,
-            dataRangeY = scaleMaxY - scaleMinY;
+          scaleMaxX = dimScales[DIMX].y,
+          scaleMinY = dimScales[DIMY].x,
+          scaleMaxY = dimScales[DIMY].y,
+          dataRangeX = scaleMaxX - scaleMinX,
+          dataRangeY = scaleMaxY - scaleMinY;
 
     scaleMinX -= dataRangeX*scalePadding[DIMX].x;
     scaleMinY -= dataRangeY*scalePadding[DIMY].x;
@@ -1128,12 +1334,14 @@ sf::Vector2f CVPlot::getScalePos(const sf::Vector2f& pos){ // Turn view window c
 
     sf::Vector2f output;
 
-    if(dataRangeX == 0.0f){
+    if(dataRangeX == 0.0f)
+    {
         output.x = scaleMinX;
     }
     else output.x = (pos.x - plotBounds.left)/plotBounds.width*dataRangeX + scaleMinX;
 
-    if(dataRangeY == 0.0f){
+    if(dataRangeY == 0.0f)
+    {
         output.y = scaleMinY;
     }
     else output.y = (plotBounds.top + plotBounds.height - pos.y)/plotBounds.height*dataRangeY + scaleMinY;
@@ -1142,31 +1350,37 @@ sf::Vector2f CVPlot::getScalePos(const sf::Vector2f& pos){ // Turn view window c
 
 }
 
-float CVPlot::getScaleXPos(const float& pos){
+float CVPlot::getScaleXPos(const float& pos)
+{
     float scaleRange = dimScales[DIMX].y - dimScales[DIMX].x;
     if(scaleRange == 0.0f) return dimScales[DIMX].x;
 
     return (pos - plotBounds.left)/
-    plotBounds.width*scaleRange*(1.0f + scalePadding[DIMX].x + scalePadding[DIMX].y) +
-    dimScales[DIMX].x - scaleRange*scalePadding[DIMX].x;
+           plotBounds.width*scaleRange*(1.0f + scalePadding[DIMX].x + scalePadding[DIMX].y) +
+           dimScales[DIMX].x - scaleRange*scalePadding[DIMX].x;
 }
 
-float CVPlot::getScaleYPos(const float& pos){
+float CVPlot::getScaleYPos(const float& pos)
+{
     float scaleRange = dimScales[DIMY].y - dimScales[DIMY].x;
     if(scaleRange == 0.0f) return dimScales[DIMY].x;
 
     return (plotBounds.top + plotBounds.height - pos)/
-    plotBounds.height*scaleRange*(1.0f + scalePadding[DIMY].x + scalePadding[DIMY].y) +
-    dimScales[DIMY].x - scaleRange*scalePadding[DIMY].x;
+           plotBounds.height*scaleRange*(1.0f + scalePadding[DIMY].x + scalePadding[DIMY].y) +
+           dimScales[DIMY].x - scaleRange*scalePadding[DIMY].x;
 }
 
-bool CVPlot::select_indices(const std::vector<unsigned int>& idx){
+bool CVPlot::select_indices(const vector<unsigned int>& idx)
+{
     if(datasets.size() < 1) return false;
 
     bool output = false;
-    for(auto& set : datasets){
-        for(auto& point : set.points){
-            if(EZC::anyEqual(point.dataIndex, idx)){
+    for(auto& set : datasets)
+    {
+        for(auto& point : set.points)
+        {
+            if(EZC::anyEqual(point.dataIndex, idx))
+            {
                 point.setSelection(true);
                 output = true;
             }
@@ -1179,30 +1393,35 @@ bool CVPlot::select_indices(const std::vector<unsigned int>& idx){
     return output;
 }
 
-void CVPlot::removeData(const unsigned int dimension, const unsigned int index){
+void CVPlot::removeData(const unsigned int dimension, const unsigned int index)
+{
     data[dimension].erase(data[dimension].begin() + index);
     tags[dimension].erase(tags[dimension].begin() + index);
     bReqPlotUpdate = true;
     bReqAxisUpdate = true;
 }
 void CVPlot::removeData(const unsigned int dimension,
-                       const unsigned int begin,
-                       const unsigned int end){
+                        const unsigned int begin,
+                        const unsigned int end)
+{
     data[dimension].erase(data[dimension].begin() + begin, data[dimension].end() + end);
     tags[dimension].erase(tags[dimension].begin() + begin, tags[dimension].end() + end);
     bReqPlotUpdate = true;
     bReqAxisUpdate = true;
 }
 
-void CVPlot::clearData(){
+void CVPlot::clearData()
+{
     data.clear();
     datasets.clear();
     tags.clear();
     dimScales.clear();
     selectedPoints.clear();
 }
-void CVPlot::clearData(const unsigned int dimension){
-    for(auto& set : datasets){
+void CVPlot::clearData(const unsigned int dimension)
+{
+    for(auto& set : datasets)
+    {
         set.rm_dimension(dimension);
     }
     data[dimension].clear();
@@ -1210,107 +1429,136 @@ void CVPlot::clearData(const unsigned int dimension){
     dimScales.erase(dimScales.begin() + dimension);
 }
 
-bool CVPlot::draw(sf::RenderTarget* target){
+bool CVPlot::draw(sf::RenderTarget* target)
+{
 
     if(!CVBox::draw(target)) return false;
 
-    for(auto& line : gridLines){ // Background grid
+    for(auto& line : gridLines)  // Background grid
+    {
         target->draw(line);
     }
 
-    for(auto& line : backLines){ // Quadrant lines, etc.
+    for(auto& line : backLines)  // Quadrant lines, etc.
+    {
         target->draw(line);
     }
 
     if(bPlotBoundary) target->draw(plotBoundary);
 
-    if(bShowSprites){
-        for(auto& set : datasets){ // Plot points
-            for(auto& point : set.points){
-                if(point.visible && !anyEqual(&point, selectedPoints)){
+    if(bShowSprites)
+    {
+        for(auto& set : datasets)  // Plot points
+        {
+            for(auto& point : set.points)
+            {
+                if(point.visible && !anyEqual(&point, selectedPoints))
+                {
                     target->draw(point.sprite);
                 }
             }
         }
-        for(auto& selected : selectedPoints){
+        for(auto& selected : selectedPoints)
+        {
             if(selected->visible) target->draw(selected->sprite);
         }
     }
 
-    for(auto& line : frontLines){ // Regression lines
+    for(auto& line : frontLines)  // Regression lines
+    {
         target->draw(line);
     }
 
-    for(auto& Axis : plotAxes){ // Draw Axes
+    for(auto& Axis : plotAxes)  // Draw Axes
+    {
         target->draw(Axis.line);
-        for(auto& tick : Axis.lineTicks){
+        for(auto& tick : Axis.lineTicks)
+        {
             target->draw(tick);
         }
-        for(auto& text : Axis.renderLabels){
+        for(auto& text : Axis.renderLabels)
+        {
             target->draw(text);
         }
     }
 
-    for(auto& box : legends){ // Draw legend labels
+    for(auto& box : legends)  // Draw legend labels
+    {
         box.draw(target);
     }
 
-    for(auto& textbox : axisLabels){ // Draw axis labels
+    for(auto& textbox : axisLabels)  // Draw axis labels
+    {
         textbox.draw(target);
     }
 
-    for(auto& text : plotText){ // Draw persistent plot text
+    for(auto& text : plotText)  // Draw persistent plot text
+    {
         target->draw(text);
     }
 
-    for(auto& text : displayText){ // Draw temporary/pop-up text
+    for(auto& text : displayText)  // Draw temporary/pop-up text
+    {
         target->draw(text);
     }
 
-    for(auto& item : mask){
+    for(auto& item : mask)
+    {
         target->draw(item);
     }
 
     return true;
 }
 
-std::ostream& operator<<(std::ostream& output, const CVPlot& plot){
+ostream& operator<<(ostream& output, const CVPlot& plot)
+{
     unsigned int D = plot.numDimensions();
-    for(size_t i = 0; i < plot.datasets.size(); ++i){
-        if((plot.axisLabels.size() > 0) && (plot.axisLabels.front().getTypeString().size() > 0)){
+    for(size_t i = 0; i < plot.datasets.size(); ++i)
+    {
+        if((plot.axisLabels.size() > 0) && (plot.axisLabels.front().getTypeString().size() > 0))
+        {
             output << plot.axisLabels.front().getTypeString() << '\n';
         }
         output << "Set\t" << i << "\n";
         output << "Index\t";
-        for(size_t j = 0; j < plot.numDimensions(); ++j){
-            switch(j){
-                case 0:{
-                    if(plot.axisLabels.size() > 1) output << plot.axisLabels[1].getTypeString() << '\t';
-                    else output << "x\t";
-                    break;
-                }
-                case 1:{
-                    if(plot.axisLabels.size() > 2) output << plot.axisLabels[2].getTypeString() << '\t';
-                    else output << "y\t";
-                    break;
-                }
-                case 2:{
-                    if(plot.axisLabels.size() > 3) output << plot.axisLabels[3].getTypeString() << '\t';
-                    else output << "z\t";
-                    break;
-                }
-                default:{
-                    output << "Dimension " << j << '\t';
-                    break;
-                }
+        for(size_t j = 0; j < plot.numDimensions(); ++j)
+        {
+            switch(j)
+            {
+            case 0:
+            {
+                if(plot.axisLabels.size() > 1) output << plot.axisLabels[1].getTypeString() << '\t';
+                else output << "x\t";
+                break;
+            }
+            case 1:
+            {
+                if(plot.axisLabels.size() > 2) output << plot.axisLabels[2].getTypeString() << '\t';
+                else output << "y\t";
+                break;
+            }
+            case 2:
+            {
+                if(plot.axisLabels.size() > 3) output << plot.axisLabels[3].getTypeString() << '\t';
+                else output << "z\t";
+                break;
+            }
+            default:
+            {
+                output << "Dimension " << j << '\t';
+                break;
+            }
             }
         }
         output << '\n';
 
-        for(auto& point : plot.datasets[i].points){
-            if(point.visible){
+        for(auto& point : plot.datasets[i].points)
+        {
+            if(point.visible)
+            {
                 output << point.dataIndex << '\t';
-                for(size_t j = 0; j < D; ++j){
+                for(size_t j = 0; j < D; ++j)
+                {
                     output << point.dimValues[j];
                     if(j < D-1) output << '\t';
                 }
@@ -1324,34 +1572,44 @@ std::ostream& operator<<(std::ostream& output, const CVPlot& plot){
     return output;
 }
 
-void CVPlot::setAxisLineColor(const sf::Color& newColor){
-    for(auto& ax : plotAxes){
+void CVPlot::setAxisLineColor(const sf::Color& newColor)
+{
+    for(auto& ax : plotAxes)
+    {
         ax.setLineColor(newColor);
     }
     axisLineColor = newColor;
 }
 
-void CVPlot::setAxisLabelColor(const sf::Color& newColor){
+void CVPlot::setAxisLabelColor(const sf::Color& newColor)
+{
 
-    try{
+    try
+    {
         xLabelBox().setTextColor(newColor);
-    }catch(...){ }
-    try{
+    }
+    catch(...) { }
+    try
+    {
         yLabelBox().setTextColor(newColor);
-    }catch(...){ }
+    }
+    catch(...) { }
 
-    for(auto& ax : plotAxes){
+    for(auto& ax : plotAxes)
+    {
         ax.setLabelColor(newColor);
     }
     axisTextColor = newColor;
 }
 
-void CVPlot::setAxisColor(const sf::Color& newColor){
+void CVPlot::setAxisColor(const sf::Color& newColor)
+{
     setAxisLabelColor(newColor);
     setAxisLineColor(newColor);
 }
 
-void CVPlot::updateBounds(){
+void CVPlot::updateBounds()
+{
 
     sf::FloatRect textBounds;
 
@@ -1361,14 +1619,18 @@ void CVPlot::updateBounds(){
     bounds.width += plotBounds.width*0.2f;
     bounds.height += plotBounds.height*0.2f;
 
-    for(auto& Axis : plotAxes){
-        for(auto& text : Axis.renderLabels){
+    for(auto& Axis : plotAxes)
+    {
+        for(auto& text : Axis.renderLabels)
+        {
             textBounds = text.getGlobalBounds();
-            if(textBounds.left < bounds.left){
+            if(textBounds.left < bounds.left)
+            {
                 bounds.width += (bounds.left - textBounds.left);
                 bounds.left = textBounds.left;
             }
-            if(textBounds.top < bounds.top){
+            if(textBounds.top < bounds.top)
+            {
                 bounds.height += (bounds.top - textBounds.top);
                 bounds.top = textBounds.top;
             }
@@ -1379,13 +1641,16 @@ void CVPlot::updateBounds(){
         }
     }
 
-    for(auto& label : axisLabels){
+    for(auto& label : axisLabels)
+    {
         textBounds = label.getBounds();
-        if(textBounds.left < bounds.left){
+        if(textBounds.left < bounds.left)
+        {
             bounds.width += (bounds.left - textBounds.left);
             bounds.left = textBounds.left;
         }
-        if(textBounds.top < bounds.top){
+        if(textBounds.top < bounds.top)
+        {
             bounds.height += (bounds.top - textBounds.top);
             bounds.top = textBounds.top;
         }
@@ -1400,41 +1665,53 @@ void CVPlot::updateBounds(){
 
 }
 
-void CVPlot::setPosition(const sf::Vector2f& position){
+void CVPlot::setPosition(const sf::Vector2f& position)
+{
     move(position - getPosition());
 }
 
-void CVPlot::move(const sf::Vector2f& distance){
+void CVPlot::move(const sf::Vector2f& distance)
+{
     CVTextBox::move(distance);
 
     plotBoundary.move(distance);
-    for(auto& textBox : axisLabels){
+    for(auto& textBox : axisLabels)
+    {
         textBox.move(distance);
     }
-    for(auto& line : gridLines){
+    for(auto& line : gridLines)
+    {
         line.move(distance);
     }
-    for(auto& line : backLines){
+    for(auto& line : backLines)
+    {
         line.move(distance);
     }
-    for(auto& line : frontLines){
+    for(auto& line : frontLines)
+    {
         line.move(distance);
     }
-    for(auto& axis : plotAxes){
+    for(auto& axis : plotAxes)
+    {
         axis.line.move(distance);
-        for(auto& text : axis.renderLabels){
+        for(auto& text : axis.renderLabels)
+        {
             text.move(distance);
         }
-        for(auto& line : axis.lineTicks){
+        for(auto& line : axis.lineTicks)
+        {
             line.move(distance);
         }
     }
-    for(auto& set : datasets){
-        for(auto& point : set.points){
+    for(auto& set : datasets)
+    {
+        for(auto& point : set.points)
+        {
             point.sprite.move(distance);
         }
     }
-    for(auto& text : plotText){
+    for(auto& text : plotText)
+    {
         text.move(distance);
     }
 
@@ -1443,108 +1720,131 @@ void CVPlot::move(const sf::Vector2f& distance){
 
 }
 
-void CVPlot::addData(const std::vector<float>& xData, const std::vector<float>& yData,
-                    const std::vector<unsigned int>& indices,
-                    const std::string& name, const EZC::StringVector& pointTags){
-    if(indices.empty()){
+void CVPlot::addData(const vector<float>& xData, const vector<float>& yData,
+                     const vector<unsigned int>& indices,
+                     const string& name, const EZC::StringVector& pointTags)
+{
+    if(indices.empty())
+    {
         dataAddRequests.emplace_back(xData, yData, vseq(0U, (unsigned int)xData.size() - 1), name, pointTags);
     }
-    else{
+    else
+    {
         dataAddRequests.emplace_back(xData, yData, indices, name, pointTags);
     }
     callUpdate();
 }
 void CVPlot::addData(const EZC::StringVector& xLabels, const EZC::numMatrix& yData,
-                    const std::vector<std::vector<unsigned int>>& indices,
-                    const std::string& name, const EZC::StringVector& pointTags){
-    if(indices.empty()){
-        std::vector<std::vector<unsigned int>> new_indices(yData.size());
-        for(size_t i = 0; i < yData.size(); ++i){
+                     const vector<vector<unsigned int>>& indices,
+                     const string& name, const EZC::StringVector& pointTags)
+{
+    if(indices.empty())
+    {
+        vector<vector<unsigned int>> new_indices(yData.size());
+        for(size_t i = 0; i < yData.size(); ++i)
+        {
             new_indices[i] = vseq(0U, (unsigned int)yData[i].size() - 1);
         }
 
         dataAddRequests.emplace_back(xLabels, yData, new_indices, name, pointTags);
     }
-    else{
+    else
+    {
         dataAddRequests.emplace_back(xLabels, yData, indices, name, pointTags);
     }
     callUpdate();
 }
 void CVPlot::addData(const EZC::numMatrix& xData, const EZC::StringVector& yLabels,
-                    const std::vector<std::vector<unsigned int>>& indices,
-                    const std::string& name){
-    if(indices.empty()){
-        std::vector<std::vector<unsigned int>> new_indices(xData.size());
-        for(size_t i = 0; i < xData.size(); ++i){
+                     const vector<vector<unsigned int>>& indices,
+                     const string& name)
+{
+    if(indices.empty())
+    {
+        vector<vector<unsigned int>> new_indices(xData.size());
+        for(size_t i = 0; i < xData.size(); ++i)
+        {
             new_indices[i] = vseq(0U, (unsigned int)xData[i].size() - 1);
         }
 
         dataAddRequests.emplace_back(xData, yLabels, new_indices, name);
     }
-    else{
+    else
+    {
         dataAddRequests.emplace_back(xData, yLabels, indices, name);
     }
     callUpdate();
 }
 void CVPlot::addData(const EZC::numMatrix& matrix,
-                    const std::vector<unsigned int>& indices,
-                    const EZC::StringMatrix& labels,
-                    const std::string& name){
-    if(indices.empty()){
+                     const vector<unsigned int>& indices,
+                     const EZC::StringMatrix& labels,
+                     const string& name)
+{
+    if(indices.empty())
+    {
         dataAddRequests.emplace_back(matrix, vseq(0U, (unsigned int)minSize(matrix) - 1), labels, name);
     }
-    else{
+    else
+    {
         dataAddRequests.emplace_back(matrix, indices, labels, name);
     }
     callUpdate();
 }
 
-bool CVPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
+bool CVPlot::update(CVEvent& event, const sf::Vector2f& mousePos)
+{
 
     if(!CVTextBox::update(event, mousePos)) return false;
 
     ++framesLastChange;
 
-    while(dataAddRequests.size() > 0){
+    while(dataAddRequests.size() > 0)
+    {
 
-        while(plotColors.size() < datasets.size() + 1){
+        while(plotColors.size() < datasets.size() + 1)
+        {
             if(plotColors.empty()) plotColors.emplace_back(128,128,128);
             plotColors.emplace_back(plotColors.front());
         }
 
-        if(dataAddRequests.front().labels.size() == 0){
-                datasets.emplace_back(dataAddRequests.front().data, dataAddRequests.front().indices.front(),
-                                        dataAddRequests.front().name, dataAddRequests.front().pointTags, this);
+        if(dataAddRequests.front().labels.size() == 0)
+        {
+            datasets.emplace_back(dataAddRequests.front().data, dataAddRequests.front().indices.front(),
+                                  dataAddRequests.front().name, dataAddRequests.front().pointTags, this);
         }
         else if((axisLabels.size() > 0) && (xAxis().dataType == DATA_TYPE_VERBAL)) datasets.emplace_back(dataAddRequests.front().labels.front(),
-                                                                                  dataAddRequests.front().data,
-                                                                                  dataAddRequests.front().indices,
-                                                                         dataAddRequests.front().name, this);
-        else{
+                    dataAddRequests.front().data,
+                    dataAddRequests.front().indices,
+                    dataAddRequests.front().name, this);
+        else
+        {
             datasets.emplace_back(dataAddRequests.front().data,
-                                   dataAddRequests.front().indices.front(),
-                                    dataAddRequests.front().name,
-                                    dataAddRequests.front().labels.front(),
-                                   this);
+                                  dataAddRequests.front().indices.front(),
+                                  dataAddRequests.front().name,
+                                  dataAddRequests.front().labels.front(),
+                                  this);
         }
 
         dataAddRequests.erase(dataAddRequests.begin());
 
     }
 
-    for(auto& typeBox : axisLabels){
+    for(auto& typeBox : axisLabels)
+    {
         typeBox.update(event, mousePos);
     }
 
-    if(updateState & CV_PLOT_UPDATE_AXIS){
-        if(axisLabels.size() > 0){
+    if(updateState & CV_PLOT_UPDATE_AXIS)
+    {
+        if(axisLabels.size() > 0)
+        {
             titleBox().setFontSize(titleBox().getTextInfo().fontSize * pow(areaScale(), 1.0f/3));
             titleBox().setPosition(plotBounds.left + plotBounds.width/2 - titleBox().getBounds().width/2,
-                                plotBounds.top - 1.5*titleBox().getBounds().height);
+                                   plotBounds.top - 1.5*titleBox().getBounds().height);
         }
     }
 
-    for(auto& box : legends){
+    for(auto& box : legends)
+    {
         box.update(event, mousePos);
     }
 
@@ -1552,51 +1852,69 @@ bool CVPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
 
     if(datasets.size() < 1) return false;
 
-    if(framesLastChange < 5){
+    if(framesLastChange < 5)
+    {
 
-        if(updateState & CV_PLOT_UPDATE_DRAW){
+        if(updateState & CV_PLOT_UPDATE_DRAW)
+        {
             plotText.clear();
             gridLines.clear();
         }
 
-        if(updateState & CV_PLOT_UPDATE_AXIS){
-            for(auto& Axis : plotAxes){
+        if(updateState & CV_PLOT_UPDATE_AXIS)
+        {
+            for(auto& Axis : plotAxes)
+            {
                 Axis.update();
             }
         }
 
-        if(framesLastChange < 3){
-            for(auto& set : datasets){
-                if(updateState & CV_PLOT_UPDATE_DATA){
+        if(framesLastChange < 3)
+        {
+            for(auto& set : datasets)
+            {
+                if(updateState & CV_PLOT_UPDATE_DATA)
+                {
                     set.update();
                 }
-                if(updateState & CV_PLOT_UPDATE_POINTS){
-                    for(auto& point : set.points){
+                if(updateState & CV_PLOT_UPDATE_POINTS)
+                {
+                    for(auto& point : set.points)
+                    {
                         point.update();
-                        if(updateState & CV_PLOT_UPDATE_DATA){
-                            if(!subset.empty()){
+                        if(updateState & CV_PLOT_UPDATE_DATA)
+                        {
+                            if(!subset.empty())
+                            {
                                 if(!anyEqual(point.dataIndex, subset)) point.visible = false;
                             }
-                            if(!set.subset.empty()){
+                            if(!set.subset.empty())
+                            {
                                 if(!anyEqual(point.dataIndex, set.subset)) point.visible = false;
                             }
                         }
                     }
                 }
             }
-            if(updateState & CV_PLOT_UPDATE_DATA){
+            if(updateState & CV_PLOT_UPDATE_DATA)
+            {
                 updateScales();
             }
-        }else{
+        }
+        else
+        {
             updateState &= ~(CV_PLOT_UPDATE_DATA);
         }
 
-        if(updateState & CV_PLOT_UPDATE_DRAW){
-            if(has_y_axis() && bUseHorizGrid){
+        if(updateState & CV_PLOT_UPDATE_DRAW)
+        {
+            if(has_y_axis() && bUseHorizGrid)
+            {
                 sf::Color gridColor = getBorderColor();
                 gridColor.a = 30;
 
-                for(auto& val : yAxis().axisIntervals){
+                for(auto& val : yAxis().axisIntervals)
+                {
                     if(val == 0.0f) gridLines.emplace_back(sf::Vector2f(plotBounds.width, yAxis().thickness/2));
                     else gridLines.emplace_back(sf::Vector2f(plotBounds.width, yAxis().thickness/4));
 
@@ -1605,11 +1923,13 @@ bool CVPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
                     gridLines.back().setFillColor(gridColor);
                 }
             }
-            if(has_x_axis() && bUseVertGrid){
+            if(has_x_axis() && bUseVertGrid)
+            {
                 sf::Color gridColor = getBorderColor();
                 gridColor.a = 30;
 
-                for(auto& val : xAxis().axisIntervals){
+                for(auto& val : xAxis().axisIntervals)
+                {
                     if(val == 0.0f) gridLines.emplace_back(sf::Vector2f(xAxis().thickness/2, plotBounds.height));
                     else gridLines.emplace_back(sf::Vector2f(xAxis().thickness/4, plotBounds.height));
 
@@ -1620,26 +1940,33 @@ bool CVPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
             }
         }
 
-        if(updateState & CV_PLOT_UPDATE_AXIS){
+        if(updateState & CV_PLOT_UPDATE_AXIS)
+        {
             updateBounds();
         }
 
     }
-    else{
+    else
+    {
         updateState = CV_PLOT_UPDATE_NONE;
     }
 
-    if(event.LMBhold && bounds.contains(event.lastFrameMousePosition) && event.viewHasFocus && event.captureMouse()){
-        if(shiftPressed()){
+    if(event.LMBhold && bounds.contains(event.lastFrameMousePosition) && event.viewHasFocus && event.captureMouse())
+    {
+        if(shiftPressed())
+        {
             if((mousePos.x < bounds.left + bounds.width*0.95f) &&
-               (mousePos.x > bounds.left + bounds.width*0.05f) &&
-               (mousePos.y > bounds.top + bounds.height*0.05f) &&
-               (mousePos.y < bounds.top + bounds.height*0.95f)){
+                    (mousePos.x > bounds.left + bounds.width*0.05f) &&
+                    (mousePos.y > bounds.top + bounds.height*0.05f) &&
+                    (mousePos.y < bounds.top + bounds.height*0.95f))
+            {
                 event.mouse_capture(*this);
             }
         }
-        else if(plotBounds.contains(event.LMBpressPosition) && (event.LMBholdFrames > 5) && (mousePos != event.LMBpressPosition)){
-            if(mask.size() < 1){
+        else if(plotBounds.contains(event.LMBpressPosition) && (event.LMBholdFrames > 5) && (mousePos != event.LMBpressPosition))
+        {
+            if(mask.size() < 1)
+            {
                 mask.emplace_back();
                 mask.back().setFillColor(sf::Color(178,207,255,78));
                 mask.back().setOutlineThickness(1.0f);
@@ -1648,35 +1975,40 @@ bool CVPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
             mask.back().setPosition(mousePos);
 
             displayText.emplace_back("[" + strDigits(getScaleXPos(mousePos.x), 3) + "," +
-                                         strDigits(getScaleYPos(mousePos.y), 3) + "]",
-                                          *plotFont, 13*fontScaling); // Read out current mouse position
+                                     strDigits(getScaleYPos(mousePos.y), 3) + "]",
+                                     *plotFont, 13*fontScaling); // Read out current mouse position
             displayText.back().setPosition(sf::Vector2f(mousePos.x + 10.0f, mousePos.y -
-                                                        displayText.back().getGlobalBounds().height/2));
+                                           displayText.back().getGlobalBounds().height/2));
             displayText.back().setFillColor(sf::Color(77,127,209,180));
 
 
             sf::Vector2f shiftPos(0.0f,0.0f);
             mask.back().setSize(sf::Vector2f(abs(mousePos.x - event.LMBpressPosition.x),
-                                     abs(mousePos.y - event.LMBpressPosition.y)));
+                                             abs(mousePos.y - event.LMBpressPosition.y)));
 
 
-            if(mask.back().getSize().x * mask.back().getSize().y > 16){
+            if(mask.back().getSize().x * mask.back().getSize().y > 16)
+            {
                 displayText.emplace_back("[" + strDigits(getScaleXPos(event.LMBpressPosition.x), 3) + "," +
                                          strDigits(getScaleYPos(event.LMBpressPosition.y), 3) + "]",
-                                          *plotFont, 13*fontScaling); // Read out begin position
+                                         *plotFont, 13*fontScaling); // Read out begin position
                 displayText.back().setPosition(event.LMBpressPosition);
 
-                if(mousePos.y < event.LMBpressPosition.y){
+                if(mousePos.y < event.LMBpressPosition.y)
+                {
                     displayText.back().move(0.0f, 10.0f);
                 }
-                else{
+                else
+                {
                     displayText.back().move(0.0f, -displayText.back().getGlobalBounds().height - 10.0f);
                 }
 
-                if(mousePos.x > event.LMBpressPosition.x){
+                if(mousePos.x > event.LMBpressPosition.x)
+                {
                     displayText.back().move(-10.0f - displayText.back().getGlobalBounds().width, 0.0f);
                 }
-                else{
+                else
+                {
                     displayText.back().move(10.0f, 0.0f);
                 }
 
@@ -1687,12 +2019,17 @@ bool CVPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
             if(mousePos.y > event.LMBpressPosition.y) shiftPos.y = event.LMBpressPosition.y - mousePos.y;
             mask.back().move(shiftPos);
         }
-        else if(event.LMBholdFrames == 1){
+        else if(event.LMBholdFrames == 1)
+        {
             bool pointSelected = false;
-            for(auto& set : datasets){
-                for(auto& point : set.points){
-                    if(point.visible && point.sprite.getGlobalBounds().contains(mousePos)){
-                        if(!pointSelected){
+            for(auto& set : datasets)
+            {
+                for(auto& point : set.points)
+                {
+                    if(point.visible && point.sprite.getGlobalBounds().contains(mousePos))
+                    {
+                        if(!pointSelected)
+                        {
                             if(point.selected) point.setSelection(false);
                             else point.setSelection(true);
                             pointSelected = true;
@@ -1706,15 +2043,20 @@ bool CVPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
             callUpdate(CV_PLOT_UPDATE_DRAW);
         }
     }
-    else{
-        if(mask.size() > 0){
+    else
+    {
+        if(mask.size() > 0)
+        {
             sf::FloatRect selectionBounds = mask.back().getGlobalBounds(),
-                        pointBounds;
+                          pointBounds;
 
-            for(auto& set : datasets){
-                for(auto& point : set.points){
+            for(auto& set : datasets)
+            {
+                for(auto& point : set.points)
+                {
                     pointBounds = point.sprite.getGlobalBounds();
-                    if(point.visible && selectionBounds.contains(point.sprite.getPosition())){
+                    if(point.visible && selectionBounds.contains(point.sprite.getPosition()))
+                    {
                         point.setSelection(true);
                     }
                     else if(!ctrlPressed())
@@ -1726,14 +2068,19 @@ bool CVPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
             callUpdate(CV_PLOT_UPDATE_DRAW);
         }
 
-        if(plotBounds.contains(mousePos)){
+        if(plotBounds.contains(mousePos))
+        {
 
             bool hoverSelected = false;
 
-            for(auto& set : datasets){
-                for(auto& point : set.points){
-                    if(point.visible){
-                        if(!hoverSelected && point.sprite.getGlobalBounds().contains(mousePos)){
+            for(auto& set : datasets)
+            {
+                for(auto& point : set.points)
+                {
+                    if(point.visible)
+                    {
+                        if(!hoverSelected && point.sprite.getGlobalBounds().contains(mousePos))
+                        {
                             displayText.emplace_back(point.getDisplayString(), *plotFont, 13*fontScaling);
                             displayText.back().setPosition(mousePos);
                             displayText.back().move(10.0f, -displayText.back().getGlobalBounds().height/2);
@@ -1747,32 +2094,37 @@ bool CVPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
         }
     }
 
-    if(shiftPressed() && event.LMBhold && bounds.contains(event.lastFrameMousePosition) && !event.isCaptured(*this)){
-        if(mousePos.x > bounds.left + bounds.width/2){
+    if(shiftPressed() && event.LMBhold && bounds.contains(event.lastFrameMousePosition) && !event.isCaptured(*this))
+    {
+        if(mousePos.x > bounds.left + bounds.width/2)
+        {
             plotBounds.width += (mousePos.x - event.lastFrameMousePosition.x);
             bounds.width += (mousePos.x - event.lastFrameMousePosition.x);
             panel.front().setSize(sf::Vector2f(panel.front().getSize().x + (mousePos.x - event.lastFrameMousePosition.x),
-                                  panel.front().getSize().y));
+                                               panel.front().getSize().y));
             callUpdate(CV_PLOT_UPDATE_AXIS | CV_PLOT_UPDATE_POINTS | CV_PLOT_UPDATE_DRAW);
         }
-        else if(mousePos.x < bounds.left + bounds.width/2){
+        else if(mousePos.x < bounds.left + bounds.width/2)
+        {
             plotBounds.width -= (mousePos.x - event.lastFrameMousePosition.x);
             plotBounds.left += (mousePos.x - event.lastFrameMousePosition.x);
             bounds.width -= (mousePos.x - event.lastFrameMousePosition.x);
             bounds.left += (mousePos.x - event.lastFrameMousePosition.x);
             panel.front().setSize(sf::Vector2f(panel.front().getSize().x - (mousePos.x - event.lastFrameMousePosition.x),
-                                  panel.front().getSize().y));
+                                               panel.front().getSize().y));
             callUpdate(CV_PLOT_UPDATE_AXIS | CV_PLOT_UPDATE_POINTS | CV_PLOT_UPDATE_DRAW);
         }
 
-        if(mousePos.y > bounds.top + bounds.height/2){
+        if(mousePos.y > bounds.top + bounds.height/2)
+        {
             plotBounds.height += (mousePos.y - event.lastFrameMousePosition.y);
             bounds.height += (mousePos.y - event.lastFrameMousePosition.y);
             panel.front().setSize(sf::Vector2f(panel.front().getSize().x,
                                                panel.front().getSize().y + (mousePos.y - event.lastFrameMousePosition.y)));
             callUpdate(CV_PLOT_UPDATE_AXIS | CV_PLOT_UPDATE_POINTS | CV_PLOT_UPDATE_DRAW);
         }
-        else if(mousePos.y < bounds.top + bounds.height/2){
+        else if(mousePos.y < bounds.top + bounds.height/2)
+        {
             plotBounds.height -= (mousePos.y - event.lastFrameMousePosition.y);
             plotBounds.top += (mousePos.y - event.lastFrameMousePosition.y);
             bounds.height -= (mousePos.y - event.lastFrameMousePosition.y);
@@ -1783,15 +2135,20 @@ bool CVPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
         }
     }
 
-    if(updateState & CV_PLOT_UPDATE_DRAW){
-        if((axisLabels.size() > 1) && (xAxis().dataType == DATA_TYPE_NUMERIC) && (yAxis().dataType == DATA_TYPE_NUMERIC)){
-            if(selectedPoints.size() < 50){ // Prevent text cluttering
-                for(auto& selected : selectedPoints){
-                    if(selected->visible && (selected->labels.size() > 0)){
+    if(updateState & CV_PLOT_UPDATE_DRAW)
+    {
+        if((axisLabels.size() > 1) && (xAxis().dataType == DATA_TYPE_NUMERIC) && (yAxis().dataType == DATA_TYPE_NUMERIC))
+        {
+            if(selectedPoints.size() < 50)  // Prevent text cluttering
+            {
+                for(auto& selected : selectedPoints)
+                {
+                    if(selected->visible && (selected->labels.size() > 0))
+                    {
                         plotText.emplace_back(concatenateString(selected->labels, ","), *plotFont, 12*fontScaling);
                         plotText.back().setPosition(selected->getPosition() +
-                                                       sf::Vector2f(12.0f, -(plotText.back().getGlobalBounds().height/2
-                                                                             + getTextCenterOffsetY(plotText.back()))));
+                                                    sf::Vector2f(12.0f, -(plotText.back().getGlobalBounds().height/2
+                                                            + getTextCenterOffsetY(plotText.back()))));
                         plotText.back().setFillColor(getBorderColor());
                     }
                 }
@@ -1807,14 +2164,15 @@ bool CVPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
 }
 
 CVScatterPlot::CVScatterPlot(CVView* View, const sf::Vector2f& position, const float& width, const float& height,
-           const sf::Color& fillColor, const sf::Color& borderColor, const sf::Color& plotColor,
-           const float& borderWidth, const std::string& plotSprite,
-           const std::string& fontName, const std::string& quadrantType):
-               CVPlot(View, position, width, height, fillColor, borderColor, plotColor, borderWidth,
-                      plotSprite, fontName),
-                      quadrantType(quadrantType),
-                      colorQuadrants(false),
-                      regressionType(CV_LINE_REGRESSION_NONE){
+                             const sf::Color& fillColor, const sf::Color& borderColor, const sf::Color& plotColor,
+                             const float& borderWidth, const string& plotSprite,
+                             const string& fontName, const string& quadrantType):
+    CVPlot(View, position, width, height, fillColor, borderColor, plotColor, borderWidth,
+           plotSprite, fontName),
+    quadrantType(quadrantType),
+    colorQuadrants(false),
+    regressionType(CV_LINE_REGRESSION_NONE)
+{
 
     plotTypeID = CV_PLOT_ID_SCATTER;
 
@@ -1835,74 +2193,92 @@ CVScatterPlot::CVScatterPlot(CVView* View, const sf::Vector2f& position, const f
 
 }
 
-bool CVScatterPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
+bool CVScatterPlot::update(CVEvent& event, const sf::Vector2f& mousePos)
+{
 
     if(!CVPlot::update(event, mousePos)) return false;
 
-    if((framesLastChange < 5) && (datasets.size() > 0)){
+    if((framesLastChange < 5) && (datasets.size() > 0))
+    {
 
-        if(updateState & CV_PLOT_UPDATE_DRAW){
+        if(updateState & CV_PLOT_UPDATE_DRAW)
+        {
 
             frontLines.clear();
 
-            if((quadrantType.size() != 0) && (quadrantType != "none")){
+            if((quadrantType.size() != 0) && (quadrantType != "none"))
+            {
 
                 quadrantPoints.resize(4);
 
                 float xPos, yPos;
-                std::vector<float> xData, yData;
+                vector<float> xData, yData;
 
-                for(auto& set : datasets){
+                for(auto& set : datasets)
+                {
                     append(xData, set.getSubsetData(DIMX));
                     append(yData, set.getSubsetData(DIMY));
                 }
 
                 bool validType = false;
 
-                if(quadrantType == "median"){
+                if(quadrantType == "median")
+                {
                     xPos = median(xData);
                     yPos = median(yData);
                     validType = true;
                 }
-                else if(quadrantType == "average"){
+                else if(quadrantType == "average")
+                {
                     xPos = average(xData);
                     yPos = average(yData);
                     validType = true;
                 }
 
-                if(validType){
+                if(validType)
+                {
 
                     addLine(CV_PLOT_ALIGN_HORIZONTAL, yPos, plotAxes[DIMX].thickness/2, getBorderColor(),
-                                CV_LINE_TYPE_BROKEN, true);
+                            CV_LINE_TYPE_BROKEN, true);
                     addLine(CV_PLOT_ALIGN_VERTICAL, xPos, plotAxes[DIMY].thickness/2, getBorderColor(),
-                                CV_LINE_TYPE_BROKEN, true);
+                            CV_LINE_TYPE_BROKEN, true);
 
-                    if(colorQuadrants){
-                        for(auto& set : datasets){
-                            for(auto& point : set.points){
+                    if(colorQuadrants)
+                    {
+                        for(auto& set : datasets)
+                        {
+                            for(auto& point : set.points)
+                            {
                                 if(!point.valid()) continue;
-                                if((point.x() >= xPos) && (point.y() >= yPos)){
+                                if((point.x() >= xPos) && (point.y() >= yPos))
+                                {
                                     point.setBaseColor(quadrantColors[0]); // Q1
                                     quadrantPoints[0].push_back(&point);
                                 }
-                                else if((point.x() < xPos) && (point.y() >= yPos)){
+                                else if((point.x() < xPos) && (point.y() >= yPos))
+                                {
                                     point.setBaseColor(quadrantColors[1]); // Q2
                                     quadrantPoints[1].push_back(&point);
                                 }
-                                else if((point.x() < xPos) && (point.y() < yPos)){
+                                else if((point.x() < xPos) && (point.y() < yPos))
+                                {
                                     point.setBaseColor(quadrantColors[2]); // Q3
                                     quadrantPoints[2].push_back(&point);
                                 }
-                                else{
+                                else
+                                {
                                     point.setBaseColor(quadrantColors[3]); // Q4
                                     quadrantPoints[3].push_back(&point);
                                 }
                             }
                         }
                     }
-                    else{
-                        for(auto& set : datasets){
-                            for(auto& point : set.points){
+                    else
+                    {
+                        for(auto& set : datasets)
+                        {
+                            for(auto& point : set.points)
+                            {
                                 point.setBaseColor(plotColor());
                             }
                         }
@@ -1911,17 +2287,22 @@ bool CVScatterPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
                 }
 
             }
-            else{
-                for(auto& set : datasets){
-                    for(auto& point : set.points){
+            else
+            {
+                for(auto& set : datasets)
+                {
+                    for(auto& point : set.points)
+                    {
                         point.setBaseColor(plotColor());
                     }
                 }
             }
 
-            if(regressionType){
+            if(regressionType)
+            {
                 regression.clear();
-                for(auto& set : datasets){
+                for(auto& set : datasets)
+                {
                     regression.emplace_back(set.getSubsetData(DIMX), set.getSubsetData(DIMY), this);
 
                     float regAngle = get_angle(getPlotPos(0.0f,0.0f), getPlotPos(1.0f, regression.back().slope))*180/PI;
@@ -1929,34 +2310,38 @@ bool CVScatterPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
                     sf::Vector2f endPos(plotBounds.left + plotBounds.width,
                                         getPlotYPos(regression.back().slope*getScaleXPos(plotBounds.left + plotBounds.width) +
                                                     regression.back().intercept)),
-                                beginPos(plotBounds.left,
-                                        getPlotYPos(regression.back().slope*getScaleXPos(plotBounds.left) +
-                                                    regression.back().intercept));
+                                                                    beginPos(plotBounds.left,
+                                                                            getPlotYPos(regression.back().slope*getScaleXPos(plotBounds.left) +
+                                                                                    regression.back().intercept));
 
-                    if(endPos.y > plotBounds.top + plotBounds.height){
+                    if(endPos.y > plotBounds.top + plotBounds.height)
+                    {
                         endPos.y = plotBounds.top + plotBounds.height;
                         endPos.x = getPlotXPos((getScaleYPos(plotBounds.top + plotBounds.height) - regression.back().intercept)/
                                                regression.back().slope);
                     }
-                    else if(endPos.y < plotBounds.top){
+                    else if(endPos.y < plotBounds.top)
+                    {
                         endPos.y = plotBounds.top;
                         endPos.x = getPlotXPos((getScaleYPos(plotBounds.top) - regression.back().intercept)/
                                                regression.back().slope);
                     }
 
-                    if(beginPos.y > plotBounds.top + plotBounds.height){
+                    if(beginPos.y > plotBounds.top + plotBounds.height)
+                    {
                         beginPos.y = plotBounds.top + plotBounds.height;
                         beginPos.x = getPlotXPos((getScaleYPos(plotBounds.top + plotBounds.height) - regression.back().intercept)/
-                                               regression.back().slope);
+                                                 regression.back().slope);
                     }
-                    else if(beginPos.y < plotBounds.top){
+                    else if(beginPos.y < plotBounds.top)
+                    {
                         beginPos.y = plotBounds.top;
                         beginPos.x = getPlotXPos((getScaleYPos(plotBounds.top) - regression.back().intercept)/
-                                               regression.back().slope);
+                                                 regression.back().slope);
                     }
 
                     frontLines.emplace_back(sf::Vector2f(getDistance(beginPos, endPos) + xAxis().thickness/2,
-                                                        xAxis().thickness/2));
+                                                         xAxis().thickness/2));
 
                     frontLines.back().setOrigin(xAxis().thickness/2, xAxis().thickness/4);
                     frontLines.back().setFillColor(sf::Color::Black);
@@ -1984,33 +2369,38 @@ bool CVScatterPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
 
 }
 
-void CVScatterPlot::RegLineInfo::getLinearModel(const std::vector<float>& xData, const std::vector<float>& yData){
-    switch(host->regressionType){
-        case CV_LINE_REGRESSION_SPEARMAN:{
-            coefficient = EZC::spearman_coefficient(xData, yData);
-            break;
-        }
-        default:{ // Pearson
-            coefficient = EZC::pearson_coefficient(xData, yData);
-            break;
-        }
+void CVScatterPlot::RegLineInfo::getLinearModel(const vector<float>& xData, const vector<float>& yData)
+{
+    switch(host->regressionType)
+    {
+    case CV_LINE_REGRESSION_SPEARMAN:
+    {
+        coefficient = EZC::spearman_coefficient(xData, yData);
+        break;
+    }
+    default:  // Pearson
+    {
+        coefficient = EZC::pearson_coefficient(xData, yData);
+        break;
+    }
     }
 
     EZC::least_squares_fit(xData, yData, slope, intercept);
 }
 
 CVCategoryPlot::CVCategoryPlot(CVView* View, const sf::Vector2f& position, const float& width, const float& height,
-           const sf::Color& fillColor, const sf::Color& borderColor, const sf::Color& plotColor,
-           const float& borderWidth, const std::string& plotSprite,
-           const std::string& fontName):
-               CVPlot(View, position, width, height, fillColor, borderColor, plotColor, borderWidth,
-                      plotSprite, fontName),
-                      showQ1(false),
-                      showMedian(false),
-                      showQ3(false),
-                      showSigBrackets(false),
-                      omitOutliers(true),
-                      maxSigBrackets(10){
+                               const sf::Color& fillColor, const sf::Color& borderColor, const sf::Color& plotColor,
+                               const float& borderWidth, const string& plotSprite,
+                               const string& fontName):
+    CVPlot(View, position, width, height, fillColor, borderColor, plotColor, borderWidth,
+           plotSprite, fontName),
+    showQ1(false),
+    showMedian(false),
+    showQ3(false),
+    showSigBrackets(false),
+    omitOutliers(true),
+    maxSigBrackets(10)
+{
 
     plotTypeID = CV_PLOT_ID_CATEGORY;
 
@@ -2024,49 +2414,61 @@ CVCategoryPlot::CVCategoryPlot(CVView* View, const sf::Vector2f& position, const
 
 }
 
-bool CVCategoryPlot::update(CVEvent& event, const sf::Vector2f& position){
+bool CVCategoryPlot::update(CVEvent& event, const sf::Vector2f& position)
+{
 
     if(!CVPlot::update(event, position)) return false;
 
-    if(framesLastChange < 5){
+    if(framesLastChange < 5)
+    {
 
         frontLines.clear();
 
         if(plotAxes.size() < 1) return false;
 
-        for(auto& set : datasets){
+        for(auto& set : datasets)
+        {
 
-            if(xAxis().dataType == DATA_TYPE_VERBAL){
+            if(xAxis().dataType == DATA_TYPE_VERBAL)
+            {
 
                 size_t L = xAxis().labels.size();
 
-                if(updateState & CV_PLOT_UPDATE_DATA){
-                    if(framesLastChange == 2){
-                        std::vector<sf::Sprite*> spriteList;
-                        for(auto& point : set.points){
+                if(updateState & CV_PLOT_UPDATE_DATA)
+                {
+                    if(framesLastChange == 2)
+                    {
+                        vector<sf::Sprite*> spriteList;
+                        for(auto& point : set.points)
+                        {
                             spriteList.push_back(&point.sprite);
                         }
                         physicsSpread(spriteList, 1.0f/(L + 1), CV_DIRECTION_X);
-                        for(auto& point : set.points){
+                        for(auto& point : set.points)
+                        {
                             point.setOffset();
                         }
                     }
                 }
 
-                if(updateState & CV_PLOT_UPDATE_DRAW){
+                if(updateState & CV_PLOT_UPDATE_DRAW)
+                {
 
-                    if(showQ1 || showMedian || showQ3){
-                        std::vector<float> labelData;
-                        for(size_t i = 0; i < L; ++i){
+                    if(showQ1 || showMedian || showQ3)
+                    {
+                        vector<float> labelData;
+                        for(size_t i = 0; i < L; ++i)
+                        {
 
                             float xPos = xAxis().getLabelPosition(xAxis().labels[i]),
-                                    lineTop = 0.0f, lineBottom = 0.0f;
+                                  lineTop = 0.0f, lineBottom = 0.0f;
                             labelData = set.getLabelledData(xAxis().labels[i], DIMY);
                             if(labelData.empty()) continue;
 
                             DataSummary<float> dataSummary(labelData);
 
-                            if(showQ3){
+                            if(showQ3)
+                            {
                                 frontLines.emplace_back(sf::Vector2f(plotBounds.width/(4*(L+1)), xAxis().thickness/2)); // 3rd quartile marker
                                 frontLines.back().setPosition(xPos - frontLines.back().getSize().x/2,
                                                               getPlotYPos(dataSummary.Q3));
@@ -2075,7 +2477,8 @@ bool CVCategoryPlot::update(CVEvent& event, const sf::Vector2f& position){
                                 if(!showQ3 && !showMedian) lineBottom = NAN;
                             }
 
-                            if(showMedian){
+                            if(showMedian)
+                            {
                                 frontLines.emplace_back(sf::Vector2f(plotBounds.width/(2*(L+1)), xAxis().thickness/2)); // Median marker
                                 frontLines.back().setPosition(xPos - frontLines.back().getSize().x/2,
                                                               getPlotYPos(dataSummary.median));
@@ -2084,7 +2487,8 @@ bool CVCategoryPlot::update(CVEvent& event, const sf::Vector2f& position){
                                 if(!showQ1) lineBottom = frontLines.back().getPosition().y;
                             }
 
-                            if(showQ1){
+                            if(showQ1)
+                            {
                                 frontLines.emplace_back(sf::Vector2f(plotBounds.width/(4*(L+1)), xAxis().thickness/2)); // 1st quartile marker
                                 frontLines.back().setPosition(xPos - frontLines.back().getSize().x/2,
                                                               getPlotYPos(dataSummary.Q1));
@@ -2093,9 +2497,10 @@ bool CVCategoryPlot::update(CVEvent& event, const sf::Vector2f& position){
                                 lineBottom = frontLines.back().getPosition().y;
                             }
 
-                            if(frontLines.size() > 1){ // Connecting line
+                            if(frontLines.size() > 1)  // Connecting line
+                            {
                                 frontLines.emplace_back(sf::Vector2f(xAxis().thickness/2,
-                                                        lineBottom - lineTop));
+                                                                     lineBottom - lineTop));
                                 frontLines.back().setPosition(xPos - frontLines.back().getSize().x/2,
                                                               lineTop);
                                 frontLines.back().setFillColor(getBorderColor());
@@ -2107,29 +2512,36 @@ bool CVCategoryPlot::update(CVEvent& event, const sf::Vector2f& position){
                 }
 
 
-                if((updateState & CV_PLOT_UPDATE_DRAW) && showSigBrackets){
+                if((updateState & CV_PLOT_UPDATE_DRAW) && showSigBrackets)
+                {
 
                     sigMatrix.clear();
-                    sigMatrix.assign(L, std::vector<float>(L, NAN));
+                    sigMatrix.assign(L, vector<float>(L, NAN));
                     sigPairs.clear();
                     sigValues.clear();
 
                     size_t sigSIZE = 0;
 
-                    for(size_t i = 0; i < L; ++i){
-                        for(size_t j = 0; j < L; ++j){
+                    for(size_t i = 0; i < L; ++i)
+                    {
+                        for(size_t j = 0; j < L; ++j)
+                        {
                             if(i == j) continue;
                             sigMatrix[i][j] = student_t_test(set.getLabelledData(xAxis().labels[i], DIMY),
                                                              set.getLabelledData(xAxis().labels[j], DIMY));
                         }
                     }
 
-                    for(size_t i = 0; i < L-1; ++i){
-                        for(size_t j = i+1; j < L; ++j){
-                            if(sigMatrix[i][j] < 0.05f){
+                    for(size_t i = 0; i < L-1; ++i)
+                    {
+                        for(size_t j = i+1; j < L; ++j)
+                        {
+                            if(sigMatrix[i][j] < 0.05f)
+                            {
                                 unsigned int distIndex = 0;
                                 while((distIndex < sigSIZE) &&
-                                      ((j - i) > (sigPairs[distIndex].y - sigPairs[distIndex].x))){
+                                        ((j - i) > (sigPairs[distIndex].y - sigPairs[distIndex].x)))
+                                {
                                     ++distIndex;
                                 }
                                 sigValues.insert(sigValues.begin() + distIndex, sigMatrix[i][j]);
@@ -2140,19 +2552,21 @@ bool CVCategoryPlot::update(CVEvent& event, const sf::Vector2f& position){
                         if(sigSIZE > maxSigBrackets) break;
                     }
 
-                    if((sigSIZE > 0) && (sigSIZE <= maxSigBrackets)){
+                    if((sigSIZE > 0) && (sigSIZE <= maxSigBrackets))
+                    {
 
                         float braceTop = plotBounds.top - plotBounds.height*0.05f*sigSIZE,
-                                braceBottom = getPlotYPos(max(set.matrix[DIMY])) - plotBounds.height*0.1f,
-                                braceInt = (braceBottom - braceTop)/sigSIZE;
+                              braceBottom = getPlotYPos(max(set.matrix[DIMY])) - plotBounds.height*0.1f,
+                              braceInt = (braceBottom - braceTop)/sigSIZE;
 
-                        for(size_t j = 0; j < sigSIZE; ++j){
+                        for(size_t j = 0; j < sigSIZE; ++j)
+                        {
                             float leftBraceX = plotBounds.left + plotBounds.width*(sigPairs[j].x+1)/(L+1),
-                                    rightBraceX = plotBounds.left + plotBounds.width*(sigPairs[j].y+1)/(L+1),
-                                    leftBraceY = getPlotYPos(max(set.getLabelledData(xAxis().labels[sigPairs[j].x], DIMY)))
-                                     - 0.04f*plotBounds.height,
-                                     rightBraceY = getPlotYPos(max(set.getLabelledData(xAxis().labels[sigPairs[j].y], DIMY)))
-                                     - 0.04f*plotBounds.height;
+                                  rightBraceX = plotBounds.left + plotBounds.width*(sigPairs[j].y+1)/(L+1),
+                                  leftBraceY = getPlotYPos(max(set.getLabelledData(xAxis().labels[sigPairs[j].x], DIMY)))
+                                               - 0.04f*plotBounds.height,
+                                               rightBraceY = getPlotYPos(max(set.getLabelledData(xAxis().labels[sigPairs[j].y], DIMY)))
+                                                             - 0.04f*plotBounds.height;
 
                             frontLines.emplace_back(sf::Vector2f(plotBounds.width/(4*(L+1)), xAxis().thickness/2)); // Left bottom brace
                             frontLines.back().setPosition(leftBraceX - frontLines.back().getSize().x/2,
@@ -2178,13 +2592,16 @@ bool CVCategoryPlot::update(CVEvent& event, const sf::Vector2f& position){
 
                             // Significance stars
 
-                            if(sigValues[j] < 0.001f){
+                            if(sigValues[j] < 0.001f)
+                            {
                                 plotText.emplace_back("***", *plotFont, 18*fontScaling);
                             }
-                            else if(sigValues[j] < 0.01f){
+                            else if(sigValues[j] < 0.01f)
+                            {
                                 plotText.emplace_back("**", *plotFont, 18*fontScaling);
                             }
-                            else{
+                            else
+                            {
                                 plotText.emplace_back("*", *plotFont, 18*fontScaling);
                             }
 
@@ -2193,7 +2610,7 @@ bool CVCategoryPlot::update(CVEvent& event, const sf::Vector2f& position){
                                                       getTextCenterOffsetY(plotText.back())/2);
                             plotText.back().setFillColor(getBorderColor());
                             plotText.back().setPosition((rightBraceX + leftBraceX)/2,
-                                                               braceBottom - 4.5f*textBounds.height);
+                                                        braceBottom - 4.5f*textBounds.height);
 
                             braceBottom -= braceInt;
 
@@ -2210,14 +2627,17 @@ bool CVCategoryPlot::update(CVEvent& event, const sf::Vector2f& position){
 
         }
 
-        if(showSigBrackets && (sigValues.size() < maxSigBrackets)){
+        if(showSigBrackets && (sigValues.size() < maxSigBrackets))
+        {
             sf::FloatRect sBounds;
             float height = titleBox().getBounds().height;
 
-            for(auto& line : frontLines){
+            for(auto& line : frontLines)
+            {
                 sBounds = line.getGlobalBounds();
                 sBounds.top -= height/2;
-                while(sBounds.intersects(titleBox().getBounds())){
+                while(sBounds.intersects(titleBox().getBounds()))
+                {
                     titleBox().move(sf::Vector2f(0.0f,-height));
                 }
             }
@@ -2230,13 +2650,14 @@ bool CVCategoryPlot::update(CVEvent& event, const sf::Vector2f& position){
 }
 
 CVLinePlot::CVLinePlot(CVView* View, const sf::Vector2f& position, const float& width, const float& height,
-           const sf::Color& fillColor, const sf::Color& borderColor, const sf::Color& plotColor,
-           const float& borderWidth, const std::string& plotSprite,
-           const std::string& fontName, const UINT8& lineType, const UINT8& connectionType):
-               CVPlot(View, position, width, height, fillColor, borderColor, plotColor, borderWidth,
-                      plotSprite, fontName),
-                      lineType(lineType),
-                      connectionType(connectionType){
+                       const sf::Color& fillColor, const sf::Color& borderColor, const sf::Color& plotColor,
+                       const float& borderWidth, const string& plotSprite,
+                       const string& fontName, const UINT8& lineType, const UINT8& connectionType):
+    CVPlot(View, position, width, height, fillColor, borderColor, plotColor, borderWidth,
+           plotSprite, fontName),
+    lineType(lineType),
+    connectionType(connectionType)
+{
 
     plotTypeID = CV_PLOT_ID_LINE;
 
@@ -2249,27 +2670,32 @@ CVLinePlot::CVLinePlot(CVView* View, const sf::Vector2f& position, const float& 
 
 }
 
-bool CVLinePlot::update(CVEvent& event, const sf::Vector2f& mousePos){
+bool CVLinePlot::update(CVEvent& event, const sf::Vector2f& mousePos)
+{
 
     if(!CVPlot::update(event, mousePos)) return false;
 
-    if(framesLastChange < 5){
+    if(framesLastChange < 5)
+    {
 
-        if(updateState & CV_PLOT_UPDATE_DRAW){
+        if(updateState & CV_PLOT_UPDATE_DRAW)
+        {
 
             backLines.clear();
 
-            std::vector<float> xDataValues;
-            std::vector<unsigned int> orderedI;
+            vector<float> xDataValues;
+            vector<unsigned int> orderedI;
             unsigned int L;
             float dist, angle,
-                lineWidth = getSpriteSize()/2;
+                  lineWidth = getSpriteSize()/2;
 
-            for(auto& set : datasets){
+            for(auto& set : datasets)
+            {
 
                 xDataValues.clear();
 
-                for(auto& point : set.points){
+                for(auto& point : set.points)
+                {
                     if(point.visible && !isnan(point.y())) xDataValues.push_back(point.x());
                     else xDataValues.push_back(NAN);
                 }
@@ -2279,57 +2705,65 @@ bool CVLinePlot::update(CVEvent& event, const sf::Vector2f& mousePos){
 
                 backLines.reserve(L*2);
 
-                for(size_t i = 1; i < L; ++i){
-                    switch(connectionType){
-                        case CV_LINE_CONN_STEP:{
-                            sf::Vector2f cornerPos(set.points[orderedI[i-1]].sprite.getPosition().x,
-                                                   set.points[orderedI[i]].sprite.getPosition().y);
+                for(size_t i = 1; i < L; ++i)
+                {
+                    switch(connectionType)
+                    {
+                    case CV_LINE_CONN_STEP:
+                    {
+                        sf::Vector2f cornerPos(set.points[orderedI[i-1]].sprite.getPosition().x,
+                                               set.points[orderedI[i]].sprite.getPosition().y);
 
-                            float segW = cornerPos.y - set.points[orderedI[i-1]].sprite.getPosition().y,
-                                segH = set.points[orderedI[i]].sprite.getPosition().x - cornerPos.x + lineWidth;
+                        float segW = cornerPos.y - set.points[orderedI[i-1]].sprite.getPosition().y,
+                              segH = set.points[orderedI[i]].sprite.getPosition().x - cornerPos.x + lineWidth;
 
-                            if(segW){
-                                if(segW > 0.0f){
-                                    backLines.emplace_back(sf::Vector2f(lineWidth, segW));
-                                    backLines.back().setOrigin(lineWidth/2, lineWidth/2);
-                                    backLines.back().setPosition(set.points[orderedI[i-1]].sprite.getPosition());
-                                }
-                                else{
-                                    backLines.emplace_back(sf::Vector2f(lineWidth, -segW));
-                                    backLines.back().setOrigin(lineWidth/2, lineWidth/2);
-                                    backLines.back().setPosition(cornerPos);
-                                }
-
-                                if(set.points[orderedI[i-1]].selected && set.points[orderedI[i]].selected)
-                                    backLines.back().setFillColor(plotHighlightColor);
-                                else backLines.back().setFillColor(set.mainColor());
+                        if(segW)
+                        {
+                            if(segW > 0.0f)
+                            {
+                                backLines.emplace_back(sf::Vector2f(lineWidth, segW));
+                                backLines.back().setOrigin(lineWidth/2, lineWidth/2);
+                                backLines.back().setPosition(set.points[orderedI[i-1]].sprite.getPosition());
                             }
-                            if(segH){
-                                backLines.emplace_back(sf::Vector2f(segH, lineWidth));
-
+                            else
+                            {
+                                backLines.emplace_back(sf::Vector2f(lineWidth, -segW));
                                 backLines.back().setOrigin(lineWidth/2, lineWidth/2);
                                 backLines.back().setPosition(cornerPos);
-
-
-                                if(set.points[orderedI[i-1]].selected && set.points[orderedI[i]].selected)
-                                    backLines.back().setFillColor(plotHighlightColor);
-                                else backLines.back().setFillColor(set.mainColor());
                             }
 
-                            break;
+                            if(set.points[orderedI[i-1]].selected && set.points[orderedI[i]].selected)
+                                backLines.back().setFillColor(plotHighlightColor);
+                            else backLines.back().setFillColor(set.mainColor());
                         }
-                        default:{
-                            dist = getDistance(set.points[orderedI[i-1]].sprite.getPosition(), set.points[orderedI[i]].sprite.getPosition());
-                            angle = get_angle(set.points[orderedI[i-1]].sprite.getPosition(), set.points[orderedI[i]].sprite.getPosition());
+                        if(segH)
+                        {
+                            backLines.emplace_back(sf::Vector2f(segH, lineWidth));
 
-                            backLines.emplace_back(sf::RectangleShape(sf::Vector2f(dist, set.points[orderedI[i]].sprite.getGlobalBounds().width/2)));
-                            backLines.back().setOrigin(0.0f,
-                                                       set.points[orderedI[i]].sprite.getGlobalBounds().width/4);
-                            backLines.back().setPosition(set.points[orderedI[i-1]].sprite.getPosition());
-                            backLines.back().setRotation(angle*180/PI);
-                            backLines.back().setFillColor(set.mainColor());
-                            break;
+                            backLines.back().setOrigin(lineWidth/2, lineWidth/2);
+                            backLines.back().setPosition(cornerPos);
+
+
+                            if(set.points[orderedI[i-1]].selected && set.points[orderedI[i]].selected)
+                                backLines.back().setFillColor(plotHighlightColor);
+                            else backLines.back().setFillColor(set.mainColor());
                         }
+
+                        break;
+                    }
+                    default:
+                    {
+                        dist = getDistance(set.points[orderedI[i-1]].sprite.getPosition(), set.points[orderedI[i]].sprite.getPosition());
+                        angle = get_angle(set.points[orderedI[i-1]].sprite.getPosition(), set.points[orderedI[i]].sprite.getPosition());
+
+                        backLines.emplace_back(sf::RectangleShape(sf::Vector2f(dist, set.points[orderedI[i]].sprite.getGlobalBounds().width/2)));
+                        backLines.back().setOrigin(0.0f,
+                                                   set.points[orderedI[i]].sprite.getGlobalBounds().width/4);
+                        backLines.back().setPosition(set.points[orderedI[i-1]].sprite.getPosition());
+                        backLines.back().setRotation(angle*180/PI);
+                        backLines.back().setFillColor(set.mainColor());
+                        break;
+                    }
                     }
                 }
             }
@@ -2342,12 +2776,13 @@ bool CVLinePlot::update(CVEvent& event, const sf::Vector2f& mousePos){
 
 CVHeatPlot::CVHeatPlot(CVView* View, const sf::Vector2f& position, const float& width,
                        const float& height, const sf::Color& fillColor, const sf::Color& borderColor,
-                       const sf::Color& plotColor, const float& borderWidth, const std::string& plotSprite,
-                       const std::string& fontName, const UINT8& clusterType, const UINT8& scaleType):
-                           CVPlot(View, position, width, height, fillColor, borderColor,
-                                  plotColor, borderWidth, plotSprite, fontName),
-                                  clusterType(clusterType),
-                                  scaleType(scaleType){
+                       const sf::Color& plotColor, const float& borderWidth, const string& plotSprite,
+                       const string& fontName, const UINT8& clusterType, const UINT8& scaleType):
+    CVPlot(View, position, width, height, fillColor, borderColor,
+           plotColor, borderWidth, plotSprite, fontName),
+    clusterType(clusterType),
+    scaleType(scaleType)
+{
     plotTypeID = CV_PLOT_ID_HEAT;
 
     addAxis(NAN, DIMENSION_X, DATA_TYPE_VERBAL, 5.0f, 0.0f, borderColor, labelFontSize*fontScaling);
@@ -2358,32 +2793,41 @@ CVHeatPlot::CVHeatPlot(CVView* View, const sf::Vector2f& position, const float& 
 
 }
 
-bool CVHeatPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
+bool CVHeatPlot::update(CVEvent& event, const sf::Vector2f& mousePos)
+{
     if(!CVPlot::update(event, mousePos)) return false;
 
-    if(framesLastChange < 5){
+    if(framesLastChange < 5)
+    {
 
-        for(auto& set : datasets){
+        for(auto& set : datasets)
+        {
             unsigned int yCells = set.matrix.size(),
-                        xCells = maxSize(set.matrix);
+                         xCells = maxSize(set.matrix);
             float xLength = plotBounds.width/xCells,
-                    yLength = plotBounds.height/yCells;
-            for(auto& point : set.points){
+                  yLength = plotBounds.height/yCells;
+            for(auto& point : set.points)
+            {
                 point.setSize(sf::Vector2f(xLength, yLength));
 
-                switch(scaleType){
-                    case CV_HEAT_SCALE_REL_COL:{
-                        break;
-                    }
-                    case CV_HEAT_SCALE_REL_ROW:{
-                        break;
-                    }
-                    case CV_HEAT_SCALE_REL_ALL:{
-                        break;
-                    }
-                    default:{
-                        break;
-                    }
+                switch(scaleType)
+                {
+                case CV_HEAT_SCALE_REL_COL:
+                {
+                    break;
+                }
+                case CV_HEAT_SCALE_REL_ROW:
+                {
+                    break;
+                }
+                case CV_HEAT_SCALE_REL_ALL:
+                {
+                    break;
+                }
+                default:
+                {
+                    break;
+                }
                 }
             }
         }
@@ -2393,25 +2837,55 @@ bool CVHeatPlot::update(CVEvent& event, const sf::Vector2f& mousePos){
     return true;
 }
 
-bool CVPlot::setPlotSpriteTexture(const std::string& textureName){
+void CVPlot::addPlotText(const TextEntry& newText,
+                         const sf::Vector2f& position)
+{
+
+    if(appFont(newText.font))
+    {
+        cout << "Adding text with font: \"" << newText.font << "\"\n";
+        plotText.emplace_back(
+            newText.text,
+            *appFont(newText.font),
+            newText.fontSize
+        );
+    }
+    else
+    {
+        plotText.emplace_back();
+        plotText.back().setString(newText.text);
+        plotText.back().setCharacterSize(newText.fontSize);
+    }
+
+    plotText.back().setFillColor(newText.textColor);
+    colorTheme.emplace_back(newText.textColor);
+    plotText.back().setPosition(position);
+
+}
+
+bool CVPlot::setPlotSpriteTexture(const string& textureName)
+{
     const sf::Texture* txtCheck = View->mainApp->bitmaps.taggedTexture(textureName);
     if(txtCheck == nullptr) return false;
     else plotSpriteTexture = txtCheck;
     return true;
 }
 
-void CVPlot::get_numeric_x_axis(){
+void CVPlot::get_numeric_x_axis()
+{
     if(data.size() < 1) return;
 
     xAxisLabels.clear();
     float dataRange = dimScales[DIMX].y - dimScales[DIMX].x;
     float axisIncrement = 0.0f;
 
-    if(dataRange == 0){
-        xAxisLabels.push_back(std::to_string(data[DIMX][0].front()));
+    if(dataRange == 0)
+    {
+        xAxisLabels.push_back(to_string(data[DIMX][0].front()));
         sigFigs(xAxisLabels.back());
     }
-    else{
+    else
+    {
         if(dataRange < 1e-2) axisIncrement = pow(10.0f, (int)floor(-log10(dataRange)-1));
         else if(dataRange <= 0.001f) axisIncrement = 0.0001f;
         else if(dataRange <= 0.02f) axisIncrement = 0.002f;
@@ -2433,7 +2907,8 @@ void CVPlot::get_numeric_x_axis(){
         else if(dataRange <= 5000.0f) axisIncrement = 500.0f;
         else if(dataRange <= 10000.0f) axisIncrement = 1000.0f;
         else if(dataRange <= 50000.0f) axisIncrement = 5000.0f;
-        else{
+        else
+        {
             axisIncrement = pow(10.0f, (int)floor(log10(dataRange)));
         }
     }
@@ -2441,24 +2916,28 @@ void CVPlot::get_numeric_x_axis(){
     int multBegin = int(ceil(dimScales[0].x/axisIncrement)),
         multEnd = int(floor(dimScales[0].y/axisIncrement));
 
-    for(int i = multBegin; i <= multEnd; ++i){
-        xAxisLabels.push_back(std::to_string(i*axisIncrement));
+    for(int i = multBegin; i <= multEnd; ++i)
+    {
+        xAxisLabels.push_back(to_string(i*axisIncrement));
         sigFigs(xAxisLabels.back());
     }
 }
 
-void CVPlot::get_numeric_y_axis(){
+void CVPlot::get_numeric_y_axis()
+{
     if(data.size() < 1) return;
 
     yAxisLabels.clear();
     float dataRange = dimScales[DIMY].y - dimScales[DIMY].x;
     float axisIncrement = 0.0f;
 
-    if(dataRange == 0){
-        yAxisLabels.push_back(std::to_string(data[DIMY][0].front()));
+    if(dataRange == 0)
+    {
+        yAxisLabels.push_back(to_string(data[DIMY][0].front()));
         sigFigs(yAxisLabels.back());
     }
-    else{
+    else
+    {
         if(dataRange < 1e-2) axisIncrement = pow(10.0f, (int)floor(-log10(dataRange)-1));
         else if(dataRange <= 0.001f) axisIncrement = 0.0001f;
         else if(dataRange <= 0.02f) axisIncrement = 0.002f;
@@ -2480,7 +2959,8 @@ void CVPlot::get_numeric_y_axis(){
         else if(dataRange <= 5000.0f) axisIncrement = 500.0f;
         else if(dataRange <= 10000.0f) axisIncrement = 1000.0f;
         else if(dataRange <= 50000.0f) axisIncrement = 5000.0f;
-        else{
+        else
+        {
             axisIncrement = pow(10.0f, (int)floor(log10(dataRange)));
         }
     }
@@ -2488,42 +2968,53 @@ void CVPlot::get_numeric_y_axis(){
     int multBegin = int(ceil(dimScales[1].x/axisIncrement)),
         multEnd = int(floor(dimScales[1].y/axisIncrement));
 
-    for(int i = multBegin; i <= multEnd; ++i){
-        yAxisLabels.push_back(std::to_string(i*axisIncrement));
+    for(int i = multBegin; i <= multEnd; ++i)
+    {
+        yAxisLabels.push_back(to_string(i*axisIncrement));
         sigFigs(yAxisLabels.back());
     }
 
 }
 
-void CVPlot::get_verbal_x_axis(){
+void CVPlot::get_verbal_x_axis()
+{
     if(tags.size() < 1) return;
 
     xAxisLabels.clear();
     size_t L = tags[DIMX].size();
 
-    for(size_t i = 0; i < L; ++i){
+    for(size_t i = 0; i < L; ++i)
+    {
         xAxisLabels.push_back(tags[DIMX][i].front());
     }
 }
 
-void CVPlot::removeDataOutliers(){
+void CVPlot::removeDataOutliers()
+{
     size_t nDim = numDimensions();
-    for(size_t i = 0; i < nDim; ++i){
+    for(size_t i = 0; i < nDim; ++i)
+    {
         size_t L = data[i].size();
-        for(size_t j = 0; j < L; ++j){
+        for(size_t j = 0; j < L; ++j)
+        {
             size_t S = data[i][j].size();
             if(S < 4) continue;
             DataSummary<float> dataSummary(data[i][j]);
-            for(size_t k = 0; k < S;){
-                if(data[i][j][k] > dataSummary.upperOutlierRange){
-                    for(size_t a = 0; a < nDim; ++a){
+            for(size_t k = 0; k < S;)
+            {
+                if(data[i][j][k] > dataSummary.upperOutlierRange)
+                {
+                    for(size_t a = 0; a < nDim; ++a)
+                    {
                         if((data[a].size() <= j) || (data[a][j].size() <= k)) continue;
                         data[a][j].erase(data[a][j].begin() + k); // Erase all dimensions of this data point
                         --S;
                     }
                 }
-                else if(data[i][j][k] < dataSummary.lowerOutlierRange){
-                    for(size_t a = 0; a < nDim; ++a){
+                else if(data[i][j][k] < dataSummary.lowerOutlierRange)
+                {
+                    for(size_t a = 0; a < nDim; ++a)
+                    {
                         if((data[a].size() <= j) || (data[a][j].size() <= k)) continue;
                         data[a][j].erase(data[a][j].begin() + k);
                         --S;
@@ -2536,83 +3027,95 @@ void CVPlot::removeDataOutliers(){
 }
 
 void CVPlot::addLine(const uint8_t& orientation, const float& dimValue,
-            const float& thickness, const sf::Color& color,
-            const uint8_t& type, bool foreground){
+                     const float& thickness, const sf::Color& color,
+                     const uint8_t& type, bool foreground)
+{
 
-    std::vector<sf::RectangleShape>* lineSpace = nullptr;
+    vector<sf::RectangleShape>* lineSpace = nullptr;
     if(foreground) lineSpace = &frontLines;
     else lineSpace = &backLines;
 
-    switch(type){
-        case CV_LINE_TYPE_BROKEN:{
-            switch(orientation){
-                case CV_PLOT_ALIGN_VERTICAL:{
-                    float posY = plotBounds.top,
-                            plotEnd = posY + plotBounds.height,
-                            lineLength = 5.0f,
-                            pos = getPlotXPos(dimValue);
+    switch(type)
+    {
+    case CV_LINE_TYPE_BROKEN:
+    {
+        switch(orientation)
+        {
+        case CV_PLOT_ALIGN_VERTICAL:
+        {
+            float posY = plotBounds.top,
+                  plotEnd = posY + plotBounds.height,
+                  lineLength = 5.0f,
+                  pos = getPlotXPos(dimValue);
 
-                    while(posY < plotEnd){
-                        if(posY + lineLength > plotEnd) lineLength = plotEnd - posY;
-                        lineSpace->emplace_back(sf::Vector2f(thickness, lineLength));
-                        lineSpace->back().setOrigin(thickness/2, 0.0f);
-                        lineSpace->back().setPosition(pos, posY);
-                        lineSpace->back().setFillColor(color);
-                        posY += 2*lineLength;
-                    }
-                    break;
-                }
-                default:{ // Horizontal
-                    float posX = plotBounds.left,
-                            plotEnd = posX + plotBounds.width,
-                            lineLength = 5.0f,
-                            pos = getPlotYPos(dimValue);
-
-                    while(posX < plotEnd){
-                        if(posX + lineLength > plotEnd) lineLength = plotEnd - posX;
-                        lineSpace->emplace_back(sf::Vector2f(lineLength, thickness));
-                        lineSpace->back().setOrigin(0.0f, thickness/2);
-                        lineSpace->back().setPosition(posX, pos);
-                        lineSpace->back().setFillColor(color);
-                        posX += 2*lineLength;
-                    }
-                    break;
-                }
+            while(posY < plotEnd)
+            {
+                if(posY + lineLength > plotEnd) lineLength = plotEnd - posY;
+                lineSpace->emplace_back(sf::Vector2f(thickness, lineLength));
+                lineSpace->back().setOrigin(thickness/2, 0.0f);
+                lineSpace->back().setPosition(pos, posY);
+                lineSpace->back().setFillColor(color);
+                posY += 2*lineLength;
             }
             break;
         }
-        default:{ // Solid
-            switch(orientation){
-                case CV_PLOT_ALIGN_VERTICAL:{
-                    lineSpace->emplace_back(sf::Vector2f(thickness, plotBounds.height));
-                    lineSpace->back().setOrigin(thickness/2, 0.0f);
-                    float pos = getPlotXPos(dimValue);
-                    lineSpace->back().setPosition(pos, plotBounds.top);
-                    lineSpace->back().setFillColor(color);
-                    break;
-                }
-                default:{ // Horizontal
-                    lineSpace->emplace_back(sf::Vector2f(plotBounds.width, thickness));
-                    lineSpace->back().setOrigin(0.0f, thickness/2);
-                    float pos = getPlotYPos(dimValue);
-                    lineSpace->back().setPosition(plotBounds.left, pos);
-                    lineSpace->back().setFillColor(color);
-                    break;
-                }
+        default:  // Horizontal
+        {
+            float posX = plotBounds.left,
+                  plotEnd = posX + plotBounds.width,
+                  lineLength = 5.0f,
+                  pos = getPlotYPos(dimValue);
+
+            while(posX < plotEnd)
+            {
+                if(posX + lineLength > plotEnd) lineLength = plotEnd - posX;
+                lineSpace->emplace_back(sf::Vector2f(lineLength, thickness));
+                lineSpace->back().setOrigin(0.0f, thickness/2);
+                lineSpace->back().setPosition(posX, pos);
+                lineSpace->back().setFillColor(color);
+                posX += 2*lineLength;
             }
             break;
         }
+        }
+        break;
+    }
+    default:  // Solid
+    {
+        switch(orientation)
+        {
+        case CV_PLOT_ALIGN_VERTICAL:
+        {
+            lineSpace->emplace_back(sf::Vector2f(thickness, plotBounds.height));
+            lineSpace->back().setOrigin(thickness/2, 0.0f);
+            float pos = getPlotXPos(dimValue);
+            lineSpace->back().setPosition(pos, plotBounds.top);
+            lineSpace->back().setFillColor(color);
+            break;
+        }
+        default:  // Horizontal
+        {
+            lineSpace->emplace_back(sf::Vector2f(plotBounds.width, thickness));
+            lineSpace->back().setOrigin(0.0f, thickness/2);
+            float pos = getPlotYPos(dimValue);
+            lineSpace->back().setPosition(plotBounds.left, pos);
+            lineSpace->back().setFillColor(color);
+            break;
+        }
+        }
+        break;
+    }
     }
 }
 
-CVPlotPanel::CVPlotPanel(CVView* parentView, std::string panelTag, sf::Color backgroundColor,
-                        const sf::Color& plotHighlightColor,
-                        const sf::Vector2f& size,
-                        const bool& bFitWindow, const sf::Vector2f& position):
-        CVViewPanel(parentView, panelTag, backgroundColor, size, bFitWindow, position),
-        plotHighlightColor(plotHighlightColor),
-        logo(*parentView->mainApp->bitmaps.taggedTexture("CVPlot_logo")),
-        logoAlpha(80)
+CVPlotPanel::CVPlotPanel(CVView* parentView, string panelTag, sf::Color backgroundColor,
+                         const sf::Color& plotHighlightColor,
+                         const sf::Vector2f& size,
+                         const bool& bFitWindow, const sf::Vector2f& position):
+    CVViewPanel(parentView, panelTag, backgroundColor, size, bFitWindow, position),
+    plotHighlightColor(plotHighlightColor),
+    logo(*parentView->mainApp->bitmaps.taggedTexture("CVPlot_logo")),
+    logoAlpha(80)
 {
 
     sf::FloatRect logoBounds = logo.getGlobalBounds();
@@ -2623,52 +3126,69 @@ CVPlotPanel::CVPlotPanel(CVView* parentView, std::string panelTag, sf::Color bac
     logo.setColor(sf::Color(255,255,255,0));
 }
 
-bool CVPlotPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
+bool CVPlotPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
+{
     if(!CVViewPanel::update(event, mousePos)) return false;
-    if(event.viewResized){
+    if(event.viewResized)
+    {
         logo.setPosition(bounds.left + bounds.width/2,
                          bounds.top + bounds.height/2);
     }
 
-    if(viewPanelElements.size() < 1){
-        if(logo.getColor().a < logoAlpha){
+    if(viewPanelElements.size() < 1)
+    {
+        if(logo.getColor().a < logoAlpha)
+        {
             sf::Color newColor = logo.getColor();
             ++newColor.a;
             logo.setColor(newColor);
         }
     }
-    else{
-        if(logo.getColor().a > 0){
+    else
+    {
+        if(logo.getColor().a > 0)
+        {
             sf::Color newColor = logo.getColor();
-            if(newColor.a > 2){
+            if(newColor.a > 2)
+            {
                 newColor.a -= 2;
             }
             else newColor.a = 0;
             logo.setColor(newColor);
         }
 
-        for(auto& panel : boost::adaptors::reverse(viewPanelElements)){
+        for(auto& panel : boost::adaptors::reverse(viewPanelElements))
+        {
             panel->update(event, mousePos);
         }
     }
 
-    if(event.viewHasFocus && bounds.contains(mousePos) && event.captureFocus()){
-        if(event.LMBhold){
+    if(event.viewHasFocus && bounds.contains(mousePos) && event.captureFocus())
+    {
+        if(event.LMBhold)
+        {
             highlightBlocks.clear();
             if(sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ||
-               sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)){
-                for(auto& panel : boost::adaptors::reverse(viewPanelElements)){
-                    if(panel->getBounds().contains(event.lastFrameMousePosition)){
-                        if(!anyEqual((CVPlot*)panel, selectedPlots)){
+                    sf::Keyboard::isKeyPressed(sf::Keyboard::RShift))
+            {
+                for(auto& panel : boost::adaptors::reverse(viewPanelElements))
+                {
+                    if(panel->getBounds().contains(event.lastFrameMousePosition))
+                    {
+                        if(!anyEqual((CVPlot*)panel, selectedPlots))
+                        {
                             selectedPlots.push_back((CVPlot*)panel);
                         }
                         break;
                     }
                 }
 
-                for(auto& plot : selectedPlots){
-                    if(event.isCaptured(*plot)){
-                        for(auto& p : selectedPlots){
+                for(auto& plot : selectedPlots)
+                {
+                    if(event.isCaptured(*plot))
+                    {
+                        for(auto& p : selectedPlots)
+                        {
                             event.mouse_capture(*p);
                         }
                         break;
@@ -2676,13 +3196,18 @@ bool CVPlotPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
                 }
 
             }
-            else if(event.LMBholdFrames == 1){
-                if(!ctrlPressed()){
+            else if(event.LMBholdFrames == 1)
+            {
+                if(!ctrlPressed())
+                {
                     selectedPlots.clear();
                 }
-                for(auto& panel : boost::adaptors::reverse(viewPanelElements)){
-                    if(panel->getBounds().contains(mousePos)){
-                        if(!anyEqual((CVPlot*)panel, selectedPlots)){
+                for(auto& panel : boost::adaptors::reverse(viewPanelElements))
+                {
+                    if(panel->getBounds().contains(mousePos))
+                    {
+                        if(!anyEqual((CVPlot*)panel, selectedPlots))
+                        {
                             selectedPlots.push_back((CVPlot*)panel);
                         }
                         else remove((CVPlot*)panel, selectedPlots);
@@ -2691,7 +3216,8 @@ bool CVPlotPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
                 }
             }
 
-            for(auto& plot : selectedPlots){
+            for(auto& plot : selectedPlots)
+            {
                 highlightBlocks.emplace_back(sf::Vector2f(plot->getBounds().width, plot->getBounds().height));
                 highlightBlocks.back().setFillColor(sf::Color::Transparent);
                 highlightBlocks.back().setOutlineThickness(3.0f);
@@ -2701,15 +3227,20 @@ bool CVPlotPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
 
         }
 
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+        {
             highlightBlocks.clear();
             selectedPlots.clear();
         }
 
-        if(event.keyLog.size() > 0){
-            for(auto& key : event.keyLog){
-                if(key == 127){
-                    for(auto& selected : selectedPlots){
+        if(event.keyLog.size() > 0)
+        {
+            for(auto& key : event.keyLog)
+            {
+                if(key == 127)
+                {
+                    for(auto& selected : selectedPlots)
+                    {
                         removePanelElement(selected);
                     }
                     selectedPlots.clear();
@@ -2722,17 +3253,22 @@ bool CVPlotPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
     return true;
 }
 
-bool CVPlotPanel::select_tags(const std::vector<std::string>& tags){
+bool CVPlotPanel::select_tags(const vector<string>& tags)
+{
 
     bool output = false;
 
-    if(numSelected() > 0){
-        for(auto& plot : selectedPlots){
+    if(numSelected() > 0)
+    {
+        for(auto& plot : selectedPlots)
+        {
             output |= plot->select_tags(tags);
         }
     }
-    else{
-        for(auto& panel : viewPanelElements){
+    else
+    {
+        for(auto& panel : viewPanelElements)
+        {
             output |= ((CVPlot*)panel)->select_tags(tags);
         }
     }
@@ -2741,15 +3277,20 @@ bool CVPlotPanel::select_tags(const std::vector<std::string>& tags){
 
 }
 
-bool CVPlotPanel::select_indices(const std::vector<unsigned int>& idx){
+bool CVPlotPanel::select_indices(const vector<unsigned int>& idx)
+{
     bool output = false;
-    if(numSelected() > 0){
-        for(auto& plot : selectedPlots){
+    if(numSelected() > 0)
+    {
+        for(auto& plot : selectedPlots)
+        {
             output |= plot->select_indices(idx);
         }
     }
-    else{
-        for(auto& panel : viewPanelElements){
+    else
+    {
+        for(auto& panel : viewPanelElements)
+        {
             output |= ((CVPlot*)panel)->select_indices(idx);
         }
     }
@@ -2757,16 +3298,19 @@ bool CVPlotPanel::select_indices(const std::vector<unsigned int>& idx){
     return output;
 }
 
-bool CVPlotPanel::draw(sf::RenderTarget* target){
+bool CVPlotPanel::draw(sf::RenderTarget* target)
+{
     if(!CVTextBox::draw(target)) return false;
 
     target->draw(logo);
 
-    for(auto& block : highlightBlocks){
+    for(auto& block : highlightBlocks)
+    {
         target->draw(block);
     }
 
-    for(auto& panel : viewPanelElements){
+    for(auto& panel : viewPanelElements)
+    {
         panel->draw(target);
     }
 
@@ -2774,30 +3318,37 @@ bool CVPlotPanel::draw(sf::RenderTarget* target){
 
 }
 
-void CVPlotPanel::move(const sf::Vector2f& distance){
+void CVPlotPanel::move(const sf::Vector2f& distance)
+{
     CVViewPanel::move(distance);
-    for(auto& block : highlightBlocks){
+    for(auto& block : highlightBlocks)
+    {
         block.move(distance);
     }
     logo.move(distance);
 }
 
-void CVPlotPanel::setPosition(const sf::Vector2f& position){
+void CVPlotPanel::setPosition(const sf::Vector2f& position)
+{
     move(position - getPosition());
 }
 
-std::vector<unsigned int> CVPlotPanel::getAllSelectedIndices(){
-    std::vector<unsigned int> output;
-    for(auto& plot : selectedPlots){
+vector<unsigned int> CVPlotPanel::getAllSelectedIndices()
+{
+    vector<unsigned int> output;
+    for(auto& plot : selectedPlots)
+    {
         append(output, plot->getSelectedIndices());
     }
     rmDuplicates(output);
     return output;
 }
 
-std::vector<unsigned int> CVPlotPanel::getCommonSelectedIndices(){
-    std::vector<unsigned int> output;
-    for(auto& plot : selectedPlots){
+vector<unsigned int> CVPlotPanel::getCommonSelectedIndices()
+{
+    vector<unsigned int> output;
+    for(auto& plot : selectedPlots)
+    {
         if(output.size() < 1) output = plot->getSelectedIndices();
         else output = shared(output, plot->getSelectedIndices());
     }

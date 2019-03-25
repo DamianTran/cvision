@@ -49,15 +49,18 @@
 #include "EZC/toolkit/string.hpp"
 
 using namespace EZC;
+using namespace std;
 
 namespace cvis
 {
 
 CVTextBox::CVTextBox(CVView* View,
-                     sf::Vector2f position, float width, float height,
-                     sf::Color fillColor,
-                     sf::Color borderColor,
-                     float borderWidth):
+                     const sf::Vector2f& position,
+                     const float& width,
+                     const float& height,
+                     const sf::Color& fillColor,
+                     const sf::Color& borderColor,
+                     const float& borderWidth):
     CVBox(View, position, width, height,
           fillColor, borderColor, borderWidth),
 
@@ -69,11 +72,13 @@ CVTextBox::CVTextBox(CVView* View,
 }
 
 CVTextBox::CVTextBox(CVView* View,
-                     sf::Vector2f position, float width, float height,
-                     textEntry textInfo,
-                     sf::Color fillColor,
-                     sf::Color borderColor,
-                     float borderWidth):
+                     const sf::Vector2f& position,
+                     const float& width,
+                     const float& height,
+                     const TextEntry& textInfo,
+                     const sf::Color& fillColor,
+                     const sf::Color& borderColor,
+                     const float& borderWidth):
     CVBox(View, position, width, height,
           fillColor, borderColor, borderWidth),
     textInfo(textInfo),
@@ -96,7 +101,7 @@ void CVTextBox::alignText()
                  i = 1;
 
     for(auto& text : displayText)
-    {;
+    {
 
         textBounds = text.getGlobalBounds();
 
@@ -271,7 +276,7 @@ void CVTextBox::wrapText()
 
         if(textBounds.width > bounds.width - 2*textPadding)
         {
-            std::string displayTextString = text.getString();
+            wstring displayTextString = text.getString();
             for(size_t i = 0; i < displayTextString.size(); ++i)  // Add new line characters to fit text horizontally
             {
                 if(text.findCharacterPos(i).x - bounds.left > bounds.width - 2*textPadding)
@@ -305,13 +310,26 @@ void CVTextBox::wrapText()
         }
     }
 
-    if(bExpand) updateBounds();
+    if(bExpand)
+    {
+        updateBounds();
+    }
     alignText();
 }
 
-void CVTextBox::setString(const std::string& newString)
+void CVTextBox::setString(const string& newString)
 {
-    if(displayText.size() > 0)
+    if(!displayText.empty())
+    {
+        displayText.front().setString(UTF8_to_UTF16(newString));
+        if(bWrapText) wrapText();
+    }
+    alignText();
+}
+
+void CVTextBox::setString(const wstring& newString)
+{
+    if(!displayText.empty())
     {
         displayText.front().setString(newString);
         if(bWrapText) wrapText();
@@ -319,19 +337,36 @@ void CVTextBox::setString(const std::string& newString)
     alignText();
 }
 
-void CVTextBox::fitText()
+void CVTextBox::fitText(const bool& fitX,
+                        const bool& fitY)
 {
     if(displayText.empty())
     {
         setSize(sf::Vector2f(0,0));
     }
-    else
+    else if(fitX || fitY)
     {
         sf::FloatRect textBounds = displayText.front().getGlobalBounds();
         expandBounds(textBounds, textPadding);
-        CVBox::setPosition(sf::Vector2f(textBounds.left, textBounds.top));
-        CVBox::setSize(sf::Vector2f(textBounds.width, textBounds.height));
+
+        sf::Vector2f newPosition = getPosition();
+        sf::Vector2f newSize = getSize();
+
+        if(fitX)
+        {
+            newPosition.x = textBounds.left;
+            newSize.x = textBounds.width;
+        }
+        if(fitY)
+        {
+            newPosition.y = textBounds.top;
+            newSize.y = textBounds.height;
+        }
+
+        CVBox::setPosition(newPosition);
+        CVBox::setSize(newSize);
     }
+
     alignText();
 }
 
@@ -385,6 +420,7 @@ void CVTextBox::updateBounds()
     if(!bSpriteOnly)
     {
         sf::FloatRect textBounds = get_element_bounds(displayText);
+        expandBounds(textBounds, textPadding);
 
         if(textBounds.left < bounds.left) bounds.left = textBounds.left;
         if(textBounds.top < bounds.top) bounds.top = textBounds.top;
@@ -400,17 +436,17 @@ void CVTextBox::updateBounds()
 
 void CVTextBox::sendData(CVEvent& event) const
 {
-    std::string cpyData = textInfo.text;
+    string cpyData = textInfo.text;
     event.sendData(cpyData.c_str(), cpyData.size(), CV_EVENT_LMB);
 }
 
-std::string CVTextBox::getText() const
+string CVTextBox::getText() const
 {
-    std::string newLine;
+    wstring newLine;
 
-    if(displayText.empty()) return newLine;
+    if(displayText.empty()) return string();
 
-    std::stringstream output;
+    wstringstream output;
 
     for(size_t i = 0, j; i < displayText.size(); ++i)
     {
@@ -426,7 +462,7 @@ std::string CVTextBox::getText() const
         output << newLine;
         if(i < displayText.size() - 1) output << '\n';
     }
-    return output.str();
+    return UTF16_to_UTF8(output.str());
 }
 
 const sf::Color& CVTextBox::getTextColor() const
@@ -434,7 +470,7 @@ const sf::Color& CVTextBox::getTextColor() const
     return textInfo.textColor;
 }
 
-void CVTextBox::addTextEntry(textEntry newText, float padding, bool regular)
+void CVTextBox::addTextEntry(const TextEntry& newText, float padding, bool regular)
 {
 
     sf::Vector2f newTextPosition;
@@ -459,7 +495,7 @@ void CVTextBox::addTextEntry(textEntry newText, float padding, bool regular)
     if(appFont(newText.font))
     {
         displayText.emplace_back(
-            newText.text,
+            UTF8_to_UTF16(newText.text),
             *appFont(newText.font),
             newText.fontSize
         );
@@ -467,7 +503,7 @@ void CVTextBox::addTextEntry(textEntry newText, float padding, bool regular)
     else
     {
         displayText.emplace_back();
-        displayText.back().setString(newText.text);
+        displayText.back().setString(UTF8_to_UTF16(newText.text));
         displayText.back().setCharacterSize(newText.fontSize);
     }
 
@@ -503,7 +539,7 @@ void CVTextBox::addTextEntry(textEntry newText, float padding, bool regular)
     if(bExpand) updateBounds();
 }
 
-void CVTextBox::addTextEntry(const textEntry& newText, const sf::Vector2f& position)
+void CVTextBox::addTextEntry(const TextEntry& newText, const sf::Vector2f& position)
 {
 
     if(displayText.empty())
@@ -517,14 +553,14 @@ void CVTextBox::addTextEntry(const textEntry& newText, const sf::Vector2f& posit
 
     if(appFont(newText.font))
     {
-        displayText.emplace_back(newText.text,
-                                 *mainApp()->fonts[newText.font],
+        displayText.emplace_back(UTF8_to_UTF16(newText.text),
+                                 *appFont(newText.font),
                                  newText.fontSize);
     }
     else
     {
         displayText.emplace_back();
-        displayText.back().setString(newText.text);
+        displayText.back().setString(UTF8_to_UTF16(newText.text));
         displayText.back().setCharacterSize(newText.fontSize);
     }
 
@@ -594,7 +630,7 @@ void CVTextBox::addTextEntry(const textEntry& newText, const sf::Vector2f& posit
 
 }
 
-void CVTextBox::setFont(const std::string& font)
+void CVTextBox::setFont(const string& font)
 {
     if(appFont(font))
     {
@@ -616,6 +652,13 @@ void CVTextBox::setFont(const sf::Font& font)
     {
         text.setFont(font);
     }
+}
+
+void CVTextBox::setSize(const sf::Vector2f& newSize)
+{
+    CVBox::setSize(newSize);
+    if(bWrapText) wrapText();
+    alignText();
 }
 
 void CVTextBox::setPosition(const sf::Vector2f& position)
@@ -732,7 +775,38 @@ bool CVTextBox::update(CVEvent& event, const sf::Vector2f& mousePos)
     return true;
 }
 
-void CVTextBox::setText(const unsigned int textIndex, std::string newText)
+void CVTextBox::setText(const unsigned int& textIndex, const char* newText)
+{
+    if(displayText.size() > textIndex)
+    {
+        string newTextStr(newText);
+        displayText[textIndex].setString(UTF8_to_UTF16(newText));
+        if(bWrapText) wrapText();
+        else alignText();
+    }
+}
+
+void CVTextBox::setText(const unsigned int& textIndex, const string& newText)
+{
+    if(displayText.size() > textIndex)
+    {
+        displayText[textIndex].setString(UTF8_to_UTF16(newText));
+        if(bWrapText) wrapText();
+        else alignText();
+    }
+}
+
+void CVTextBox::setText(const unsigned int& textIndex, const wchar_t* newText)
+{
+    if(displayText.size() > textIndex)
+    {
+        displayText[textIndex].setString(newText);
+        if(bWrapText) wrapText();
+        else alignText();
+    }
+}
+
+void CVTextBox::setText(const unsigned int& textIndex, const sf::String& newText)
 {
     if(displayText.size() > textIndex)
     {
@@ -743,7 +817,7 @@ void CVTextBox::setText(const unsigned int textIndex, std::string newText)
 }
 
 CVText::CVText(CVView* View,
-               const textEntry& textInfo,
+               const TextEntry& textInfo,
                const sf::Vector2f& position,
                const sf::Vector2f& size,
                const bool& bWrap):

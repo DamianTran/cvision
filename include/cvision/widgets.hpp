@@ -70,7 +70,7 @@ class CVTitleBar: public CVTextBox{
 public:
 
     CVISION_API CVTitleBar(CVView* View, const uint8_t& alignment, const float& height, const float& width,
-               const textEntry& textInfo, const std::string& logo = "", const sf::Color& fillColor = sf::Color(128,128,128),
+               const TextEntry& textInfo, const std::string& logo = "", const sf::Color& fillColor = sf::Color(128,128,128),
                const sf::Color& outlineColor = sf::Color(60,60,60), const float& outlineWidth = 1.0f);
 
     CVISION_API ~CVTitleBar();
@@ -206,7 +206,7 @@ public:
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
 
     CVISION_API CVProgressBar(CVView* View, sf::Vector2f position, float width, float height,
-                textEntry textInfo = textEntry(), sf::Color fillColor = sf::Color(128,128,128),
+                TextEntry textInfo = TextEntry(), sf::Color fillColor = sf::Color(128,128,128),
                   sf::Color progressColor = sf::Color(60,60,60),
                   sf::Color borderColor = sf::Color::Black,
                 float borderWidth = 1.0f);

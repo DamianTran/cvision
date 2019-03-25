@@ -76,7 +76,7 @@ CVListPanel::CVListPanel(CVView* parentView, std::string panelTag, sf::Color bac
                          bListItemHighlight(true){
     scrollBarY.setPanelSize(size.y - 2*outerPadding);
     scrollBarY.setPosition(sf::Vector2f(bounds.left + bounds.width - outerPadding/2,
-                                                        bounds.top + bounds.height - scrollBarPadding));
+                                        bounds.top + scrollBarPadding));
 
     colorTheme.emplace_back(backgroundColor);
     darken(colorTheme.back(), 50);
@@ -85,6 +85,15 @@ CVListPanel::CVListPanel(CVView* parentView, std::string panelTag, sf::Color bac
     colorTheme.emplace_back(colorTheme.back());
     brighten(colorTheme.back(), 50);
 
+}
+
+void CVListPanel::setSelectionStatus(const bool& status)
+{
+    bSelect = status;
+    if(!status)
+    {
+        selected.clear();
+    }
 }
 
 void CVListPanel::toggleSelection(CVElement* element){
@@ -218,7 +227,7 @@ void CVListPanel::addTextEntry(const std::string& newText, const unsigned int& i
     newItem->setTextWrap(true);
     newItem->setExpand(true);
 
-    newItem->addTextEntry(textEntry(newText, textInfo.font, textInfo.fontSize, textInfo.alignment, textInfo.textColor),
+    newItem->addTextEntry(TextEntry(newText, textInfo.font, textInfo.fontSize, textInfo.alignment, textInfo.textColor),
                           sf::Vector2f(newItem->getBounds().left + innerPadding,
                                        newItem->getBounds().top + innerPadding));
 
@@ -267,7 +276,7 @@ void CVListPanel::removeTextEntry(const unsigned int& index){
     }
 }
 
-bool CVListPanel::textEntryExists(const std::string& text) const
+bool CVListPanel::TextEntryExists(const std::string& text) const
 {
     return anyEqual(text, listTags);
 }
@@ -342,6 +351,7 @@ void CVListPanel::setListHighlightColor(const sf::Color& newColor)
 }
 
 void CVListPanel::setDragAndDrop(const bool& status){
+    bDragAndDrop = status;
     for(auto& item : viewPanelElements){
         item->setDragAndDrop(status);
     }
@@ -368,9 +378,9 @@ void CVListPanel::addPanelElement(CVElement* newElement, std::string newTag, con
         outerPaddingActual = (getSize().x - newElement->getSize().x)/2;
     }
 
-    if(numPanels() == 0){
-        newElement->setPosition(bounds.left + outerPadding,
-                               bounds.top + outerPadding);
+    if(!numPanels()){
+        newElement->setPosition(bounds.left + outerPaddingActual,
+                               bounds.top);
     }
     else{
         if(index < numPanels()){
@@ -389,23 +399,26 @@ void CVListPanel::addPanelElement(CVElement* newElement, std::string newTag, con
     newElement->setHighlightableStatus(bListItemHighlight);
     newElement->setHighlightColor(getListHighlightColor());
 
-    newElement->setDragAndDrop(true);
+    newElement->setDragAndDrop(bDragAndDrop);
 
     CVViewPanel::addPanelElement(newElement, newTag, index);
 }
 
 void CVListPanel::removePanelElement(const unsigned int& index){
+
+    if(!numPanels()) return;
+
     if(index > numPanels()){
         float shiftY = viewPanelElements.back()->getBounds().height;
         remove(viewPanelElements.back(), selected);
-        CVViewPanel::removePanelElement(index);
+        CVViewPanel::removePanelElement(numPanels() - 1);
     }
     else{
         float shiftY = viewPanelElements[index]->getBounds().height;
         remove(viewPanelElements[index], selected);
         CVViewPanel::removePanelElement(index);
         for(size_t i = index; i < numPanels(); ++i){
-            viewPanelElements[i]->move(0.0f,-shiftY);
+            viewPanelElements[i]->anim_move(sf::Vector2f(0.0f,-shiftY), 1100);
         }
         scrollBarY.scroll(-shiftY);
     }

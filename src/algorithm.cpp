@@ -42,7 +42,9 @@
 /////////////////////////////////////////////////////////////  **/
 
 #include "cvision/algorithm.hpp"
-#include "EZC/toolkit/string.hpp"
+#include "cvision/element.hpp"
+
+#include <EZC/toolkit/string.hpp>
 
 #ifndef CVIS_TEXT_BOX
 #define ALIGN_LEFT                      0
@@ -429,6 +431,66 @@ void physicsSpread(std::vector<sf::Sprite*>& shapes,
 
                 shapes[j]->move(moveDist.x*sizeRatio, moveDist.y*sizeRatio);
                 shapes[i]->move(-moveDist.x*(1.0f-sizeRatio), -moveDist.y*(1.0f-sizeRatio));
+
+            }
+        }
+    }
+}
+
+void physicsSpread(std::vector<CVElement*>& elements,
+                   const float& strength,
+                   const BYTE& direction){
+
+    sf::FloatRect shape1Bounds, shape2Bounds;
+    sf::Vector2f moveDist(0.0f, 0.0f),
+                oriDist(0.0f, 0.0f),
+                maxDist(0.0f, 0.0f);
+    float sizeRatio;
+
+    for(size_t i = 0, j, L = elements.size(); i + 1 < L; ++i){
+
+        if(!elements[i]->isVisible()) continue;
+
+        for(j = i + 1; j < L; ++j){
+
+            if(!elements[j]->isVisible()) continue;
+
+            shape1Bounds = elements[i]->getBounds();
+            shape2Bounds = elements[j]->getBounds();
+
+            if(shape1Bounds.intersects(shape2Bounds)){
+
+                sizeRatio = (shape1Bounds.width*shape1Bounds.height)/
+                (shape1Bounds.width*shape1Bounds.height + shape2Bounds.height*shape2Bounds.width);
+
+                if(direction & CV_DIRECTION_X){
+                    oriDist.x = shape1Bounds.left + shape1Bounds.width/2 - shape2Bounds.left - shape2Bounds.width/2;
+                    maxDist.x = shape1Bounds.width/2 + shape2Bounds.width/2;
+                    if((shape2Bounds.left + shape2Bounds.width/2) >
+                       (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (maxDist.x - oriDist.x)*strength/2;
+                    else if((shape2Bounds.left + shape2Bounds.width/2) <
+                       (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (oriDist.x - maxDist.x)*strength/2;
+                    else{
+                        if(rand(0.0f,10.0f) >= 5.0f) moveDist.x = (maxDist.x - oriDist.x)*strength;
+                        else moveDist.x = (oriDist.x - maxDist.x)*strength;
+                   }
+                }
+
+                if(direction & CV_DIRECTION_Y){
+                    oriDist.y = shape1Bounds.top + shape1Bounds.height/2 - shape2Bounds.top - shape2Bounds.height/2;
+                    maxDist.y = shape1Bounds.height/2 + shape2Bounds.height/2;
+                    if((shape2Bounds.top + shape2Bounds.height/2) >
+                       (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
+                    else if((shape2Bounds.top + shape2Bounds.height/2) <
+                       (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (oriDist.y - maxDist.y)*strength/2;
+                    else{
+                        if(rand(0.0f,10.0f) >= 5.0f) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
+                        else moveDist.y = (oriDist.y - maxDist.y)*strength/2;
+                   }
+                }
+
+                elements[j]->move(moveDist.x*sizeRatio, moveDist.y*sizeRatio);
+                elements[i]->move(-moveDist.x*(1.0f-sizeRatio), -moveDist.y*(1.0f-sizeRatio));
 
             }
         }

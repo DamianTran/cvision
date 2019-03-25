@@ -43,11 +43,13 @@
 
 #include "cvision/panel/toggle.hpp"
 
+using namespace std;
+
 namespace cvis
 {
 
-CVTogglePanel::CVTogglePanel(CVView* parentView, std::string panelTag, sf::Color backgroundColor,
-                     const sf::Vector2f& size, bool bFitToWindow,
+CVTogglePanel::CVTogglePanel(CVView* parentView, const string& panelTag, const sf::Color& backgroundColor,
+                     const sf::Vector2f& size, const bool& bFitToWindow,
                      const sf::Vector2f& position):
                          CVBasicViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position),
                          active_index(0)
@@ -67,23 +69,16 @@ bool CVTogglePanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     if(active_index < numPanels())
     {
-        return viewPanelElements[active_index]->update(event, mousePos);
+        viewPanelElements[active_index]->update(event, mousePos);
     }
 
-    return false;
-}
-
-bool CVTogglePanel::draw(sf::RenderTarget* target)
-{
-
-    if(!CVTextBox::draw(target))
+    if(trigger_waiting())
     {
-        return false;
-    }
-
-    if(active_index < numPanels())
-    {
-        return viewPanelElements[active_index]->draw(target);
+        string trigger = take_trigger("SwitchTo");
+        if(!trigger.empty())
+        {
+            switch_to(trigger);
+        }
     }
 
     return false;
@@ -91,25 +86,61 @@ bool CVTogglePanel::draw(sf::RenderTarget* target)
 
 void CVTogglePanel::switch_to(const size_t& index)
 {
-    if(index < numPanels())
+    for(size_t i = 0; i < numPanels(); ++i)
     {
-        active_index = index;
+        if(i == index)
+        {
+            viewPanelElements[i]->setVisible(true);
+        }
+        else
+        {
+            viewPanelElements[i]->setVisible(false);
+        }
     }
 
+    active_index = index;
 }
 
-void CVTogglePanel::switch_to(const std::string& tag)
+void CVTogglePanel::switch_to(const string& tag)
 {
 
     for(size_t i = 0; i < numPanels(); ++i)
     {
-        if(viewPanelTags[i] == tag)
+        if(viewPanelElements[i]->tag() == tag)
         {
-            switch_to(i);
-            return;
+            viewPanelElements[i]->setVisible(true);
+            active_index = i;
+        }
+        else
+        {
+            viewPanelElements[i]->setVisible(false);
         }
     }
 
+}
+
+void CVTogglePanel::addPanelElement(CVElement* element,
+                                    const string& tag,
+                                    const unsigned int& index)
+{
+    CVViewPanel::addPanelElement(element, tag, index);
+
+    if(active_index >= index)
+    {
+        ++active_index;
+    }
+
+    if(numPanels() > 1)
+    {
+        if(index < numPanels())
+        {
+            viewPanelElements[index]->setVisible(false);
+        }
+        else
+        {
+            viewPanelElements.back()->setVisible(false);
+        }
+    }
 }
 
 

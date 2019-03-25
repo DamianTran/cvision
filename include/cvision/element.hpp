@@ -289,7 +289,16 @@ public:
     {
         trigger_targets.emplace_back(target, signal, state);
     }
-    CVISION_API void sendTriggers() const;
+
+    inline void addTriggerTarget(const std::string& ID,
+                                 const std::string& signal,
+                                 const unsigned int& state = UINT_MAX)
+    {
+        trigger_targets.emplace_back(getElementById(ID), signal, state);
+        trigger_targets.back().tag = ID;
+    }
+
+    CVISION_API void sendTriggers();
     CVISION_API void sendTrigger(CVElement* target, const std::string& signal);
 
     inline bool getTrigger(){
@@ -458,11 +467,11 @@ public:
 
     // ===================================================================== **/
 
-    inline std::string tag()
+    inline const std::string& tag() const noexcept
     {
         return IDtag;
     }
-    inline void setTag(const std::string& newTag)
+    inline void setTag(const std::string& newTag) noexcept
     {
         IDtag = newTag;
     }
@@ -576,7 +585,8 @@ public:
     CVISION_API void addSprite(const sf::Texture* texture,
                    const sf::Vector2f& position,
                    const sf::Vector2f& size = sf::Vector2f(0,0),
-                   const sf::Color& fillColor = sf::Color::White);       // Add a new sprite
+                   const sf::Color& fillColor = sf::Color::White,
+                   const sf::IntRect& subRect = sf::IntRect(0, 0, 0, 0));       // Add a new sprite
     CVISION_API void removeSprites(const std::string& tag);                         // Remove all sprites with this tag
     CVISION_API bool has_sprite(const std::string& tag) const;                     // Check if a sprite of this type has been added
 

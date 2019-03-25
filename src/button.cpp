@@ -51,7 +51,7 @@ using namespace EZC;
 namespace cvis{
 
 CVButton::CVButton(CVView* View, const sf::Vector2f& position, float width, float height,
-                const textEntry& textInfo, const std::string& icon, sf::Color fillColor, sf::Color borderColor,
+                const TextEntry& textInfo, const std::string& icon, sf::Color fillColor, sf::Color borderColor,
                 float borderWidth):
                     CVTextBox(View, position, width, height, textInfo, fillColor, borderColor, borderWidth),
                     bFadeInHover(false),

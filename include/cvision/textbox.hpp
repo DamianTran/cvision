@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -77,28 +77,12 @@ namespace cvis
 class CVEvent;
 class CVView;
 
-struct CVISION_API textEntry
+class CVISION_API TextEntry
 {
-    std::string text, font;
-    unsigned int fontSize, alignment;
-    sf::Color textColor;
-    sf::Text::Style textStyle;
+public:
 
-    inline void operator=(std::string newText)
-    {
-        text = newText;
-    }
-    inline void operator=(unsigned int newAlignment)
-    {
-        alignment = newAlignment;
-    }
-    inline void operator=(sf::Color newColor)
-    {
-        textColor = newColor;
-    }
-
-    textEntry() { }
-    textEntry(std::string text,
+    TextEntry() { }
+    TextEntry(std::string text,
               std::string font,
               unsigned int size = 12,
               unsigned int alignment = ALIGN_CENTER,
@@ -111,6 +95,28 @@ struct CVISION_API textEntry
         textColor(textColor),
         textStyle(textStyle) { }
 
+    std::string text;
+    std::string font;
+
+    unsigned int fontSize;
+    unsigned int alignment;
+
+    sf::Color textColor;
+    sf::Text::Style textStyle;
+
+    inline void operator=(const std::string& newText)
+    {
+        text = newText;
+    }
+    inline void operator=(const unsigned int& newAlignment)
+    {
+        alignment = newAlignment;
+    }
+    inline void operator=(const sf::Color& newColor)
+    {
+        textColor = newColor;
+    }
+
 };
 
 class CVISION_API CVTextBox:public CVBox
@@ -120,7 +126,7 @@ protected:
     friend class CVView;
 
     uint8_t textAlignment;
-    textEntry textInfo;
+    TextEntry textInfo;
 
     std::vector<sf::Text> displayText;
 
@@ -151,19 +157,32 @@ public:
     }
 
     CVISION_API void setString(const std::string& newString);
-    CVISION_API void fitText(); // Fit the background panel to the text
+    CVISION_API void setString(const std::wstring& newString);
 
-    inline void setTextTemplate(const textEntry& textInfo)
+    CVISION_API void fitText(const bool& fitX = true,
+                             const bool& fitY = true); // Fit the background panel to the text
+
+    inline void setTextTemplate(const TextEntry& textInfo)
     {
         this->textInfo = textInfo;
     }
-    CVISION_API void setText(const unsigned int textIndex, std::string newText);
+
+    CVISION_API void setText(const unsigned int& textIndex, const char* newText);
+    CVISION_API void setText(const unsigned int& textIndex, const std::string& newText);
+
+    CVISION_API void setText(const unsigned int& textIndex, const wchar_t* newText);
+    inline void setText(const unsigned int& textIndex, const std::wstring& newText)
+    {
+        setText(textIndex, newText.c_str());
+    }
+
+    CVISION_API void setText(const unsigned int& textIndex, const sf::String& newText);
     CVISION_API void setTextSize(const unsigned int& newSize);
 
-    CVISION_API void addTextEntry(textEntry newText, float padding = 12.0f, bool regular = true);
-    CVISION_API void addTextEntry(const textEntry& newText, const sf::Vector2f& position);
+    CVISION_API void addTextEntry(const TextEntry& newText, float padding = 12.0f, bool regular = true);
+    CVISION_API void addTextEntry(const TextEntry& newText, const sf::Vector2f& position);
 
-    inline const textEntry& getTextInfo()
+    inline const TextEntry& getTextInfo()
     {
         return textInfo;
     }
@@ -177,6 +196,12 @@ public:
 
     CVISION_API void setFont(const std::string& newFont);
     CVISION_API void setFont(const sf::Font& newFont);
+
+    CVISION_API void setSize(const sf::Vector2f& newSize);
+    inline void setSize(const float& x, const float& y)
+    {
+        setSize(sf::Vector2f(x, y));
+    }
 
     CVISION_API void setTextWrap(const bool& state);
     CVISION_API void setTextPadding(const float& newPadding);
@@ -199,20 +224,20 @@ public:
     }
 
     CVISION_API CVTextBox(CVView* View,
-              sf::Vector2f position = sf::Vector2f(0.0f,0.0f),
-              float width = 0.0f,
-              float height = 0.0f,
-              textEntry textInfo = textEntry("", ""),
-              sf::Color fillColor = sf::Color::Transparent,
-              sf::Color borderColor = sf::Color::Transparent,
-              float borderWidth = 0.0f);
+              const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f),
+              const float& width = 0.0f,
+              const float& height = 0.0f,
+              const TextEntry& textInfo = TextEntry("", ""),
+              const sf::Color& fillColor = sf::Color::Transparent,
+              const sf::Color& borderColor = sf::Color::Transparent,
+              const float& borderWidth = 0.0f);
     CVISION_API CVTextBox(CVView* View,
-              sf::Vector2f position = sf::Vector2f(0.0f,0.0f),
-              float width = 0.0f,
-              float height = 0.0f,
-              sf::Color fillColor = sf::Color::Transparent,
-              sf::Color borderColor = sf::Color::Transparent,
-              float borderWidth = 0.0f);
+              const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f),
+              const float& width = 0.0f,
+              const float& height = 0.0f,
+              const sf::Color& fillColor = sf::Color::Transparent,
+              const sf::Color& borderColor = sf::Color::Transparent,
+              const float& borderWidth = 0.0f);
 
 };
 
@@ -226,7 +251,7 @@ class CVISION_API CVText : public CVTextBox
 public:
 
     CVISION_API CVText(CVView* View,
-           const textEntry& textInfo,
+           const TextEntry& textInfo,
            const sf::Vector2f& location = sf::Vector2f(0.0f,0.0f),
            const sf::Vector2f& size = sf::Vector2f(0.0f,0.0f),
            const bool& bWrap = false);

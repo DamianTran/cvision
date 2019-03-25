@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -166,15 +166,22 @@ struct CVISION_API CVTriggerTarget
     CVTriggerTarget():
         target(nullptr),
         state(UINT_MAX) { }
+
     CVTriggerTarget(CVElement* newTarget,
                     const std::string& newSignal = "",
+                    const unsigned int& state = UINT_MAX);
+
+    CVTriggerTarget(const std::string& targetID,
+                    const std::string& newSignal = "",
                     const unsigned int& state = UINT_MAX):
-        target(newTarget),
+        target(nullptr),
+        tag(targetID),
         signal(newSignal),
-        state(state) { }
+        state(state){ }
 
     CVElement* target;
 
+    std::string tag;            // Tag to retry target acquisition if applicable
     std::string signal;         // Information sent to the target
 
     unsigned int state;

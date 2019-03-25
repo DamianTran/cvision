@@ -75,6 +75,8 @@
 namespace cvis
 {
 
+class CVElement;
+
 template<typename T1, typename T2> constexpr bool operator==(const sf::Vector2<T1>& LHS, const sf::Vector2<T2>& RHS)
 {
     return ((T1)RHS.x == LHS.x) && ((T1)RHS.y == LHS.y);
@@ -165,7 +167,7 @@ template<typename T> std::ostream& operator<<(std::ostream& output, const sf::Ve
 }
 
 template<typename T> std::ostream& operator<<(std::ostream& output, const sf::Rect<T>& box){
-    output << "[Left: " << box.left << ";Top: " << box.top << ";Width: " << box.width << ";Height: " << box.height << ']';
+    output << "Rect (Left: " << box.left << ";Top: " << box.top << ";Width: " << box.width << ";Height: " << box.height << ')';
     return output;
 }
 
@@ -306,6 +308,14 @@ template<typename T> sf::Rect<T> averageBounds(std::vector<sf::Rect<T>>& rectVec
     return output;
 }
 
+template<typename T> sf::Vector2<T> getBoundCenter(const sf::Rect<T>& bounds)
+{
+
+    return sf::Vector2<T>(bounds.left + bounds.width/2,
+                          bounds.top + bounds.height/2);
+
+}
+
 CVISION_API sf::Rect<float> averageTextSize(std::vector<sf::Text>& textItems);
 
 template<typename T> inline sf::Vector2f element_range_y(const std::vector<T>& elements){
@@ -334,6 +344,21 @@ template<typename T> inline sf::FloatRect get_element_bounds(const std::vector<T
     sf::FloatRect bounds, output(NAN, NAN, 0.0f, 0.0f);
     for(auto& item : elements){
         bounds = item.getGlobalBounds();
+        if(isnan(output.top) || (bounds.top < output.top)) output.top = bounds.top;
+        if(isnan(output.height) || (bounds.top + bounds.height > output.top + output.height))
+            output.height = bounds.top + bounds.height - output.top;
+
+        if(isnan(output.left) || (bounds.left < output.left)) output.left = bounds.left;
+        if(isnan(output.width) || (bounds.left + bounds.width > output.left + output.width))
+            output.width = bounds.left + bounds.width - output.left;
+    }
+    return output;
+}
+
+template<typename T> inline sf::FloatRect get_element_bounds(const std::vector<T*>& elements){
+    sf::FloatRect bounds, output(NAN, NAN, 0.0f, 0.0f);
+    for(auto& item : elements){
+        bounds = item->getGlobalBounds();
         if(isnan(output.top) || (bounds.top < output.top)) output.top = bounds.top;
         if(isnan(output.height) || (bounds.top + bounds.height > output.top + output.height))
             output.height = bounds.top + bounds.height - output.top;
@@ -451,9 +476,18 @@ template<typename bound_t, typename shape_t> void applyBounds(const sf::Rect<bou
     shape.setSize(sf::Vector2f(bounds.width, bounds.height));
 }
 
-CVISION_API void physicsSpread(std::vector<sf::Sprite>& sprites, const float& strength, const unsigned char& direction = CV_DIRECTION_X);
-CVISION_API void physicsSpread(std::vector<sf::Shape*>& shapes, const float& strength, const unsigned char& direction = CV_DIRECTION_X);
-CVISION_API void physicsSpread(std::vector<sf::Sprite*>& shapes, const float& strength, const unsigned char& direction = CV_DIRECTION_X);
+CVISION_API void physicsSpread(std::vector<sf::Sprite>& sprites,
+                               const float& strength,
+                               const unsigned char& direction = CV_DIRECTION_X);
+CVISION_API void physicsSpread(std::vector<sf::Shape*>& shapes,
+                               const float& strength,
+                               const unsigned char& direction = CV_DIRECTION_X);
+CVISION_API void physicsSpread(std::vector<sf::Sprite*>& shapes,
+                               const float& strength,
+                               const unsigned char& direction = CV_DIRECTION_X);
+CVISION_API void physicsSpread(std::vector<CVElement*>& elements,
+                               const float& strength,
+                               const unsigned char& direction = CV_DIRECTION_X | CV_DIRECTION_Y);
 
 CVISION_API double get_angle(const sf::Vector2f& origin, const sf::Vector2f& destination); // Returns radians, in the cartesian plane (CW rotation)
 

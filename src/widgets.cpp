@@ -48,7 +48,7 @@
 namespace cvis{
 
 CVTitleBar::CVTitleBar(CVView* View, const uint8_t& alignment, const float& width, const float& height,
-               const textEntry& textInfo, const std::string& logo, const sf::Color& fillColor,
+               const TextEntry& textInfo, const std::string& logo, const sf::Color& fillColor,
                const sf::Color& outlineColor, const float& outlineWidth):
                    CVTextBox(View, sf::Vector2f(0.0f,0.0f), width, height, fillColor, outlineColor, outlineWidth),
                    alignment(alignment),
@@ -88,21 +88,21 @@ CVTitleBar::CVTitleBar(CVView* View, const uint8_t& alignment, const float& widt
     #else
     closeButton = new CVButton(View, sf::Vector2f(width - height * 1.8f, 0.0f),
                                height*1.8, height,
-                               textEntry("", ""), "gen_x", fillColor,
+                               TextEntry("", ""), "gen_x", fillColor,
                                outlineColor, outlineWidth);
     closeButton->setSpriteColor(sf::Color(220,220,220,220));
     closeButton->setSpriteScale(0.4f);
 
     resizeButton = new CVButton(View, sf::Vector2f(closeButton->getPosition().x - height * 1.8f, 0.0f),
                                height*1.8, height,
-                               textEntry("", ""), "resize_button", fillColor,
+                               TextEntry("", ""), "resize_button", fillColor,
                                outlineColor, outlineWidth);
     resizeButton->setSpriteColor(sf::Color(220,220,220,220));
     resizeButton->setSpriteScale(0.4f);
 
     minimizeButton = new CVButton(View, sf::Vector2f(resizeButton->getPosition().x - height * 1.8f, 0.0f),
                                height*1.8, height,
-                               textEntry("", ""), "bottom_line", fillColor,
+                               TextEntry("", ""), "bottom_line", fillColor,
                                outlineColor, outlineWidth);
     minimizeButton->setSpriteColor(sf::Color(220,220,220,220));
     minimizeButton->setSpriteScale(0.4f);
@@ -449,7 +449,7 @@ void CVScrollBar::setScrollOffset(const float& newOffset){
 }
 
 CVProgressBar::CVProgressBar(CVView* View, sf::Vector2f position, float width, float height,
-                textEntry textInfo, sf::Color fillColor, sf::Color progressColor,
+                TextEntry textInfo, sf::Color fillColor, sf::Color progressColor,
                 sf::Color borderColor, float borderWidth):
                     CVTextBox(View, position, width, height, textInfo, fillColor, borderColor, borderWidth),
                     progress(0.0f),

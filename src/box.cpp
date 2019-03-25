@@ -108,7 +108,7 @@ void CVBox::highlight(const bool& state)
 
 void CVBox::setPosition(const sf::Vector2f& position)
 {
-    move(position - getPosition());
+    CVBox::move(position - getPosition());
 }
 
 void CVBox::move(const sf::Vector2f& offset)

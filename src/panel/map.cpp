@@ -122,7 +122,7 @@ CVMapPanel::CVMapPanel(CVView* parentView, std::string panelTag, sf::Color backg
 
     expandBounds(outer_bounds, outerSelectDist);
 
-    textEntryIndex = displayText.size();
+    TextEntryIndex = displayText.size();
     addTextEntry(textInfo, sf::Vector2f(bounds.left, bounds.top - outerSelectDist - 6.0f));
     extraInfoIndex = displayText.size();
     addTextEntry(textInfo, sf::Vector2f(bounds.left, bounds.top + bounds.height + outerSelectDist));
@@ -130,11 +130,11 @@ CVMapPanel::CVMapPanel(CVView* parentView, std::string panelTag, sf::Color backg
 };
 
 void CVMapPanel::setTitle(const std::string& newTitle){
-    displayText[textEntryIndex].setString(newTitle);
+    displayText[TextEntryIndex].setString(newTitle);
 }
 
 std::string CVMapPanel::getTitle() const{
-    return std::string(displayText[textEntryIndex].getString());
+    return std::string(displayText[TextEntryIndex].getString());
 }
 
 void CVMapPanel::setCoords(const sf::Rect<int>& newCoords, const bool& morph){
@@ -268,7 +268,7 @@ sf::Text& CVMapPanel::extraInfoText(){
 }
 
 sf::Text& CVMapPanel::titleText(){
-    return displayText[textEntryIndex];
+    return displayText[TextEntryIndex];
 }
 
 sf::Vector2i CVMapPanel::globalToCoords(const sf::Vector2f& position) const{

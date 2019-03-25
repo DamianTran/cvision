@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -48,6 +48,7 @@
 
 #include <vector>
 #include <string>
+#include <unordered_map>
 
 #include "cvision/lib.hpp"
 
@@ -59,31 +60,27 @@ namespace cvis
 class CVISION_API FontManager
 {
 public:
-    std::vector<sf::Font> fonts;
-    std::vector<std::string> fontTags;
 
-    inline const sf::Font* operator[](const unsigned int& i) const
-    {
-        if(i >= fonts.size()) throw std::out_of_range("Font Manager: Index out of range of available fonts");
-        return &fonts[i];
-    }
+    std::unordered_map<std::string, sf::Font*> fonts;
+
     inline const sf::Font* operator[](const std::string& s) const
     {
-        if(s.empty()) return nullptr;
-        unsigned int index = 0;
-        for(auto& tag : fontTags)
+        try
         {
-            if(tag == s) return &fonts[index];
-            ++index;
+            return fonts.at(s);
+        }catch(...)
+        {
+            return nullptr;
+//            throw std::out_of_range(std::string("FontManager: requested font \"") + s + "\" does not exist in memory");
         }
-        throw std::invalid_argument("Font Manager: Font tag does not correspond to a font in Font Manager");
     }
 
-    CVISION_API bool addFont(std::string fileDir, std::string tag);
+    CVISION_API bool addFont(const std::string& fileDir, const std::string& tag);
     CVISION_API bool addFont(const void* binaries, const size_t& size,
                  const std::string& tag);
 
     FontManager() { }
+    ~FontManager();
 
 };
 

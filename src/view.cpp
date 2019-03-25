@@ -60,6 +60,8 @@
 
 #endif
 
+using namespace std;
+
 namespace cvis
 {
 
@@ -98,7 +100,7 @@ void CVDropTarget::HandleDrop(HDROP hDrop)
     }
 }
 
-bool CVDropTarget::getWaitingData(std::vector<std::string>& output)
+bool CVDropTarget::getWaitingData(vector<string>& output)
 {
 
     if(waiting_data.empty())
@@ -243,7 +245,7 @@ STDMETHODIMP CVDropTarget::Drop(LPDATAOBJECT pDataObj,
 }
 #endif
 
-CVView::CVView(unsigned int x, unsigned int y, std::string winName,
+CVView::CVView(unsigned int x, unsigned int y, string winName,
                uint32_t style, CVApp* mainApp,
                const sf::Vector2f& screenPosition,
                const sf::Color& backgroundColor):
@@ -274,168 +276,91 @@ CVView::CVView(unsigned int x, unsigned int y, std::string winName,
     mainApp(mainApp),
     tag(winName)
 {
-
-#ifdef __APPLE__
-    // Construct the viewPort outside of the worker thread for OSX compatibility
-    viewPort = new sf::RenderWindow();
-    viewPort->setActive(false);
-    viewPort->setVerticalSyncEnabled(true);
-    viewPort->setMouseCursor(cursor_rep);
-#endif
-
-    textureBuffer.setActive(false);
-
-    mainApp->viewThreads.emplace_back(new std::thread([&, x, y, winName, style, screenPosition]()
-    {
-
-        const float frameTime = 0.5f/frameRateLimit;
-
-#ifndef __APPLE__
-        viewPort = new sf::RenderWindow();
-        viewPort->setVerticalSyncEnabled(true);
-        viewPort->setMouseCursor(cursor_rep);
-#elif defined __APPLE__
-        sf::Context threadContext;
-#endif
-
-        moveTarget = viewPort->getPosition();
-        sf::Vector2i intPos;
-
-        std::chrono::high_resolution_clock::time_point t0 = TIME_NOW;
-        const std::chrono::duration<float> frameUpdateLatency(frameTime);
-
-        std::chrono::duration<float> duration;
-
-        eventTrace.viewBounds = sf::FloatRect(moveTarget.x, moveTarget.y, x, y);
-        eventTrace.lastViewBounds = eventTrace.viewBounds;
-        eventTrace.lastFrameMousePosition =
-            sf::Vector2f(sf::Mouse::getPosition(*viewPort));
-
-        while(!bClosed)
-        {
-
-#ifdef __APPLE__
-            drawLock.lock();
-#endif
-            if(!bClosed && viewPort && !viewPort->isOpen())
-            {
-                if(getState() == VIEW_STATE_MAIN)
-                {
-                    if(!isnan(screenPosition.x) && !isnan(screenPosition.y)) viewPort->setPosition(sf::Vector2i(screenPosition));
-#ifndef __APPLE__
-                    sf::ContextSettings newWinSettings;
-                    newWinSettings.antialiasingLevel = 4;
-                    viewPort->create(sf::VideoMode(x, y), winName, style, newWinSettings);
-                    activateWindow();
-#endif
-                }
-                else
-                {
-#ifdef __APPLE__
-                    drawLock.unlock();
-#endif
-                    goto nextFrame;
-                }
-            }
-            else if(bClosed)
-            {
-#ifdef __APPLE__
-                drawLock.unlock();
-#endif
-                break;
-
-            }
-
-#ifdef __APPLE__
-            drawLock.unlock();
-#endif
-
-            if(forceClose)
-            {
-#ifndef __APPLE__
-                viewPort->close();
-#endif
-                break;
-            }
-
-#ifdef __APPLE__
-            while(!bClosed && !eventTrace.eventsProcessed)
-            {
-                std::this_thread::sleep_for(std::chrono::duration<float>(frameTime/10));
-            } // Wait for main thread to process events
-#endif // __APPLE__
-
-            updateLock.lock();
-
-            if(!bClosed && viewPort && viewPort->isOpen())
-            {
-                intPos = sf::Mouse::getPosition(*viewPort);
-                mousePos.x = intPos.x;
-                mousePos.y = intPos.y;
-                update(eventTrace, mousePos);
-            }
-
-            updateLock.unlock();
-
-            drawLock.lock();
-
-            if(!bClosed && viewPort && viewPort->isOpen())
-            {
-                viewPort->clear(backgroundColor);
-                draw(viewPort);
-                viewPort->display();
-            }
-
-            drawLock.unlock();
-
-            postDrawProcess();
-
-            // Framerate limit cycle
-
-            nextFrame:;
-
-            duration = TIME_NOW - t0;
-
-            if(duration < frameUpdateLatency)
-            {
-                std::this_thread::sleep_for(std::chrono::duration<float>(frameTime - duration.count()));
-            }
-
-            eventTrace.lastFrameTime = std::chrono::duration<float>(TIME_NOW - t0).count();
-            t0 = TIME_NOW;
-            frameRate = 1.0f/eventTrace.avgFrameTime;
-
-        }
-
-#ifdef __APPLE__
-        // Wait for main thread to handle viewport close
-//            while(viewPort && viewPort->isOpen()){
-//                std::this_thread::sleep_for(std::chrono::duration<float>(frameTime));
-//            }
-#else
-        if(viewPort->isOpen())
-        {
-            viewPort->close();
-        }
-#endif
-        viewState = VIEW_STATE_CLOSED;
-
-    }));
-    appThread = mainApp->viewThreads.back(); // Establish reference to app thread for this view
-
-#ifndef __APPLE__
-    // Wait for the view to be constructed
-    while(!viewPort)
-    {
-        std::this_thread::sleep_for(std::chrono::duration<float>(0.01f));
-    }
-
-    viewPort->setActive(true);
-#endif
+    mainApp->setContextActive();
 }
 
-CVElement* CVView::getElementById(const std::string& tag)
+void CVView::init()
 {
+
+    cursor_rep.loadFromSystem(sf::Cursor::Arrow);
+
+    sf::ContextSettings contextSettings;
+    contextSettings.antialiasingLevel = 4;
+
+    viewPort = new sf::RenderWindow(sf::VideoMode(width, height), name, style, contextSettings);
+    viewPort->setVerticalSyncEnabled(true);
+    viewPort->setMouseCursor(cursor_rep);
+    viewPort->setFramerateLimit(frameRateLimit);
+
+    const float frameTime = 0.5f/frameRateLimit;
+
+    moveTarget = viewPort->getPosition();
+    sf::Vector2i intPos;
+
+    chrono::high_resolution_clock::time_point t0 = TIME_NOW;
+    const chrono::duration<float> frameUpdateLatency(frameTime);
+
+    chrono::duration<float> duration;
+
+    eventTrace.viewBounds = sf::FloatRect(moveTarget.x, moveTarget.y, width, height);
+    eventTrace.lastViewBounds = eventTrace.viewBounds;
+    eventTrace.lastFrameMousePosition =
+        sf::Vector2f(sf::Mouse::getPosition(*viewPort));
+
+    setState(VIEW_STATE_MAIN);
+
+    while(!bClosed)
+    {
+
+        if(forceClose)
+        {
+
+            viewPort->close();
+
+            break;
+        }
+
+        intPos = sf::Mouse::getPosition(*viewPort);
+        mousePos.x = intPos.x;
+        mousePos.y = intPos.y;
+
+        if(mainApp->setContextActive()) // Activate the background context for texture updates
+        {
+            update(eventTrace, mousePos);
+        }
+
+        if(bClosed) break;
+
+        if(viewPort->setActive(true))   // Activate the viewport context for draw
+        {
+            viewPort->clear(backgroundColor);
+            draw(viewPort);
+            viewPort->display();
+        }
+
+        postDrawProcess();
+
+        nextFrame:;
+
+        // Count actual frame time
+
+        duration = TIME_NOW - t0;
+
+        eventTrace.lastFrameTime = chrono::duration<float>(TIME_NOW - t0).count();
+        t0 = TIME_NOW;
+        frameRate = 1.0f/eventTrace.avgFrameTime;
+
+    }
+
+    viewPort->close();
+}
+
+CVElement* CVView::getElementById(const string& tag)
+{
+
+    if(tag.empty()) return nullptr;
+
+    CVElement* output = nullptr;
 
     for(auto& panel : viewPanels)
     {
@@ -444,23 +369,20 @@ CVElement* CVView::getElementById(const std::string& tag)
             return panel;
         }
 
-        for(auto& element : panel->getElements())
+        if(output = panel->getOwnedElementByID(tag))
         {
-            if(element->tag() == tag)
-            {
-                return element;
-            }
+            return output;
         }
 
     }
 
-    return nullptr;
+    return output;
 }
 
 void CVView::activateWindow()
 {
 
-//    viewPort->setActive(false);
+//    viewPort->setActive(true);
 
 }
 
@@ -516,6 +438,8 @@ void CVView::getTexture(sf::Texture& texture)
 {
     captureLock.lock();
 
+    textureBuffer.setActive(true);
+
     textureBuffer.create(width, height);
     textureBuffer.setView(sf::View(getBounds()));
     textureBuffer.clear();
@@ -525,28 +449,46 @@ void CVView::getTexture(sf::Texture& texture)
     textureBuffer.display();
     texture = textureBuffer.getTexture();
 
+    mainApp->setContextActive();
+
     captureLock.unlock();
 }
 
-const sf::Font* CVView::appFont(const std::string& font) const
+const sf::Font* CVView::appFont(const string& font) const
 {
-    if(mainApp) return mainApp->fonts[font];
+    if(mainApp)
+    {
+        const sf::Font* output = mainApp->fonts[font];
+
+        if(!output)
+        {
+            try
+            {
+                return mainApp->fonts[mainApp->font_panel.at(font)];
+            }catch(...)
+            {
+                return nullptr;
+            }
+        }
+
+        return output;
+    }
     return nullptr;
 }
 
-const sf::Texture* CVView::appTexture(const std::string& tag) const
+const sf::Texture* CVView::appTexture(const string& tag) const
 {
     if(mainApp) return mainApp->bitmaps.taggedTexture(tag);
     return nullptr;
 }
 
-const sf::Image* CVView::appImage(const std::string& tag) const
+const sf::Image* CVView::appImage(const string& tag) const
 {
     if(mainApp) return mainApp->bitmaps.taggedImage(tag);
     return nullptr;
 }
 
-const sf::Color& CVView::appColor(const std::string& tag) const
+const sf::Color& CVView::appColor(const string& tag) const
 {
     if(mainApp)
     {
@@ -555,10 +497,10 @@ const sf::Color& CVView::appColor(const std::string& tag) const
             return mainApp->colors.at(tag);
         }catch(...)
         {
-            throw std::invalid_argument("CVView: no color to map to tag \"" + tag + "\"");
+            throw invalid_argument("CVView: no color to map to tag \"" + tag + "\"");
         }
     }
-    throw std::invalid_argument("CVVuiew: No app available to derive color from tag");
+    throw invalid_argument("CVVuiew: No app available to derive color from tag");
 }
 
 void CVView::setVisible(const unsigned int index, bool newVisibleState)
@@ -612,7 +554,7 @@ void CVView::setCursor(const sf::Texture* texture,
 
 }
 
-void CVView::setCursor(const std::string& texture,
+void CVView::setCursor(const string& texture,
                        const sf::Vector2f& size,
                        const sf::Color& fillColor,
                        const sf::Vector2f& origin)
@@ -667,7 +609,7 @@ void CVView::setShadow(const sf::Texture* texture,
 
 }
 
-void CVView::setShadow(const std::string& texture,
+void CVView::setShadow(const string& texture,
                        const sf::Vector2f& size,
                        const uint8_t& alpha,
                        const sf::Vector2f& origin)
@@ -690,11 +632,11 @@ bool CVView::contains(const CVElement& element)
     return viewBounds.intersects(element.getBounds());
 }
 
-CVViewPanel* CVView::getTaggedPanel(const std::string s)
+CVViewPanel* CVView::getTaggedPanel(const string s)
 {
     return *taggedItem(s, viewPanels, panelTags);
 }
-CVViewPanel* CVView::operator[](const std::string s)
+CVViewPanel* CVView::operator[](const string s)
 {
     return *taggedItem(s, viewPanels, panelTags);
 }
@@ -710,7 +652,7 @@ void CVView::setDefaultViewScale(const float& x, const float& y)
     defaultViewScale = x*y;
 }
 
-void CVView::addPanel(CVViewPanel* newPanel, std::string tag, const unsigned int& index)
+void CVView::addPanel(CVViewPanel* newPanel, string tag, const unsigned int& index)
 {
     if(addUnique(newPanel, viewPanels, index))
     {
@@ -720,7 +662,7 @@ void CVView::addPanel(CVViewPanel* newPanel, std::string tag, const unsigned int
             newPanel->setTag(tag);
         }
         else{
-            newPanel->setTag("Panel " + std::to_string(viewPanels.size()));
+            newPanel->setTag("Panel " + to_string(viewPanels.size()));
             panelTags.push_back(newPanel->tag());
         }
     }
@@ -763,7 +705,7 @@ void CVView::restore()
 void CVView::setVisiblePanel(const unsigned int i)
 {
     unsigned int L = 0;
-    for(std::vector<CVViewPanel*>::iterator it = viewPanels.begin();
+    for(vector<CVViewPanel*>::iterator it = viewPanels.begin();
             it != viewPanels.end(); ++it)
     {
         if(L != i) (*it)->setVisible(false);
@@ -771,10 +713,10 @@ void CVView::setVisiblePanel(const unsigned int i)
     }
 }
 
-void CVView::setVisiblePanel(const std::string tag)
+void CVView::setVisiblePanel(const string tag)
 {
-    std::vector<std::string>::iterator strIT = panelTags.begin();
-    for(std::vector<CVViewPanel*>::iterator it = viewPanels.begin();
+    vector<string>::iterator strIT = panelTags.begin();
+    for(vector<CVViewPanel*>::iterator it = viewPanels.begin();
             it != viewPanels.end(); ++it)
     {
         if(*strIT != tag) (*it)->setVisible(false);
@@ -785,7 +727,7 @@ void CVView::setVisiblePanel(const std::string tag)
 
 void CVView::setVisiblePanel(CVViewPanel* panel)
 {
-    for(std::vector<CVViewPanel*>::iterator it = viewPanels.begin();
+    for(vector<CVViewPanel*>::iterator it = viewPanels.begin();
             it != viewPanels.end(); ++it)
     {
         if(*it != panel) (*it)->setVisible(false);
@@ -812,7 +754,6 @@ void CVView::setScreenPosition(sf::Vector2i newPosition)
 
 void CVView::draw(sf::RenderTarget* target)
 {
-    if(bClosed || (viewPort == nullptr) || !viewPort->isOpen()) return;
     switch(viewState)
     {
     case VIEW_STATE_STARTUP:
@@ -821,9 +762,15 @@ void CVView::draw(sf::RenderTarget* target)
     }
     case VIEW_STATE_MAIN:
     {
+
+        mainApp->setContextActive();
+
         for(auto& item : viewPanels)
         {
-            if(item->isVisible()) item->draw(target);
+            if(item->isVisible())
+            {
+                item->draw(target);
+            }
         }
         if(bShadow)
         {
@@ -833,6 +780,7 @@ void CVView::draw(sf::RenderTarget* target)
         {
             target->draw(cursor);
         }
+
         break;
     }
     default:
@@ -923,7 +871,7 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
         {
             return false;
         }
-        std::this_thread::sleep_for(std::chrono::duration<float>(0.01f));
+        this_thread::sleep_for(chrono::duration<float>(0.01f));
     }
 #endif
 
@@ -1237,9 +1185,37 @@ bool CVView::handleViewEvents(CVEvent& event)
             {
                 event.timeLastKey = 0.0f;
                 event.keyPressed = true;
-                if(!ctrlPressed() && (SFevent.text.unicode < 127))
+                if(!ctrlPressed())
                 {
-                    event.keyLog += static_cast<char>(SFevent.text.unicode);
+
+                    switch(SFevent.text.unicode)
+                    {
+                    case sf::Keyboard::Delete:
+                        {
+                            event.keyLog.push_back(CV_KEY_DELETE);
+                            break;
+                        }
+                    case sf::Keyboard::Return:
+                        {
+                            event.keyLog.push_back(CV_KEY_RETURN);
+                            break;
+                        }
+                    case 13: // Carriage-return
+                        {
+                            event.keyLog.push_back(CV_KEY_RETURN);
+                            break;
+                        }
+                    case sf::Keyboard::Tab:
+                        {
+                            event.keyLog.push_back(CV_KEY_TAB);
+                            break;
+                        }
+                    default:
+                        {
+                            event.keyLog.push_back(SFevent.text.unicode);
+                        }
+                    }
+
                 }
                 break;
             }
@@ -1250,49 +1226,34 @@ bool CVView::handleViewEvents(CVEvent& event)
 
                 if(ctrlPressed())
                 {
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)) event.keyLog += 'a';
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)) event.keyLog += 'd';
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::V)) event.keyLog += 'v';
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::C)) event.keyLog += 'c';
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) event.keyLog += 'z';
+                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)) event.keyLog.emplace_back(uint32_t('a'));
+                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)) event.keyLog.emplace_back(uint32_t('d'));
+                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::V)) event.keyLog.emplace_back(uint32_t('v'));
+                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::C)) event.keyLog.emplace_back(uint32_t('c'));
+                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) event.keyLog.emplace_back(uint32_t('z'));
                     break;
                 }
 
                 switch(SFevent.key.code)
                 {
-                case sf::Keyboard::Delete:
-                    {
-                        event.keyLog += static_cast<char>(CV_KEY_DELETE);
-                        break;
-                    }
                 case sf::Keyboard::Left:
                     {
-                        event.keyLog += static_cast<char>(CV_KEY_LEFT);
+                        event.keyLog.push_back(CV_KEY_LEFT);
                         break;
                     }
                 case sf::Keyboard::Right:
                     {
-                        event.keyLog += static_cast<char>(CV_KEY_RIGHT);
+                        event.keyLog.push_back(CV_KEY_RIGHT);
                         break;
                     }
                 case sf::Keyboard::Up:
                     {
-                        event.keyLog += static_cast<char>(CV_KEY_UP);
+                        event.keyLog.push_back(CV_KEY_UP);
                         break;
                     }
                 case sf::Keyboard::Down:
                     {
-                        event.keyLog += static_cast<char>(CV_KEY_DOWN);
-                        break;
-                    }
-                case sf::Keyboard::Return:
-                    {
-                        event.keyLog += static_cast<char>(CV_KEY_RETURN);
-                        break;
-                    }
-                case sf::Keyboard::Tab:
-                    {
-                        event.keyLog += static_cast<char>(CV_KEY_TAB);
+                        event.keyLog.push_back(CV_KEY_DOWN);
                         break;
                     }
                 default:
@@ -1338,20 +1299,22 @@ void CVView::close()
 
     if(!bClosed)
     {
-#ifdef __APPLE__
-        // Require main thread to call close() on OSX
         if(viewPort && viewPort->isOpen())
         {
-            drawLock.lock();
             bClosed = true;
             viewPort->close();
             delete(viewPort);
             viewPort = nullptr;
-            drawLock.unlock();
         }
-#else
-        bClosed = true;
-#endif // __APPLE__
+    }
+    else
+    {
+        if(viewPort)
+        {
+            viewPort->close();
+            delete(viewPort);
+            viewPort = nullptr;
+        }
     }
 
     forceClose = true; // Let app master handle destructor from main thread

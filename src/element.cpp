@@ -50,6 +50,7 @@
 #include <EZC/toolkit/string.hpp>
 
 using namespace EZC;
+using namespace std;
 
 namespace cvis
 {
@@ -477,7 +478,7 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
     return true;
 }
 
-std::string CVElement::getDefaultFont() const
+string CVElement::getDefaultFont() const
 {
     if(mainApp())
     {
@@ -486,25 +487,41 @@ std::string CVElement::getDefaultFont() const
     return "";
 }
 
-const sf::Font* CVElement::appFont(const std::string& font) const
+const sf::Font* CVElement::appFont(const string& font) const
 {
-    if(mainApp()) return mainApp()->fonts[font];
+    if(mainApp())
+    {
+        const sf::Font* output = mainApp()->fonts[font];
+
+        if(!output)
+        {
+            try
+            {
+                return mainApp()->fonts[mainApp()->font_panel.at(font)];
+            }catch(...)
+            {
+                return nullptr;
+            }
+        }
+
+        return output;
+    }
     return nullptr;
 }
 
-const sf::Texture* CVElement::appTexture(const std::string& tag) const
+const sf::Texture* CVElement::appTexture(const string& tag) const
 {
     if(mainApp()) return mainApp()->bitmaps.taggedTexture(tag);
     return nullptr;
 }
 
-const sf::Image* CVElement::appImage(const std::string& tag) const
+const sf::Image* CVElement::appImage(const string& tag) const
 {
     if(mainApp()) return mainApp()->bitmaps.taggedImage(tag);
     return nullptr;
 }
 
-const sf::Color& CVElement::appColor(const std::string& tag) const
+const sf::Color& CVElement::appColor(const string& tag) const
 {
     if(mainApp())
     {
@@ -513,10 +530,10 @@ const sf::Color& CVElement::appColor(const std::string& tag) const
             return mainApp()->colors.at(tag);
         }catch(...)
         {
-            throw std::invalid_argument("CVElement: no color to map to tag \"" + tag + "\"");
+            throw invalid_argument("CVElement: no color to map to tag \"" + tag + "\"");
         }
     }
-    throw std::invalid_argument("CVElement: No app available to derive color from tag");
+    throw invalid_argument("CVElement: No app available to derive color from tag");
 }
 
 void CVElement::setViewCursor(const sf::Texture* texture,
@@ -527,7 +544,7 @@ void CVElement::setViewCursor(const sf::Texture* texture,
     View->setCursor(texture, size, color, origin);
 }
 
-void CVElement::setViewCursor(const std::string& texture,
+void CVElement::setViewCursor(const string& texture,
                               const sf::Vector2f& size,
                               const sf::Color& color,
                               const sf::Vector2f& origin)
@@ -588,19 +605,17 @@ void CVElement::setDropShadow(const bool& state,
     bDropShadow = state;
 }
 
-std::string CVElement::take_trigger(const std::string& tag)
+string CVElement::take_trigger(const string& tag)
 {
-    std::string output;
-    size_t found_index;
+    string output;
 
     for(size_t i = 0; i < incoming_triggers.size(); ++i)
     {
-        found_index = incoming_triggers[i].find(tag);
-        if(found_index < incoming_triggers[i].size())
+        if(incoming_triggers[i].find(tag) == 0)
         {
             output = incoming_triggers[i];
-            output.erase(output.begin() + found_index,
-                                       output.begin() + found_index + tag.size());
+            output.erase(output.begin(),
+                         output.begin() + tag.size());
             trim_all(output);
 
             incoming_triggers.erase(incoming_triggers.begin() + i);
@@ -617,12 +632,21 @@ std::string CVElement::take_trigger(const std::string& tag)
     return output;
 }
 
-void CVElement::sendTriggers() const
+void CVElement::sendTriggers()
 {
 
     for(auto& info : trigger_targets)
     {
-        if(!info.target) continue;
+
+        if(!info.target) // If the target is not present initially, re-check and cache the pointer if found
+        {
+            info.target = getElementById(info.tag);
+            if(!info.target)
+            {
+                cout << "Warning: Could not send trigger \"" << info.signal << "\" (Invalid target)\n";
+                continue;
+            }
+        }
 
         if(info.state == UINT_MAX)
         {
@@ -636,9 +660,16 @@ void CVElement::sendTriggers() const
 
 }
 
-void CVElement::sendTrigger(CVElement* target, const std::string& signal)
+void CVElement::sendTrigger(CVElement* target, const string& signal)
 {
-    target->receive_trigger(signal);
+    if(target)
+    {
+        target->receive_trigger(signal);
+    }
+    else
+    {
+        throw invalid_argument("CVision: requested ID does not match to elements in app cascade");
+    }
 }
 
 void CVElement::setDrawClipping(const bool& status)
@@ -718,7 +749,7 @@ void CVElement::getTexture(sf::Texture& outTex)
     View->textureBuffer.display();
     outTex = View->textureBuffer.getTexture();
 
-    View->textureBuffer.setActive(false);
+    View->mainApp->setContextActive();
 
     View->captureLock.unlock();
 
@@ -844,7 +875,7 @@ const CVApp* CVElement::mainApp() const
     return View->mainApp;
 }
 
-CVElement* CVElement::getElementById(const std::string& tag)
+CVElement* CVElement::getElementById(const string& tag)
 {
     return View->getElementById(tag);
 }
@@ -852,24 +883,35 @@ CVElement* CVElement::getElementById(const std::string& tag)
 void CVElement::addSprite(const sf::Texture* texture,
                           const sf::Vector2f& position,
                           const sf::Vector2f& size,
-                          const sf::Color& fillColor)
+                          const sf::Color& fillColor,
+                          const sf::IntRect& subRect)
 {
 
     if(!texture) return;
 
     spriteList.emplace_back(*texture);
-    sf::Vector2f texSize(texture->getSize());
-    spriteList.back().setOrigin(texSize.x/2, texSize.y/2);
+    sf::Vector2u texSize = texture->getSize();
+
     spriteList.back().setScale(
         size.x/texSize.x,
         size.y/texSize.y);
+
+    if(subRect.width && subRect.height)
+    {
+        spriteList.back().setTextureRect(subRect);
+        spriteList.back().setOrigin(subRect.width/2, subRect.height/2);
+    }
+    else
+    {
+        spriteList.back().setOrigin(texSize.x/2, texSize.y/2);
+    }
 
     spriteList.back().setPosition(bounds.left + position.x,
                                   bounds.top + position.y);
     spriteList.back().setColor(fillColor);
 }
 
-void CVElement::removeSprites(const std::string& tag)
+void CVElement::removeSprites(const string& tag)
 {
     size_t L = spriteList.size();
     for(size_t i = 0; i < L;)
@@ -883,7 +925,7 @@ void CVElement::removeSprites(const std::string& tag)
     }
 }
 
-bool CVElement::has_sprite(const std::string& tag) const
+bool CVElement::has_sprite(const string& tag) const
 {
     for(auto& sprite : spriteList)
     {
@@ -894,20 +936,20 @@ bool CVElement::has_sprite(const std::string& tag) const
 
 sf::Sprite& CVElement::lastSprite()
 {
-    if(spriteList.empty()) throw std::invalid_argument("No sprites in sprite list to index");
+    if(spriteList.empty()) throw invalid_argument("No sprites in sprite list to index");
     return spriteList.back();
 }
 
 sf::Sprite& CVElement::firstSprite()
 {
-    if(spriteList.empty()) throw std::invalid_argument("No sprites in sprite list to index");
+    if(spriteList.empty()) throw invalid_argument("No sprites in sprite list to index");
     return spriteList.front();
 }
 
 sf::Sprite& CVElement::getSprite(const unsigned int& index)
 {
-    if(spriteList.empty()) throw std::invalid_argument("No sprites in sprite list to index");
-    if(index > spriteList.size()) throw std::out_of_range("Index out of range of sprite list");
+    if(spriteList.empty()) throw invalid_argument("No sprites in sprite list to index");
+    if(index > spriteList.size()) throw out_of_range("Index out of range of sprite list");
     return spriteList[index];
 }
 

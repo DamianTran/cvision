@@ -48,7 +48,8 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "cvision/time.hpp"
+#include <EZC/toolkit/time.hpp>
+
 #include "cvision/textbox.hpp"
 
 #include <mutex>
@@ -96,12 +97,12 @@ class CVISION_API CVTextLogMsg : public CVTextBox
 public:
 
     CVISION_API CVTextLogMsg(CVView* View,
-                             const textEntry& newTheme = textEntry("", ""));
+                             const TextEntry& newTheme = TextEntry("", ""));
 
     bool        bUser;
     bool        bMsg;
 
-    TimePoint   time;
+    EZC::TimePoint   time;
 
     size_t      textLogIndex;
 
@@ -112,7 +113,7 @@ class CVISION_API CVTextLog: public CVTextBox
 public:
 
     CVISION_API CVTextLog(CVView* View, const sf::Vector2f& position, const float& width, const float& height,
-                          const textEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
+                          const TextEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
                           const float& borderWidth, const uint8_t& animType = CV_OBJ_ANIM_SLIDE,
                           const std::string& logFile = "", CVTypeBox* usrEntryBox = nullptr);
 
@@ -320,7 +321,7 @@ protected:
     std::vector<std::string>    textLog;
     std::vector<std::string>    waitingText;
 
-    TimeLog                     times;
+    EZC::TimeLog                times;
 
     CVTypeBox*                  usrEntryBox;
 
@@ -360,7 +361,7 @@ protected:
 
     CVTextLogMsg*               selectedEntry;
 
-    textEntry                   templateTheme;
+    TextEntry                   templateTheme;
 
     CVISION_API void shiftMsgs(const float& dist);
 
@@ -371,7 +372,7 @@ class CVTypeBox: public CVTextBox
 public:
 
     CVISION_API CVTypeBox(CVView* View, const sf::Vector2f& position, const float width, const float height,
-                          const textEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
+                          const TextEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
                           const float borderWidth, const uint8_t& animType = CV_CURSOR_ANIM_FADE,
                           const uint8_t& textFitType = CV_TEXT_FIT_NONE,
                           const unsigned char& expandType = CV_TEXT_EXPAND_NONE,
@@ -437,14 +438,7 @@ public:
     {
         bEnterLine = status;
     }
-    inline void enterString()
-    {
-        enteredString = typeString;
-        selectionStart = UINT_MAX;
-        typeString.clear();
-        bTypeStringChanged = true;
-        cursorPos = 0;
-    }
+    CVISION_API void enterString();
 
     inline void setFontSize(const unsigned int& newSize)
     {
@@ -496,16 +490,11 @@ public:
         enteredString.clear();
     }
 
-    inline void setBackgroundString(const std::string& newString)
-    {
-        bkgString = newString;
-    }
-    CVISION_API void setTypeString(std::string newString);
+    CVISION_API void setBackgroundString(const std::string& newString);
+    CVISION_API void setTypeString(const std::string& newString);
+    CVISION_API void setTypeString(std::wstring newString);
 
-    inline const std::string& getTypeString() const
-    {
-        return typeString;
-    }
+    CVISION_API std::string getTypeString() const;
     inline std::string getDisplayString() const
     {
         return displayText.front().getString();
@@ -572,8 +561,9 @@ public:
 
 protected:
 
-    std::string         typeString;
-    std::string         bkgString;
+    std::wstring         typeString;
+    std::wstring         bkgString;
+
     std::string         enteredString;
     std::string         suggested;
 

@@ -175,7 +175,8 @@ public:
     unsigned int        maxMouseTrace;          // Buffer length for mouse frame positions
     unsigned int        numFrameAvg;            // Number of frames to average the frame time over
 
-    std::string keyLog;
+    std::vector<uint32_t> keyLog;               // Stores UTF32-encoded key events
+
     CVISION_API void clearKeys();       // Capture all keys
     CVISION_API bool keyIsPressed(const char& key);
 
@@ -185,20 +186,32 @@ public:
 
     template<typename T> bool getData(T& output)
     {
-        if(EZC::getTypeID(output) == EZC::getTypeID<std::string>())
+        for(size_t i = 0; i < transferData.size(); ++i)
         {
-            for(size_t i = 0; i < transferData.size(); ++i)
+            if(checkCond(transferData[i].releaseCond))
             {
-                if((transferData[i].infoType == CV_DATA_STRING) && checkCond(transferData[i].releaseCond))
-                {
-                    output = (char*)transferData[i].data;
-                    transferData.erase(transferData.begin() + i);
-                    return true;
-                }
+                output = *((T*)transferData[i].data);
+                transferData.erase(transferData.begin() + i);
+                return true;
             }
         }
         return false;
     }
+
+    inline bool getData(std::string& output)
+    {
+        for(size_t i = 0; i < transferData.size(); ++i)
+        {
+            if((transferData[i].infoType == CV_DATA_STRING) && checkCond(transferData[i].releaseCond))
+            {
+                output = (char*)transferData[i].data;
+                transferData.erase(transferData.begin() + i);
+                return true;
+            }
+        }
+        return false;
+    }
+
     template<typename T> void sendData(T* input, const size_t& length,
                                        const unsigned char& releaseCond,
                                        const sf::Keyboard::Key& releaseKey = sf::Keyboard::Unknown)
@@ -206,6 +219,11 @@ public:
         if(EZC::getTypeID(*input) == EZC::getTypeID<char>())
         {
             transferData.emplace_back(input, length, CV_DATA_STRING,
+                                      releaseCond, releaseKey);
+        }
+        else
+        {
+            transferData.emplace_back(input, length, CV_DATA_VOID,
                                       releaseCond, releaseKey);
         }
     }

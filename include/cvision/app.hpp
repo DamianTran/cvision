@@ -50,7 +50,7 @@
 #include <string>
 #include <thread>
 #include <mutex>
-#include <map>
+#include <unordered_map>
 
 #include <SFML/Graphics.hpp>
 
@@ -106,6 +106,11 @@ public:
     CVISION_API void pushEvent(const std::string& tag);
     CVISION_API void clearEvents();
 
+    inline bool setContextActive(const bool& state = true)
+    {
+        return appGLContext.setActive(state);
+    }
+
     unsigned int frameRate;
     float frameTime;
 
@@ -117,23 +122,27 @@ public:
         return running;
     }
 
-    inline void setRunning(bool runState)
+    inline void setRunning(const bool& runState) noexcept
     {
         running = runState;
     }
-    inline const bool getRunState()
+    inline const bool getRunState() noexcept
     {
         return running;
     }
 
     FontManager fonts;
     ImageManager bitmaps;
-    std::map<std::string, sf::Color> colors;
 
-    inline const std::string& getDefaultFont() const
+    std::unordered_map<std::string, sf::Color> colors;
+    std::unordered_map<std::string, std::string> font_panel;
+
+    inline const std::string& getDefaultFont() const noexcept
     {
         return defaultFont;
     }
+
+    CVISION_API const sf::Font* getTypeFont(const std::string& type) const;
 
     // App virtuals
 

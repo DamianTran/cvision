@@ -51,6 +51,16 @@
 #include "cvision/lib.hpp"
 #include <SFML/Graphics.hpp>
 
+#define CVRED(r)        sf::Color(r, 0, 0, 0)
+#define CVGREEN(g)      sf::Color(0, g, 0, 0)
+#define CVBLUE(b)       sf::Color(0, 0, b, 0)
+#define CVALPHA(a)      sf::Color(0, 0, 0, a)
+
+#define CVFULLRED       CVRED(255)
+#define CVFULLGREEN     CVGREEN(255)
+#define CVFULLBLUE      CVBLUE(255)
+#define CVFULLALPHA     CVALPHA(255)
+
 namespace cvis
 {
 

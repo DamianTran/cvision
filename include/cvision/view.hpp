@@ -161,17 +161,17 @@ protected:
     CVDropTarget* dropTarget;
 #endif
 
-    bool forceClose;
-    bool render;
-    bool bCloseSignal;
-    bool bClosed;
-    bool bElasticSelect;
-    bool bWindowCreateWaiting;
-    bool bDropable;            // Signal to the OS that this window can accept drop input
-    bool bCursorOverride;      // Hide the native cursor and draw the cursor sprite instead
-    bool bShadow;              // Draw the shadow texture (usually bound to the cursor)
+    bool                        forceClose;
+    bool                        render;
+    bool                        bCloseSignal;
+    bool                        bClosed;
+    bool                        bElasticSelect;
+    bool                        bWindowCreateWaiting;
+    bool                        bDropable;                 // Signal to the OS that this window can accept drop input
+    bool                        bCursorOverride;           // Hide the native cursor and draw the cursor sprite instead
+    bool                        bShadow;                   // Draw the shadow texture (usually bound to the cursor)
 
-    float defaultViewScale; // Allow scaling based on view dimensions
+    float defaultViewScale;                         // Allow scaling based on view dimensions
 
     std::vector<std::string> saveRequestFiles;
 
@@ -179,39 +179,41 @@ protected:
 
     sf::Color backgroundColor;
 
-    sf::Cursor          cursor_rep;        // Representation of current native cursor (non-iOS/Android)
-    sf::Cursor::Type    OS_cursor_type;    // Current native cursor type
+    sf::Cursor                  cursor_rep;         // Representation of current native cursor (non-iOS/Android)
+    sf::Cursor::Type            OS_cursor_type;     // Current native cursor type
 
-    sf::Sprite cursor;      // Cursor override if applicable
-    sf::Sprite shadow;      // Cursor shadow if applicable (ie drag and drop, etc.)
+    sf::Sprite                  cursor;             // Cursor override if applicable
+    sf::Sprite                  shadow;             // Cursor shadow if applicable (ie drag and drop, etc.)
 
-    sf::Texture shadowTexture; // Storage for a dynamically-captured shadow texture (ie. drag-and-drop)
+    sf::Texture                 shadowTexture;      // Storage for a dynamically-captured shadow texture (ie. drag-and-drop)
 
-    std::string name;
-    uint32_t style;
+    std::string                 name;
+    uint32_t                    style;
 
-    std::vector<CVViewPanel*> viewPanels;
-    std::vector<CVViewPanel*> waitingViewPanels;
-    std::vector<std::string> panelTags;
+    std::vector<CVViewPanel*>   viewPanels;
+    std::vector<CVViewPanel*>   waitingViewPanels;
+    std::vector<std::string>    panelTags;
 
-    std::vector<CVElement*> splashElements;
+    std::vector<CVElement*>     splashElements;
 
-    std::vector<CVAnim> pendingAnims;
-    unsigned int numPendingAnims;
+    std::vector<CVAnim>         pendingAnims;
+    unsigned int                numPendingAnims;
 
-    CVView* parentView;
-    std::thread* appThread;
+    CVView*                     parentView;
+    std::thread*                appThread;
 
-    unsigned int frameRateLimit;
-    float frameRate,
-          width, height,
-          titleBarHeight,
-          viewHeight;
+    unsigned int                frameRateLimit;
 
-    sf::Vector2i resizeTarget,
-    resizeSpeed,
-    moveTarget,
-    velocity;
+    float                       frameRate;
+    float                       width;
+    float                       height;
+    float                       titleBarHeight;
+    float                       viewHeight;
+
+    sf::Vector2i                resizeTarget;
+    sf::Vector2i                resizeSpeed;
+    sf::Vector2i                moveTarget;
+    sf::Vector2i                velocity;
 
     // Render states
 
@@ -229,14 +231,25 @@ protected:
 
 public:
 
+    void init();
+
     CVISION_API CVElement* getElementById(const std::string& name); // Retrieve an element by its tag
 
-    std::mutex drawLock,        // Prevent actions during window draw
-        updateLock,     // Prevent actions during update
-        captureLock;    // Resolve competing access over texture buffer
+    std::mutex          drawLock;               // Prevent actions during window draw
+    std::mutex          updateLock;             // Prevent actions during update
+    std::mutex          captureLock;            // Resolve competing access over texture buffer
 
-    sf::RenderWindow* viewPort;
-    sf::RenderTexture textureBuffer;        // For capture of the current draw state (screenshot) or for masking/clipping, etc.
+    sf::RenderWindow*   viewPort;
+    sf::RenderTexture   textureBuffer;          // For capture of the current draw state (screenshot) or for masking/clipping, etc.
+
+    inline bool captureRenderContext()
+    {
+        if(viewPort && viewPort->isOpen())
+        {
+            return viewPort->setActive(true);
+        }
+        return false;
+    }
 
     CVISION_API void getTexture(sf::Texture& output);
     template<typename T> void releaseMouseCapture(const T& item)
@@ -268,29 +281,34 @@ public:
         backgroundColor = newColor;
     }
 
-    inline const std::thread* mainAppThreadID() const
+    inline const std::thread* mainAppThreadID() const noexcept
     {
         return appThread;
     }
-    inline const CVEvent& getEventTrace() const
+    inline const CVEvent& getEventTrace() const noexcept
     {
         return eventTrace;
     }
-    inline const float& getFrameRate() const
+    inline const float& getFrameRate() const noexcept
     {
         return frameRate;
     }
 
-    inline bool closed() const
+    inline const bool& closed() const noexcept
     {
-        return viewState == VIEW_STATE_CLOSED;
+        return bClosed;
     }
 
-    inline void setElasticSelectState(bool newState)
+    inline bool window_open() const
+    {
+        return viewPort && viewPort->isOpen();
+    }
+
+    inline void setElasticSelectState(bool newState) noexcept
     {
         bElasticSelect = newState;
     }
-    inline bool canElasticSelect() const
+    inline bool canElasticSelect() const noexcept
     {
         return bElasticSelect;
     }

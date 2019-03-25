@@ -42,13 +42,13 @@
 /////////////////////////////////////////////////////////////  **/
 
 #include "cvision/templates/calendar.hpp"
-#include "cvision/time.hpp"
 #include "cvision/view.hpp"
 #include "cvision/app.hpp"
 #include "cvision/button.hpp"
 
-#include "EZC/algorithm.hpp"
-#include "EZC/toolkit/string.hpp"
+#include <EZC/algorithm.hpp>
+#include <EZC/toolkit/string.hpp>
+#include <EZC/toolkit/time.hpp>
 
 namespace cvis{
 
@@ -1248,7 +1248,7 @@ void CVCalendarPanel::updateRecords(){
 
                         scheduleBlocks.emplace_back(new CVTextBox(View, sf::Vector2f(newBounds.left, newBounds.top),
                                                                   newBounds.width, newBounds.height,
-                                                                        textEntry(record.start().getTime(b24hour) +
+                                                                        TextEntry(record.start().getTime(b24hour) +
                                                                                   " - " + record.end().getTime(b24hour) +
                                                                                               "\n" + record.tag(),
                                                                                   textInfo.font, textInfo.fontSize,
@@ -1307,7 +1307,7 @@ void CVCalendarPanel::updateDisplay(){
             TimePoint calendar_day(viewing_time.year(), viewing_time.month(), 0, 0, 0, 0);
 
             headerBox = new CVTextBox(View, sf::Vector2f(getPosition().x, getPosition().y), bounds.width, top_margin()/2,
-                                                            textEntry(monthStr(viewing_time.month()) + " " + std::to_string(viewing_time.year()),
+                                                            TextEntry(monthStr(viewing_time.month()) + " " + std::to_string(viewing_time.year()),
                                                                       textInfo.font, textInfo.fontSize*1.5f,
                                                                 ALIGN_CENTER, textInfo.textColor),
                                                             headerColor(), cellBorderColor(), tableOutlineThickness);
@@ -1370,7 +1370,7 @@ void CVCalendarPanel::updateDisplay(){
 
                 headerBars.emplace_back(new CVTextBox(View, sf::Vector2f(left_margin() + getPosition().x + (bounds.width - left_margin())*i/7,
                                                                          getPosition().y + top_margin()/2), (bounds.width - left_margin())/7, top_margin()/2,
-                                                      textEntry(headerStr.str(), textInfo.font, textInfo.fontSize*1.3f,
+                                                      TextEntry(headerStr.str(), textInfo.font, textInfo.fontSize*1.3f,
                                                                 textInfo.alignment, textInfo.textColor),
                                                         headerColor(), cellBorderColor(), tableOutlineThickness));
                 headerBars.back()->setMask(appTexture("gradient_linear"));
@@ -1399,7 +1399,7 @@ void CVCalendarPanel::updateDisplay(){
                                                                       getPosition().y +
                                                                       (bounds.height - top_margin())*i/8),
                                                    left_margin(), (bounds.height - top_margin())/8,
-                                                   textEntry(sideBarTime.getTime(b24hour), textInfo.font, textInfo.fontSize*1.25f,
+                                                   TextEntry(sideBarTime.getTime(b24hour), textInfo.font, textInfo.fontSize*1.25f,
                                                                 textInfo.alignment, textInfo.textColor),
                                                    sideBarColor(), cellBorderColor(), tableOutlineThickness));
                 rowBars.back()->setMask(appTexture("gradient_linear"));

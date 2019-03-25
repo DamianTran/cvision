@@ -99,7 +99,7 @@ public:
     CVISION_API bool draw(sf::RenderTarget* target);
 
     CVISION_API CVButton(CVView* View, const sf::Vector2f& position, float width, float height,
-                const textEntry& textInfo, const std::string& icon = "",
+                const TextEntry& textInfo, const std::string& icon = "",
                 sf::Color fillColor = sf::Color(168, 168, 168),
                 sf::Color borderColor = sf::Color(102,102,102),
                 float borderWidth = 2.0f); // Standard box button

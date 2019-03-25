@@ -53,30 +53,19 @@
 namespace cvis{
 
 class CVISION_API CVTypePanel: public CVViewPanel{
-protected:
-    std::vector<CVTypeBox> typeElements;
-    std::vector<float> margins;
-    std::vector<sf::RectangleShape> marginLines,
-                                    highlight;
-
-    float scrollBarPadding;
-
-    ColorTheme highlightColors;
-
-    std::vector<std::string> waitingHighlightText;
-    cvis::CVScrollBar scrollBarY;
-
-    bool bShowMarginLines,
-        bCanEdit;
-
-    inline sf::RectangleShape& left_margin_line(){ return marginLines[0]; }
-    inline sf::RectangleShape& top_margin_line(){ return marginLines[1]; }
-    inline sf::RectangleShape& right_margin_line(){ return marginLines[2]; }
-    inline sf::RectangleShape& bottom_margin_line(){ return marginLines[3]; }
-
 public:
 
+    CVISION_API CVTypePanel(CVView* parentView,
+                const TextEntry& textInfo,
+                const std::string& panelTag = "",
+                const sf::Color& color = sf::Color::White,
+                const sf::Vector2f& size = sf::Vector2f(NAN, NAN),
+                const std::vector<float>& margins = std::vector<float>(4, 25.0f),
+                const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
 
+    ~CVTypePanel();
+
+    CVISION_API void clear();
 
     inline const float& left_margin(){ return margins[0]; }
     inline const float& top_margin(){ return margins[1]; }
@@ -100,16 +89,35 @@ public:
     CVISION_API bool draw(sf::RenderTarget* target);
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
 
-    CVISION_API void addTextElement(const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f), textEntry textInfo = textEntry());
+    CVISION_API void addTextElement(const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f), TextEntry textInfo = TextEntry());
     CVISION_API void getText(std::vector<std::string>& output) const;
     CVISION_API std::string getText() const;
     CVISION_API void setText(const std::vector<std::string>& newText);
+    CVISION_API void setText(const unsigned int& index, const std::string& newText);
+    inline size_t numTextElements() const noexcept{ return typeElements.size(); }
 
     CVISION_API void setTextSize(const unsigned int& newSize);
     CVISION_API void setTextColor(const sf::Color& newColor);
 
     CVISION_API void disable_edit();
     CVISION_API void enable_edit();
+    CVISION_API void enable_edit(const unsigned int& index);
+    CVISION_API void disable_edit(const unsigned int& index);
+
+    CVISION_API sf::Vector2f getTextElementPosition(const unsigned int& index) const;
+    inline sf::Vector2f getLastTextElementPosition() const
+    {
+        return getTextElementPosition(numTextElements() - 1);
+    }
+
+    CVISION_API sf::FloatRect getTextElementBounds(const unsigned int& index) const;
+    inline sf::FloatRect getLastTextElementBounds() const
+    {
+        return getTextElementBounds(numTextElements() - 1);
+    }
+
+    CVISION_API void setTextElementPadding(const unsigned int& index, const float& newPadding);
+
     inline const bool& can_edit() const{ return bCanEdit; }
 
     CVISION_API void move(const sf::Vector2f& distance);
@@ -127,13 +135,32 @@ public:
         setSize(sf::Vector2f(x, y));
     }
 
-    CVISION_API CVTypePanel(CVView* parentView,
-                const textEntry& textInfo,
-                const std::string& panelTag = "",
-                const sf::Color& color = sf::Color::White,
-                const sf::Vector2f& size = sf::Vector2f(NAN, NAN),
-                const std::vector<float>& margins = std::vector<float>(4, 25.0f),
-                const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
+protected:
+
+    std::vector<CVTypeBox*> typeElements;
+    std::vector<float> margins;
+    std::vector<sf::RectangleShape> marginLines,
+                                    highlight;
+
+    float scrollBarPadding;
+    float paragraphSpacing;
+
+    ColorTheme highlightColors;
+
+    std::vector<std::string> waitingHighlightText;
+    cvis::CVScrollBar scrollBarY;
+
+    bool bShowMarginLines;
+    bool bCanEdit;
+
+    inline sf::RectangleShape& left_margin_line(){ return marginLines[0]; }
+    inline sf::RectangleShape& top_margin_line(){ return marginLines[1]; }
+    inline sf::RectangleShape& right_margin_line(){ return marginLines[2]; }
+    inline sf::RectangleShape& bottom_margin_line(){ return marginLines[3]; }
+
+    void arrange_media();   // Adjust for all images and media content
+    void arrange_media(const sf::FloatRect& boundary);
+
 };
 
 }

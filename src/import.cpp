@@ -42,37 +42,52 @@
 /////////////////////////////////////////////////////////////  **/
 
 #include "cvision/import.hpp"
+
 #include <iostream>
+#include <stdexcept>
+
+using namespace std;
 
 namespace cvis
 {
 
-bool FontManager::addFont(std::string fileDir, std::string tag)
+bool FontManager::addFont(const string& fileDir, const string& tag)
 {
-    fonts.push_back(sf::Font());
-    if(!fonts.back().loadFromFile(fileDir))
+    try
     {
-        fonts.pop_back();
+        fonts.at(tag);
+        cout << "Warning: request to add redundant font tag \"" << tag << "\" was ignored\n";
         return false;
+    }catch(...)
+    {
+        fonts.emplace(tag, new sf::Font());
+        fonts.at(tag)->loadFromFile(fileDir);
     }
-    fontTags.push_back(tag);
-    return true;
 }
 
-bool FontManager::addFont(const void* binaries, const size_t& size, const std::string& tag)
+bool FontManager::addFont(const void* binaries, const size_t& size, const string& tag)
 {
-    fonts.emplace_back();
-    if(!fonts.back().loadFromMemory(binaries, size))
+    try
     {
-        fonts.pop_back();
-        std::cout << "Failed to load font: " << tag << '\n';
+        fonts.at(tag);
+        cout << "Warning: request to add redundant font tag \"" << tag << "\" was ignored\n";
         return false;
+    }catch(...)
+    {
+        fonts.emplace(tag, new sf::Font());
+        fonts.at(tag)->loadFromMemory(binaries, size);
     }
-    fontTags.push_back(tag);
-    return true;
 }
 
-const sf::Texture* ImageManager::taggedTexture(const std::string& s) const
+FontManager::~FontManager()
+{
+    for(auto& pair : fonts)
+    {
+        delete(pair.second);
+    }
+}
+
+const sf::Texture* ImageManager::taggedTexture(const string& s) const
 {
     if(s.size() < 1) return nullptr;
     unsigned int index = 0;
@@ -83,7 +98,7 @@ const sf::Texture* ImageManager::taggedTexture(const std::string& s) const
     }
     return nullptr;
 }
-const sf::Image* ImageManager::taggedImage(const std::string& s) const
+const sf::Image* ImageManager::taggedImage(const string& s) const
 {
     if(s.size() < 1) return nullptr;
     unsigned int index = 0;
@@ -95,22 +110,22 @@ const sf::Image* ImageManager::taggedImage(const std::string& s) const
     return nullptr;
 }
 
-std::string ImageManager::getTextureName(const sf::Texture* texture) const
+string ImageManager::getTextureName(const sf::Texture* texture) const
 {
     for(size_t i = 0; i < numTextures; ++i)
     {
         if(&textures[i] == texture) return textureTags[i];
     }
-    return std::string();
+    return string();
 }
 
-bool ImageManager::addImage(std::string fileName, std::string tag)
+bool ImageManager::addImage(string fileName, string tag)
 {
     images.emplace_back();
     if(!images.back().loadFromFile(fileName))
     {
         images.pop_back();
-        std::cout << "Failed to load image: " << tag << '\n';
+        cout << "Failed to load image: " << tag << '\n';
         return false;
     }
     imageTags.push_back(tag);
@@ -118,15 +133,16 @@ bool ImageManager::addImage(std::string fileName, std::string tag)
     return true;
 }
 
-bool ImageManager::addTexture(std::string fileName, std::string tag)
+bool ImageManager::addTexture(string fileName, string tag)
 {
+
     textures.emplace_back();
     if(!textures.back().loadFromFile(fileName))
     {
         textures.pop_back();
-        std::cout << "Failed to load image: " << tag << '\n';
         return false;
     }
+
     textures.back().setSmooth(true);
     textures.back().generateMipmap();
     textureTags.push_back(tag);
@@ -135,7 +151,7 @@ bool ImageManager::addTexture(std::string fileName, std::string tag)
 }
 
 bool ImageManager::addTexture(const void* binaries, const size_t& size,
-                              const std::string& tag)
+                              const string& tag)
 {
     textures.emplace_back();
     if(!textures.back().loadFromMemory(binaries, size))

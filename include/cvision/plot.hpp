@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -197,7 +197,7 @@ protected:
     struct CVISION_API axis{
 
         CVPlot* plot;
-        textEntry textInfo;
+        TextEntry textInfo;
         std::string title;
         CVTypeBox* label;
 
@@ -253,7 +253,7 @@ protected:
              const uint8_t& dataType = DATA_TYPE_NUMERIC, const float& thickness = 3.0f,
              const float& offset = 0.0f,
              const sf::Color& lineColor= sf::Color::Black,
-             const textEntry& textInfo = textEntry("", "Paratype", 16, ALIGN_LEFT, sf::Color::Black),
+             const TextEntry& textInfo = TextEntry("", "Paratype", 16, ALIGN_LEFT, sf::Color::Black),
              const float& textPadding = 5.0f);
 
     };
@@ -533,9 +533,9 @@ protected:
         return axisLabels[2];
     }
 
-    inline float areaScale() const{ return (plotBounds.width+plotBounds.height)/512; }
-    inline float heightScale() const{ return plotBounds.height/256; }
-    inline float widthScale() const{ return plotBounds.width/256; }
+    inline float areaScale() const{ return (plotBounds.width+plotBounds.height)/512 * viewScale(); }
+    inline float heightScale() const{ return plotBounds.height/256 * viewScale(); }
+    inline float widthScale() const{ return plotBounds.width/256 * viewScale(); }
     inline float densityScale() const{ return 2.0f/log10(numPoints()); }
     inline float getSpriteSize() const{
         return spriteSize*densityScale()*areaScale();
@@ -654,6 +654,9 @@ public:
 
     CVISION_API bool setPlotSpriteTexture(const std::string& textureName);
 
+    CVISION_API void addPlotText(const TextEntry& newText,
+                                 const sf::Vector2f& position);
+
     inline void addAxis(const float& pos, const unsigned int& dimension,
                  const uint8_t& dataType, const float& thickness = 5.0f,
                  const float& offset = 0.0f,
@@ -665,7 +668,7 @@ public:
                  const float& textPadding = 5.0f){
         if(fontName.size() < 1) fontName = this->fontName;
         plotAxes.emplace_back(pos, dimension, this, std::vector<std::string>(), dataType, thickness, offset, lineColor,
-                              textEntry("", fontName, fontSize, alignment, fontColor),
+                              TextEntry("", fontName, fontSize, alignment, fontColor),
                               textPadding);
     }
 

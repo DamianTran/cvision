@@ -99,7 +99,7 @@ bool CVDataViewerPanel::updateCells()
 
         headerBars.insert(headerBars.begin(), new CVTextBox(View, sf::Vector2f(headerBars.front()->getPosition().x - tl.width, bounds.top),
                           tl.width, top_margin(),
-                          textEntry(std::to_string(coordOffset.x + 1), textInfo.font,
+                          TextEntry(std::to_string(coordOffset.x + 1), textInfo.font,
                                     15*View->getViewScale(), ALIGN_CENTER_MIDLINE,
                                     headerThemeColor - 50),
                           headerThemeColor, headerThemeColor - 40, 1.0f));
@@ -153,7 +153,7 @@ bool CVDataViewerPanel::updateCells()
 
         headerBars.emplace_back(new CVTextBox(View, sf::Vector2f(headerBars.back()->getPosition().x + headerBars.back()->getSize().x, bounds.top),
                                               br.width, top_margin(),
-                                              textEntry(std::to_string(cells.front().size() + coordOffset.x), textInfo.font,
+                                              TextEntry(std::to_string(cells.front().size() + coordOffset.x), textInfo.font,
                                                       15*View->getViewScale(), ALIGN_CENTER_MIDLINE,
                                                       headerThemeColor - 50),
                                               headerThemeColor, headerThemeColor - 40, 1.0f));
@@ -201,7 +201,7 @@ bool CVDataViewerPanel::updateCells()
 
         rowBars.emplace_back(new CVTextBox(View, sf::Vector2f(bounds.left, br.top),
                                            left_margin(), br.height,
-                                           textEntry(std::to_string(line_coord), textInfo.font,
+                                           TextEntry(std::to_string(line_coord), textInfo.font,
                                                    15*View->getViewScale(), ALIGN_CENTER_MIDLINE,
                                                    headerThemeColor - 70),
                                            headerThemeColor, headerThemeColor - 40, 1.0f));
@@ -253,7 +253,7 @@ bool CVDataViewerPanel::updateCells()
 
         rowBars.insert(rowBars.begin(), new CVTextBox(View, sf::Vector2f(bounds.left, tl.top),
                        left_margin(), tl.height,
-                       textEntry(std::to_string(coordOffset.y + 1), textInfo.font,
+                       TextEntry(std::to_string(coordOffset.y + 1), textInfo.font,
                                  15*View->getViewScale(), ALIGN_CENTER_MIDLINE,
                                  headerThemeColor - 70),
                        headerThemeColor, headerThemeColor - 40, 1.0f));
@@ -438,7 +438,7 @@ void CVDataViewerPanel::setup()
 
                 rowBars.emplace_back(new CVTextBox(View, sf::Vector2f(bounds.left, cells[y][x]->getPosition().y),
                                                    left_margin(), cells[y][x]->getSize().y,
-                                                   textEntry(std::to_string(y + 1), textInfo.font,
+                                                   TextEntry(std::to_string(y + 1), textInfo.font,
                                                            15*View->getViewScale(), ALIGN_CENTER_MIDLINE,
                                                            headerThemeColor - 50),
                                                    headerThemeColor, headerThemeColor - 40, 1.0f));
@@ -456,7 +456,7 @@ void CVDataViewerPanel::setup()
 
         headerBars.emplace_back(new CVTextBox(View, sf::Vector2f(cells.front()[x]->getPosition().x, bounds.top),
                                               cells.front()[x]->getSize().x, top_margin(),
-                                              textEntry(std::to_string(x + 1), textInfo.font,
+                                              TextEntry(std::to_string(x + 1), textInfo.font,
                                                       15*View->getViewScale(), ALIGN_CENTER_MIDLINE,
                                                       headerThemeColor - 50),
                                               headerThemeColor, headerThemeColor - 40, 1.0f));

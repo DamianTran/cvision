@@ -103,7 +103,7 @@ public:
     }
 
     CVISION_API CVConsoleLog(CVView* View, const sf::Vector2f& position, const float& width, const float& height,
-              const textEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
+              const TextEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
               const float& borderWidth, const uint8_t& animType = CV_OBJ_ANIM_NONE,
               const std::string& logFile = "", CVTypeBox* usrEntryBox = nullptr);
 };

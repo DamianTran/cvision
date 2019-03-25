@@ -77,6 +77,7 @@ public:
 
     virtual void clear();
 
+    CVISION_API CVElement* getOwnedElementByID(const std::string& ID);
     CVISION_API CVElement* getTaggedElement(const std::string& tag);
     CVISION_API bool elementExists(const std::string& tag);
 
@@ -119,6 +120,9 @@ public:
     {
         setSize(sf::Vector2f(x, y));
     }
+
+    CVISION_API void fitElements(const bool& fitX = true,
+                                 const bool& fitY = true); // Fit the panel boundaries to the attached elements
 
     CVISION_API void setHighlightColor(const sf::Color& color);
     inline void setHighlightColor(const int& r, const int& g, const int& b)

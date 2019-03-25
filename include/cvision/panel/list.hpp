@@ -99,7 +99,7 @@ public:
     CVISION_API void addTextEntries(const std::vector<std::string>& newText);
     CVISION_API void setTextEntries(const std::vector<std::string>& newText);
     CVISION_API void removeTextEntry(const unsigned int& index);
-    CVISION_API bool textEntryExists(const std::string& text) const;
+    CVISION_API bool TextEntryExists(const std::string& text) const;
 
     CVISION_API void setElementPadding(const float& newPadding);
 

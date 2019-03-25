@@ -101,7 +101,7 @@ CVAssemblyPanel::assembly::assembly(const vector<CVElement*>& members,
     itemPadding(12.0f*viewScale()),
     outerPadding(18.0f*viewScale()),
     label(host.View, getPosition(), host.itemSize.x*2, host.itemSize.y/4,
-          textEntry("Name this category...", host.textInfo.font, host.textInfo.fontSize, ALIGN_LEFT_MIDLINE, sf::Color::Black),
+          TextEntry("Name this category...", host.textInfo.font, host.textInfo.fontSize, ALIGN_LEFT_MIDLINE, sf::Color::Black),
           host.highlightColor, host.highlightColor, 1.0f, CV_OBJ_ANIM_SLIDE, CV_TEXT_FIT_LATERAL),
     acceptButton(host.View, getPosition(), label.getBounds().height*0.6f, label.getBounds().height*0.6f, "gen_check", 1, 0, true),
     cancelButton(host.View, getPosition(), label.getBounds().height*0.6f, label.getBounds().height*0.6f, "gen_x", 1, 0, true),
@@ -445,7 +445,7 @@ void CVAssemblyPanel::addAssemblyItem(const sf::Vector2f& position, const string
     }
 
     CVButton* newBox = new CVButton(View, position, itemSize.x, itemSize.y,
-                                      textEntry(inputData, mainApp()->getDefaultFont(), textInfo.fontSize, ALIGN_CENTER_MIDLINE, sf::Color(80,80,80)),
+                                      TextEntry(inputData, mainApp()->getDefaultFont(), textInfo.fontSize, ALIGN_CENTER_MIDLINE, sf::Color(80,80,80)),
                                                 "", sf::Color(120,120,120,120), sf::Color(160,160,160,50), 2.0f);
 
     newBox->setHighlightableStatus(true);

@@ -58,6 +58,8 @@ CVViewPanel::CVViewPanel(CVView* parentView, std::string panelTag, sf::Color bac
     bOutOfBoundsUpdate(false)
 {
 
+    IDtag = panelTag;
+
     if(!isnan(size.x) && !isnan(size.y)) setSize(size);
     else
     {
@@ -133,16 +135,20 @@ void CVViewPanel::addPanelElement(CVElement* newElement, std::string newTag, con
     // Transfer flags
 
     newElement->viewPanel = this;
-    newElement->setTag(newTag);
+
+    if(!newTag.empty())
+    {
+        newElement->setTag(newTag);
+    }
 
     if(index < numPanels())
     {
         viewPanelElements.insert(viewPanelElements.begin() + index, newElement);
-        viewPanelTags.insert(viewPanelTags.begin() + index, newTag);
+        viewPanelTags.insert(viewPanelTags.begin() + index, newElement->tag());
     }
     else
     {
-        viewPanelTags.push_back(newTag);
+        viewPanelTags.push_back(newElement->tag());
         viewPanelElements.push_back(newElement);
     }
 
@@ -271,6 +277,41 @@ void CVViewPanel::setSize(const sf::Vector2f& newSize)
     CVBox::setSize(newSize);
 }
 
+void CVViewPanel::fitElements(const bool& fitX,
+                              const bool& fitY)
+{
+    if(!numPanels())
+    {
+        CVBox::setSize(sf::Vector2f(0,0));
+    }
+    else if(fitX || fitY)
+    {
+        sf::FloatRect newBounds = viewPanelElements.front()->getBounds();
+
+        for(size_t i = 1; i < numPanels(); ++i)
+        {
+            expandBounds(newBounds, viewPanelElements[i]->getBounds());
+        }
+
+        sf::Vector2f newPosition = getPosition();
+        sf::Vector2f newSize = getSize();
+
+        if(fitX)
+        {
+            newPosition.x = newBounds.left;
+            newSize.x = newBounds.width;
+        }
+        if(fitY)
+        {
+            newPosition.y = newBounds.top;
+            newSize.y = newBounds.height;
+        }
+
+        CVBox::setPosition(newPosition);
+        CVBox::setSize(newSize);
+    }
+}
+
 CVElement* CVViewPanel::getTaggedElement(const std::string& tag)
 {
     unsigned int index = 0;
@@ -280,6 +321,28 @@ CVElement* CVViewPanel::getTaggedElement(const std::string& tag)
         else ++index;
     }
     return nullptr;
+}
+
+CVElement* CVViewPanel::getOwnedElementByID(const std::string& tag)
+{
+    CVElement* output = nullptr;
+    for(auto& element : viewPanelElements)
+    {
+        if(element->tag() == tag)
+        {
+            return element;
+        }
+        else if(dynamic_cast<CVViewPanel*>(element))
+        {
+            if(output = ((CVViewPanel*)element)->getOwnedElementByID(tag))
+            {
+                return output;
+            }
+        }
+    }
+
+    return output;
+
 }
 
 bool CVViewPanel::elementExists(const std::string& tag)
