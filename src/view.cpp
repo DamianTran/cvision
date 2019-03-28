@@ -312,6 +312,8 @@ void CVView::init()
     while(!bClosed)
     {
 
+        if(!preDrawProcess()) break;
+
         if(forceClose)
         {
 
@@ -352,7 +354,7 @@ void CVView::init()
 
     }
 
-    viewPort->close();
+    if(viewPort && viewPort->isOpen()) viewPort->close();
 }
 
 CVElement* CVView::getElementById(const string& tag)

@@ -148,7 +148,7 @@ public:
 
     virtual uint8_t loadPackages() = 0; // Load data and media required for this app to run
     virtual uint8_t initMainLoop(uint8_t runMode) = 0; // Initiate a thread consisting of the main data update loop for this app
-    virtual bool initUI(unsigned int videoX, unsigned int videoY) = 0; // Initiate the UI required for this app before main loop begins
+    virtual bool initUI() = 0; // Initiate the UI required for this app before main loop begins
 
     inline CVView* getView(const std::string& tag)
     {

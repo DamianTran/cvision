@@ -26,15 +26,25 @@ class CVISION_API CVNetworkNode
 public:
 
     CVISION_API CVNetworkNode(CVElement* element,
+                              const std::string& newType = "",
                               const float& weight = 1.0f,
                               const sf::Font* font = nullptr,
                               const unsigned int& baseCharacterSize = 14u,
                               const unsigned int& alignment = ALIGN_CENTER_MIDLINE,
                               const sf::Color& textColor = sf::Color::Black);
 
-    CVISION_API void connect_out(CVNetworkNode& other, const std::string& type = "none");         // Outbound connection
-    CVISION_API void connect_in(CVNetworkNode& other, const std::string& type = "none");          // Inbound connection
-    CVISION_API void connect_with(CVNetworkNode& other, const std::string& type = "none");        // Bidirectional connection
+    CVISION_API void connect_out(CVNetworkNode& other,
+                                 const float& weight = 1.0f,
+                                 const sf::Color& edgeColor = sf::Color::Black,
+                                 const std::string& type = "");         // Outbound connection
+    CVISION_API void connect_in(CVNetworkNode& other,
+                                const float& weight = 1.0f,
+                                const sf::Color& edgeColor = sf::Color::Black,
+                                const std::string& type = "");          // Inbound connection
+    CVISION_API void connect_with(CVNetworkNode& other,
+                                  const float& weight = 1.0f,
+                                  const sf::Color& edgeColor = sf::Color::Black,
+                                  const std::string& type = "");        // Bidirectional connection
 
     CVISION_API void remove_connections(CVNetworkNode& other);
     CVISION_API void disconnect();
@@ -45,9 +55,11 @@ public:
     inline CVElement * const getElement() noexcept{ return element; }
     inline const CVElement * const getElement() const noexcept{ return element; }
     inline const std::string& getTag() noexcept{ return element->tag(); }
+    inline const std::string& getType() const noexcept{ return type; }
+    inline const float& getWeight() const noexcept{ return weight; }
 
     inline void setWeight(const float& newWeight) noexcept{ weight = newWeight; }
-    inline const float& getWeight() const noexcept{ return weight; }
+    inline void setType(const std::string& newType) noexcept{ type = newType; }
 
     inline void setTextDisplayOffset(const sf::Vector2f& newOffset) noexcept{ textDisplayOffset = newOffset; }
 
@@ -82,6 +94,8 @@ private:
     CVElement* element;
 
     sf::Text displayText;
+
+    std::string type;
 
     std::vector<CVNetworkEdge> connected_to;
     std::vector<CVNetworkEdge> connected_from;
@@ -172,12 +186,17 @@ public:
 
     // Manual addition/addition of special elements to network
 
+    // Deprecate the original method to avoid confusion
+
     CVISION_API void addPanelElement(CVElement* newElement,
-                         const std::string& newTag = "",
-                         const unsigned int& index = UINT_MAX) = delete;
+                                    const std::string& newTag = "",
+                                    const unsigned int& index = UINT_MAX) = delete;
+
+    // New method for manual addition
 
     CVISION_API void addPanelElement(CVElement* newElement,
                                      const std::string& newTag = "",
+                                     const std::string& newType = "",
                                      const float& weight = 1.0f,
                                      const unsigned int& label_orientation = ALIGN_CENTER_MIDLINE);
 
@@ -185,12 +204,16 @@ public:
 
     // Add/remove nodes
 
+    /** Add a shape node with templated color settings */
     CVISION_API CVButton* addNode(const std::string& tag,
+                                  const std::string& type = "",
                                   const float& weight = 1.0f,
                                   const sf::Vector2f& position = sf::Vector2f(NAN, NAN),
                                   const sf::Vector2f& size = sf::Vector2f(NAN, NAN));
 
+    /** Add a shape node with specific color settings */
     CVISION_API CVButton* addNode(const std::string& tag,
+                                  const std::string& type,
                                   const float& weight,
                                   const sf::Vector2f& position,
                                   const sf::Vector2f& size,
@@ -199,14 +222,18 @@ public:
                                   const float& outlineThickness = 1.0f,
                                   const float& rounding = NAN);
 
+    /** Add a sprite node with templated color settings */
     CVISION_API CVButton* addImageNode(const std::string& tag,
                                        const std::string& texture,
+                                       const std::string& type = "",
                                        const float& weight = 1.0f,
                                        const sf::Vector2f& position = sf::Vector2f(NAN, NAN),
                                        const sf::Vector2f& size = sf::Vector2f(NAN, NAN));
 
+    /** Add a sprite node with specific color settings */
     CVISION_API CVButton* addImageNode(const std::string& tag,
                                        const std::string& texture,
+                                       const std::string& type,
                                        const float& weight,
                                        const sf::Vector2f& position,
                                        const sf::Vector2f& size,
@@ -221,21 +248,42 @@ public:
 
     // Connection
 
+    /** Connect nodes with source tag to nodes with target tag */
     CVISION_API void connectByTag(const std::string& source,
                                   const std::string& target,
+                                  const float& weight = 1.0f,
+                                  const std::string& type = "",
                                   const bool& bidirectional = true);
 
+    /** Connect nodes with source tag to nodes with target tags */
     CVISION_API void connectByTags(const std::string& source,
                                    const std::vector<std::string>& targets,
+                                   const float& weight = 1.0f,
+                                   const std::string& type = "",
                                    const bool& bidirectional = true);
 
+    /** Connect nodes with source tags to nodes with target tag */
     CVISION_API void connectByTags(const std::vector<std::string>& sources,
                                    const std::string& target,
+                                   const float& weight = 1.0f,
+                                   const std::string& type = "",
                                    const bool& bidirectional = true);
 
+    /** Cross-connect nodes with source tags to nodes with target tags */
     CVISION_API void connectByTags(const std::vector<std::string>& sources,
                                    const std::vector<std::string>& targets,
+                                   const float& weight = 1.0f,
+                                   const std::string& type = "",
                                    const bool& bidirectional = true);
+
+    // Selection
+
+    CVISION_API void select(CVElement* element);
+    CVISION_API void deselect(CVElement* element);
+    CVISION_API void toggle_select(CVElement* element);
+
+    CVISION_API void select_all();
+    CVISION_API void select_none();
 
     // Layouts
 
@@ -252,6 +300,37 @@ public:
     CVISION_API void setNodeFillColor(const sf::Color& newColor) noexcept;
     inline void setSelectionColor(const sf::Color& newColor) noexcept{ selectionColor = newColor; }
 
+    inline void setDefaultNodeSize(const sf::Vector2f& newSize) noexcept{ defaultNodeSize = newSize; }
+    inline void setDefaultNodePosition(const sf::Vector2f& newPosition) noexcept{ defaultNodePosition = newPosition; }
+    inline void setDefaultEdgeColor(const sf::Color& newColor) noexcept{ edgeLegend["__DEFAULT__"] = newColor; }
+    inline void setDefaultNodeFillColor(const sf::Color& newColor) noexcept{ nodeLegend["__DEFAULT__"] = newColor; }
+    inline void setDefaultNodeOutlineColor(const sf::Color& newColor) noexcept{ outlineLegend["__DEFAULT__"] = newColor; }
+    inline void setDefaultNodeTextColor(const sf::Color& newColor) noexcept{ textColorLegend["__DEFAULT__"] = newColor; }
+
+    inline void setLegendNodeColor(const std::string& type,
+                                   const sf::Color& newColor) noexcept{ nodeLegend[type] = newColor; }
+    inline void setLegendEdgeColor(const std::string& type,
+                                   const sf::Color& newColor) noexcept{ edgeLegend[type] = newColor; }
+    inline void setLegendOutlineColor(const std::string& type,
+                                   const sf::Color& newColor) noexcept{ outlineLegend[type] = newColor; }
+    inline void setLegendTextColor(const std::string& type,
+                                   const sf::Color& newColor) noexcept{ textColorLegend[type] = newColor; }
+
+    inline void setUniqueNodesOnly(const bool& status = true) noexcept{ bUniqueNodesOnly = status; }
+
+    // Access
+
+    inline const sf::Vector2f& getDefaultNodeSize() const noexcept{ return defaultNodeSize; }
+    inline const sf::Color& getDefaultNodeFillColor() const{ return nodeLegend.at("__DEFAULT__"); }
+    inline const sf::Color& getDefaultNodeOutlineColor() const{ return outlineLegend.at("__DEFAULT__"); }
+    inline const sf::Color& getDefaultEdgeColor() const{ return edgeLegend.at("__DEFAULT__"); }
+    inline const sf::Color& getDefaultNodeTextColor() const{ return textColorLegend.at("__DEFAULT__"); }
+
+    CVISION_API const sf::Color& getNodeColor(const std::string& type) const;
+    CVISION_API const sf::Color& getEdgeColor(const std::string& type) const;
+    CVISION_API const sf::Color& getOutlineLegendColor(const std::string& type) const;
+    CVISION_API const sf::Color& getTextLegendColor(const std::string& type) const;
+
     // Misc
 
     inline bool isSelected(CVElement* element)
@@ -266,6 +345,9 @@ public:
 
         return false;
     }
+
+    inline bool anySelected() const noexcept{ return !selected.empty(); }
+    inline size_t numSelected() const noexcept{ return selected.size(); }
 
 protected:
 
@@ -284,18 +366,26 @@ protected:
     float tetherDistanceScale;
 
     sf::Color selectionColor;
-    sf::Color defaultNodeFillColor;
-    sf::Color defaultNodeOutlineColor;
+
+    std::unordered_map<std::string, sf::Color> edgeLegend;
+    std::unordered_map<std::string, sf::Color> nodeLegend;
+    std::unordered_map<std::string, sf::Color> outlineLegend;
+    std::unordered_map<std::string, sf::Color> textColorLegend;
 
     sf::RectangleShape selectionCordon;
 
     unsigned int defaultNodeTextAlignment;
 
+    bool bUniqueNodesOnly;
+    bool bSelection;
+
     void updatePhysics(CVEvent& event);
 
-private:
-
     EZC::reference_vector<CVNetworkNode> selected;
+
+    CVISION_API void select(CVNetworkNode& node);
+    CVISION_API void deselect(CVNetworkNode& node);
+    CVISION_API void toggle_select(CVNetworkNode& node);
 
 };
 

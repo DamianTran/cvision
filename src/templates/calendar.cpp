@@ -928,6 +928,11 @@ bool CVCalendarPanel::draw(sf::RenderTarget* target){
     scrollBarX.draw(target);
     scrollBarY.draw(target);
 
+    if(is_closable())
+    {
+        closeButton->draw(target);
+    }
+
     CV_DRAW_CLIP_END
 
     return true;
@@ -1308,8 +1313,8 @@ void CVCalendarPanel::updateDisplay(){
 
             headerBox = new CVTextBox(View, sf::Vector2f(getPosition().x, getPosition().y), bounds.width, top_margin()/2,
                                                             TextEntry(monthStr(viewing_time.month()) + " " + std::to_string(viewing_time.year()),
-                                                                      textInfo.font, textInfo.fontSize*1.5f,
-                                                                ALIGN_CENTER, textInfo.textColor),
+                                                                      textInfo.font, textInfo.fontSize,
+                                                                ALIGN_CENTER_MIDLINE, textInfo.textColor),
                                                             headerColor(), cellBorderColor(), tableOutlineThickness);
             headerBox->setMask(appTexture("gradient_linear"));
             headerBox->setMaskColor(sf::Color(250,250,250,160));
@@ -1370,7 +1375,7 @@ void CVCalendarPanel::updateDisplay(){
 
                 headerBars.emplace_back(new CVTextBox(View, sf::Vector2f(left_margin() + getPosition().x + (bounds.width - left_margin())*i/7,
                                                                          getPosition().y + top_margin()/2), (bounds.width - left_margin())/7, top_margin()/2,
-                                                      TextEntry(headerStr.str(), textInfo.font, textInfo.fontSize*1.3f,
+                                                      TextEntry(headerStr.str(), textInfo.font, textInfo.fontSize*0.8f,
                                                                 textInfo.alignment, textInfo.textColor),
                                                         headerColor(), cellBorderColor(), tableOutlineThickness));
                 headerBars.back()->setMask(appTexture("gradient_linear"));
@@ -1399,7 +1404,7 @@ void CVCalendarPanel::updateDisplay(){
                                                                       getPosition().y +
                                                                       (bounds.height - top_margin())*i/8),
                                                    left_margin(), (bounds.height - top_margin())/8,
-                                                   TextEntry(sideBarTime.getTime(b24hour), textInfo.font, textInfo.fontSize*1.25f,
+                                                   TextEntry(sideBarTime.getTime(b24hour), textInfo.font, textInfo.fontSize*0.8f,
                                                                 textInfo.alignment, textInfo.textColor),
                                                    sideBarColor(), cellBorderColor(), tableOutlineThickness));
                 rowBars.back()->setMask(appTexture("gradient_linear"));

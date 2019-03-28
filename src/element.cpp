@@ -78,7 +78,7 @@ namespace cvis
         bStatic(false),\
         bNoInteract(false),\
         closeButton(nullptr),\
-        highlightColor(255,255,255,255),\
+        highlightColor(sf::Color::Transparent),\
         origin(0.0f,0.0f),\
         destination(NAN, NAN),\
         velocity(0.0f,0.0f),\
@@ -182,7 +182,8 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
         if(highlighted || (bounds.contains(mousePos) && event.focusFree()))
         {
             setFocus(true);
-            if(baseSpriteColor() == sf::Color::Transparent)
+            if((baseSpriteColor() == sf::Color::Transparent) ||
+               (highlightColor != sf::Color::Transparent))
             {
                 for(auto& spr : spriteList)
                 {

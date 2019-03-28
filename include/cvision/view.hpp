@@ -266,8 +266,8 @@ public:
 
     sf::Vector2f mousePos;
 
-    virtual void preDrawProcess(){ }        // Override to insert update events before the draw cycle
-    virtual void postDrawProcess(){ }       // Override to insert update events following the draw cycle
+    virtual bool preDrawProcess(){ return true; }        // Override to insert update events before the draw cycle
+    virtual void postDrawProcess(){ }                    // Override to insert update events following the draw cycle
 
     CVISION_API void setTopMargin(const float& margin);
     CVISION_API void setDropable(const bool& status = true);

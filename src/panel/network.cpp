@@ -13,6 +13,7 @@ namespace cvis
 {
 
 CVNetworkNode::CVNetworkNode(CVElement* element,
+                             const string& newType,
                              const float& weight,
                              const sf::Font* font,
                              const unsigned int& baseCharacterSize,
@@ -20,6 +21,7 @@ CVNetworkNode::CVNetworkNode(CVElement* element,
                              const sf::Color& textFillColor):
     element(element),
     displayText(element->tag(), *font, baseCharacterSize),
+    type(newType),
     weight(weight),
     textPadding(24.0f),
     lastElementPosition(element->getPosition()),
@@ -32,57 +34,74 @@ CVNetworkNode::CVNetworkNode(CVElement* element,
     displayText.setFillColor(textFillColor);
 }
 
-void CVNetworkNode::connect_out(CVNetworkNode& node, const string& type)
+void CVNetworkNode::connect_out(CVNetworkNode& node,
+                                const float& weight,
+                                const sf::Color& edgeColor,
+                                const string& type)
 {
     for(auto& link : connected_to)
     {
-        if(&link.getNode() == &node)
+        if((node.getElement() == link.getNode().getElement()) &&
+           (link.getType() == type))
         {
-            return;
+            goto skip_to;
         }
     }
 
-    connected_to.emplace_back(*this, node, type);
+    connected_to.emplace_back(*this, node, type, weight, edgeColor);
+
+    skip_to:;
 
     for(auto& link : node.connected_from)
     {
-        if(&link.getNode() == &node)
+        if((node.getElement() == link.getNode().getElement()) &&
+           (link.getType() == type))
         {
             return;
         }
     }
 
-    node.connected_from.emplace_back(*this, node, type);
+    node.connected_from.emplace_back(*this, node, type, weight, edgeColor);
 }
 
-void CVNetworkNode::connect_in(CVNetworkNode& node, const string& type)
+void CVNetworkNode::connect_in(CVNetworkNode& node,
+                               const float& weight,
+                               const sf::Color& edgeColor,
+                               const string& type)
 {
 
     for(auto& link : connected_from)
     {
-        if(&link.getNode() == &node)
+        if((node.getElement() == link.getNode().getElement()) &&
+           (link.getType() == type))
         {
-            return;
+            goto skip_from;
         }
     }
 
-    connected_from.emplace_back(node, *this, type);
+    connected_from.emplace_back(node, *this, type, weight, edgeColor);
+
+    skip_from:;
 
     for(auto& link : node.connected_to)
     {
-        if(&link.getNode() == &node)
+        if((node.getElement() == link.getNode().getElement()) &&
+           (link.getType() == type))
         {
             return;
         }
     }
 
-    node.connected_to.emplace_back(node, *this, type);
+    node.connected_to.emplace_back(node, *this, type, weight, edgeColor);
 }
 
-void CVNetworkNode::connect_with(CVNetworkNode& node, const string& type)
+void CVNetworkNode::connect_with(CVNetworkNode& node,
+                                 const float& weight,
+                                 const sf::Color& edgeColor,
+                                 const string& type)
 {
-    connect_out(node, type);
-    connect_in(node, type);
+    connect_out(node, weight, edgeColor, type);
+    connect_in(node, weight, edgeColor, type);
 }
 
 void CVNetworkNode::remove_connections(CVNetworkNode& other)
@@ -247,7 +266,7 @@ void CVNetworkNode::align_text(const unsigned int& alignment)
     case ALIGN_LEFT_MIDLINE:
         {
 
-            displayText.setOrigin(sf::Vector2f(textBounds.width, textBounds.height - getTextCenterOffsetY(displayText)));
+            displayText.setOrigin(sf::Vector2f(textBounds.width, textBounds.height - getTextCenterOffsetY(displayText)/4));
             displayText.setPosition(sf::Vector2f(elementBounds.left - textPadding,
                                                  elementBounds.top + elementBounds.height/2));
 
@@ -274,7 +293,7 @@ void CVNetworkNode::align_text(const unsigned int& alignment)
     case ALIGN_CENTER_MIDLINE:
         {
 
-            displayText.setOrigin(sf::Vector2f(textBounds.width/2, textBounds.height - getTextCenterOffsetY(displayText)));
+            displayText.setOrigin(sf::Vector2f(textBounds.width/2, textBounds.height - getTextCenterOffsetY(displayText)/4));
             displayText.setPosition(sf::Vector2f(elementBounds.left + elementBounds.width/2,
                                                  elementBounds.top + elementBounds.height/2));
 
@@ -301,7 +320,7 @@ void CVNetworkNode::align_text(const unsigned int& alignment)
     case ALIGN_RIGHT_MIDLINE:
         {
 
-            displayText.setOrigin(sf::Vector2f(0.0f, textBounds.height - getTextCenterOffsetY(displayText)));
+            displayText.setOrigin(sf::Vector2f(0.0f, textBounds.height - getTextCenterOffsetY(displayText)/4));
             displayText.setPosition(sf::Vector2f(elementBounds.left + elementBounds.width + textPadding,
                                                  elementBounds.top + elementBounds.height/2));
 
@@ -378,7 +397,9 @@ CVNetworkEdge::CVNetworkEdge(CVNetworkNode& origin,
                                   lineWeightScale(1.0f),
                                   lineWidth(2.0f)
 {
+
     line.setFillColor(edgeColor);
+
 }
 
 void CVNetworkEdge::setLineWidth(const float& newWidth) noexcept
@@ -429,10 +450,11 @@ CVNetworkPanel::CVNetworkPanel(CVView* View,
                                  physicsPullStrength(2.0f),
                                  tetherDistanceScale(4.0f),
                                  selectionColor(sf::Color::Yellow),
-                                 defaultNodeFillColor(sf::Color::White),
-                                 defaultNodeOutlineColor(sf::Color::Black),
-                                 defaultNodeTextAlignment(ALIGN_CENTER_MIDLINE)
+                                 defaultNodeTextAlignment(ALIGN_CENTER_MIDLINE),
+                                 bUniqueNodesOnly(false),
+                                 bSelection(false)
 {
+
     this->textInfo = textInfo;
     setOutlineThickness(outlineThickness);
     setOutlineColor(outlineColor);
@@ -440,6 +462,11 @@ CVNetworkPanel::CVNetworkPanel(CVView* View,
     selectionCordon.setOutlineThickness(1.0f);
     selectionCordon.setFillColor(sf::Color(128,128,128,60));
     selectionCordon.setOutlineColor(sf::Color(128,128,128,200));
+
+    setDefaultNodeFillColor(sf::Color::White);
+    setDefaultEdgeColor(sf::Color::Black);
+    setDefaultNodeOutlineColor(sf::Color::Black);
+    setDefaultNodeTextColor(textInfo.textColor);
 
     setDrawClipping(true);
 
@@ -458,58 +485,84 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
         node.update(mousePos);
     }
 
-//    if(event.LMBhold &&
-//       bounds.contains(event.LMBpressPosition))
-//    {
-//        for(auto& node : nodes)
-//        {
-//            if(event.isCaptured(node.getElement()))
-//            {
-//                selectionCordon.setSize(sf::Vector2f(0.0f, 0.0f));
-//                goto noCordon;
-//            }
-//        }
-//
-//        selectionCordon.setPosition(event.LMBpressPosition);
-//        selectionCordon.setSize(mousePos - event.LMBpressPosition);
-//
-//        noCordon:;
-//    }
-//    else if(event.LMBreleased && event.LMBreleaseFrames == 1)
-//    {
-//        if((event.LMBholdTime > 0.2f) && selectionCordon.getSize().x)
-//        {
-//            for(auto& node : nodes)
-//            {
-//                if(contains(node.getBounds(), selectionCordon.getGlobalBounds()))
-//                {
-//                    node.setSelected(true);
-//                }
-//                else if(!ctrlPressed())
-//                {
-//                    node.setSelected(false);
-//                }
-//            }
-//
-//            selectionCordon.setSize(sf::Vector2f(0.0f, 0.0f));
-//        }
-//        else
-//        {
-//            for(auto& node : nodes)
-//            {
-//                if(node.getBounds().contains(mousePos))
-//                {
-//                    node.setSelected(true);
-//                }
-//                else if(!ctrlPressed())
-//                {
-//                    node.setSelected(false);
-//                }
-//            }
-//
-//            selectionCordon.setSize(sf::Vector2f(0.0f, 0.0f));
-//        }
-//    }
+    if(!bSelection)
+    {
+        if(event.LMBhold &&
+           bounds.contains(event.LMBpressPosition))
+        {
+
+            for(auto& node : nodes)
+            {
+                if(node.getBounds().contains(event.lastFrameMousePosition))
+                {
+                    if(!ctrlPressed())
+                    {
+                        select_none();
+                    }
+
+                    select(node);
+                    goto noCordon;
+                }
+            }
+
+            if(!ctrlPressed())
+            {
+                select_none();
+            }
+
+            selectionCordon.setPosition(event.LMBpressPosition);
+            bSelection = true;
+
+            noCordon:;
+
+            for(auto& node : selected)
+            {
+                if(!event.isCaptured(*node.getElement()))
+                {
+                    event.mouse_capture(*node.getElement());
+                }
+            }
+
+        }
+    }
+    else if(bSelection && event.LMBhold)
+    {
+        selectionCordon.setSize(mousePos - event.LMBpressPosition);
+    }
+
+    if(event.LMBreleased && (event.LMBreleaseFrames == 1))
+    {
+
+        if(bSelection)
+        {
+
+            for(auto& node : nodes)
+            {
+                if(contains(node.getBounds(), selectionCordon.getGlobalBounds()))
+                {
+                    select(node);
+                }
+            }
+
+            selectionCordon.setSize(sf::Vector2f(0.0f, 0.0f));
+
+            bSelection = false;
+
+        }
+        else if(ctrlPressed())
+        {
+
+            for(auto& node : nodes)
+            {
+                if(node.getBounds().contains(mousePos))
+                {
+                    toggle_select(node);
+                    break;
+                }
+            }
+
+        }
+    }
 
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Delete))
     {
@@ -557,13 +610,16 @@ void CVNetworkPanel::updatePhysics(CVEvent& event)
     double lin_dist;
     double max_dist;
     double angle;
+    double distWeight;
+    double r1;
+    double r2;
 
     std::vector<CVNetworkNode*> mobile_nodes;
 
     for(auto& node : nodes)
     {
         if(node.isVisible() &&
-           !event.isCaptured(node.getElement()))
+           !event.isCaptured(*node.getElement()))
         {
             mobile_nodes.emplace_back(&node);
         }
@@ -582,8 +638,10 @@ void CVNetworkPanel::updatePhysics(CVEvent& event)
                 sizeRatio = (shape1Bounds.width*shape1Bounds.height)/
                 (shape1Bounds.width*shape1Bounds.height + shape2Bounds.height*shape2Bounds.width);
 
-                max_dist = sqrt(pow(shape1Bounds.width + shape2Bounds.width, 2) +
-                                pow(shape1Bounds.height + shape2Bounds.height, 2));
+                r1 = shape1Bounds.width < shape1Bounds.height ? shape1Bounds.width/2 : shape1Bounds.height/2;
+                r2 = shape2Bounds.width < shape2Bounds.height ? shape2Bounds.width/2 : shape2Bounds.height/2;
+
+                max_dist = r1 + r2;
 
                 shape1ctr = getBoundCenter(shape1Bounds);
                 shape2ctr = getBoundCenter(shape2Bounds);
@@ -593,21 +651,24 @@ void CVNetworkPanel::updatePhysics(CVEvent& event)
                 if(!lin_dist)
                 {
                     lin_dist = max_dist / 100;
-                    angle = rand(0.0, double(2*PI));
+                    angle = rand(0.0f, 360.0f)/180*PI;
                 }
                 else
                 {
                     angle = get_angle(shape1ctr, shape2ctr);
                 }
 
+                distWeight = lin_dist/max_dist;
+                if(distWeight > 1.0) distWeight = 1.0;
+
                 if(anyEqual(&nodes[j], mobile_nodes))
                 {
-                    moveDist = sf::Vector2f(components((1.0 - lin_dist/max_dist) * physicsPushStrength * sizeRatio, angle));
+                    moveDist = sf::Vector2f(components((1.0 - distWeight) * physicsPushStrength * sizeRatio, angle));
                     nodes[j].move(moveDist);
                 }
                 if(anyEqual(&nodes[i], mobile_nodes))
                 {
-                    moveDist = sf::Vector2f(components((1.0 - lin_dist/max_dist) * physicsPushStrength * (1.0 - sizeRatio), angle));
+                    moveDist = sf::Vector2f(components((1.0 - distWeight) * physicsPushStrength * (1.0 - sizeRatio), angle));
                     nodes[i].move(-moveDist);
                 }
 
@@ -658,6 +719,11 @@ bool CVNetworkPanel::draw(sf::RenderTarget* target)
         target->draw(item);
     }
 
+    if(is_closable())
+    {
+        closeButton->draw(target);
+    }
+
     CV_DRAW_CLIP_END
 
     return true;sf::Color baseColor;
@@ -666,12 +732,23 @@ bool CVNetworkPanel::draw(sf::RenderTarget* target)
 
 void CVNetworkPanel::addPanelElement(CVElement* element,
                                     const string& newTag,
+                                    const string& newType,
                                     const float& weight,
                                     const unsigned int& label_orientation)
 {
 
     CVBasicViewPanel::addPanelElement(element, newTag);
-    nodes.emplace_back(element, weight, appFont(textInfo.font), textInfo.fontSize, label_orientation, textInfo.textColor);
+
+    sf::Color nodeTextColor;
+    try
+    {
+        nodeTextColor = getTextLegendColor(newType);
+    }catch(...)
+    {
+        nodeTextColor = getDefaultNodeTextColor();
+    }
+
+    nodes.emplace_back(element, newType, weight, appFont(textInfo.font), textInfo.fontSize, label_orientation, nodeTextColor);
     element->setHighlightColor(selectionColor);
 }
 
@@ -688,12 +765,52 @@ void CVNetworkPanel::removePanelElement(CVElement* element)
 }
 
 CVButton* CVNetworkPanel::addNode(const string& tag,
+                                  const string& type,
                                   const float& weight,
                                   const sf::Vector2f& position,
                                   const sf::Vector2f& size)
 {
 
     CVButton* newNode = nullptr;
+
+    if(bUniqueNodesOnly)
+    {
+        for(auto& node : nodes)
+        {
+            if(cmpString(node.getTag(), tag, CMP_STR_CASE_INSENSITIVE))
+            {
+                return nullptr;
+            }
+        }
+    }
+
+    sf::Color newNodeFillColor;
+    sf::Color newNodeOutlineColor;
+    sf::Color newNodeTextColor;
+
+    try
+    {
+        newNodeFillColor = nodeLegend.at(type);
+    }
+    catch(...){
+        newNodeFillColor = getDefaultNodeFillColor();
+    }
+
+    try
+    {
+        newNodeOutlineColor = outlineLegend.at(type);
+    }
+    catch(...){
+        newNodeOutlineColor = getDefaultNodeOutlineColor();
+    }
+
+    try
+    {
+        newNodeTextColor = textColorLegend.at(type);
+    }
+    catch(...){
+        newNodeTextColor = getDefaultNodeTextColor();
+    }
 
     if(isnan(position.x) || isnan(size.x))
     {
@@ -715,8 +832,8 @@ CVButton* CVNetworkPanel::addNode(const string& tag,
                                  TextEntry("", textInfo.font,
                                            textInfo.fontSize * pow(weight, fontWeightScale),
                                            ALIGN_CENTER_MIDLINE,
-                                           textInfo.textColor),
-                                 "", defaultNodeFillColor, defaultNodeOutlineColor,
+                                           newNodeTextColor),
+                                 "", newNodeFillColor, newNodeOutlineColor,
                                  defaultNodeOutlineThickness);
 
         newNode->setOrigin(newSize/2);
@@ -737,8 +854,8 @@ CVButton* CVNetworkPanel::addNode(const string& tag,
                                  TextEntry("", textInfo.font,
                                            textInfo.fontSize * pow(weight, fontWeightScale),
                                            ALIGN_CENTER_MIDLINE,
-                                           textInfo.textColor),
-                                 "", defaultNodeFillColor, defaultNodeOutlineColor,
+                                           newNodeTextColor),
+                                 "", newNodeFillColor, newNodeOutlineColor,
                                  defaultNodeOutlineThickness);
 
         newNode->setOrigin(size/2);
@@ -756,13 +873,14 @@ CVButton* CVNetworkPanel::addNode(const string& tag,
 
     newNode->setDraggableStatus(true);
 
-    addPanelElement(newNode, tag, weight);
+    addPanelElement(newNode, tag, type, weight, defaultNodeTextAlignment);
 
     return newNode;
 
 }
 
 CVButton* CVNetworkPanel::addNode(const string& tag,
+                                  const string& type,
                                   const float& weight,
                                   const sf::Vector2f& position,
                                   const sf::Vector2f& size,
@@ -772,6 +890,17 @@ CVButton* CVNetworkPanel::addNode(const string& tag,
                                   const float& rounding)
 {
     CVButton* newNode = nullptr;
+
+    if(bUniqueNodesOnly)
+    {
+        for(auto& node : nodes)
+        {
+            if(cmpString(node.getTag(), tag, CMP_STR_CASE_INSENSITIVE))
+            {
+                return nullptr;
+            }
+        }
+    }
 
     if(isnan(position.x) || isnan(size.x))
     {
@@ -837,19 +966,41 @@ CVButton* CVNetworkPanel::addNode(const string& tag,
 
     newNode->setDraggableStatus(true);
 
-    addPanelElement(newNode, tag, weight);
+    addPanelElement(newNode, tag, type, weight, defaultNodeTextAlignment);
 
     return newNode;
 }
 
 CVButton* CVNetworkPanel::addImageNode(const string& tag,
                                        const string& texture,
+                                       const string& type,
                                        const float& weight,
                                        const sf::Vector2f& position,
                                        const sf::Vector2f& size)
 {
 
     if(!appTexture(texture)) return nullptr;
+
+    if(bUniqueNodesOnly)
+    {
+        for(auto& node : nodes)
+        {
+            if(cmpString(node.getTag(), tag, CMP_STR_CASE_INSENSITIVE))
+            {
+                return nullptr;
+            }
+        }
+    }
+
+    sf::Color newNodeFillColor;
+
+    try
+    {
+        newNodeFillColor = nodeLegend.at(type);
+    }
+    catch(...){
+        newNodeFillColor = getDefaultNodeFillColor();
+    }
 
     CVButton* newNode = nullptr;
 
@@ -893,10 +1044,10 @@ CVButton* CVNetworkPanel::addImageNode(const string& tag,
                                  texture, 1);
     }
 
-    newNode->setSpriteColor(defaultNodeFillColor);
+    newNode->setSpriteColor(newNodeFillColor);
     newNode->setDraggableStatus(true);
 
-    addPanelElement(newNode, tag, weight, ALIGN_CENTER_BOTTOM);
+    addPanelElement(newNode, tag, type, weight, defaultNodeTextAlignment);
 
     return newNode;
 
@@ -904,6 +1055,7 @@ CVButton* CVNetworkPanel::addImageNode(const string& tag,
 
 CVButton* CVNetworkPanel::addImageNode(const string& tag,
                                        const string& texture,
+                                       const string& type,
                                        const float& weight,
                                        const sf::Vector2f& position,
                                        const sf::Vector2f& size,
@@ -915,6 +1067,17 @@ CVButton* CVNetworkPanel::addImageNode(const string& tag,
 {
 
     if(!appTexture(texture)) return nullptr;
+
+    if(bUniqueNodesOnly)
+    {
+        for(auto& node : nodes)
+        {
+            if(cmpString(node.getTag(), tag, CMP_STR_CASE_INSENSITIVE))
+            {
+                return nullptr;
+            }
+        }
+    }
 
     CVButton* newNode = nullptr;
 
@@ -980,15 +1143,30 @@ CVButton* CVNetworkPanel::addImageNode(const string& tag,
     newNode->setOutlineThickness(outlineThickness);
     newNode->setDraggableStatus(true);
 
-    addPanelElement(newNode, tag, weight, ALIGN_CENTER_BOTTOM);
+    addPanelElement(newNode, tag, type, weight, defaultNodeTextAlignment);
 
     return newNode;
 }
 
-void CVNetworkPanel::connectByTag(const std::string& source,
-                                  const std::string& target,
+void CVNetworkPanel::connectByTag(const string& source,
+                                  const string& target,
+                                  const float& weight,
+                                  const string& type,
                                   const bool& bidirectional)
 {
+
+    if(nodes.size() < 2) return;
+
+    sf::Color edgeColor;
+
+    try
+    {
+        edgeColor = getEdgeColor(type);
+    }
+    catch(...)
+    {
+        edgeColor = getDefaultEdgeColor();
+    }
 
     for(size_t i = 0, j, L = nodes.size(); i < L - 1; ++i)
     {
@@ -999,11 +1177,11 @@ void CVNetworkPanel::connectByTag(const std::string& source,
             {
                 if(bidirectional)
                 {
-                    nodes[i].connect_with(nodes[j]);
+                    nodes[i].connect_with(nodes[j], weight, edgeColor, type);
                 }
                 else
                 {
-                    nodes[i].connect_out(nodes[j]);
+                    nodes[i].connect_out(nodes[j], weight, edgeColor, type);
                 }
             }
             else if(cmpString(nodes[i].getTag(), target, CMP_STR_CASE_INSENSITIVE) &&
@@ -1011,11 +1189,11 @@ void CVNetworkPanel::connectByTag(const std::string& source,
             {
                 if(bidirectional)
                 {
-                    nodes[i].connect_with(nodes[j]);
+                    nodes[i].connect_with(nodes[j], weight, edgeColor, type);
                 }
                 else
                 {
-                    nodes[i].connect_in(nodes[j]);
+                    nodes[i].connect_in(nodes[j], weight, edgeColor, type);
                 }
             }
         }
@@ -1025,8 +1203,23 @@ void CVNetworkPanel::connectByTag(const std::string& source,
 
 void CVNetworkPanel::connectByTags(const string& source,
                                    const vector<string>& targets,
+                                   const float& weight,
+                                   const string& type,
                                    const bool& bidirectional)
 {
+
+    if(nodes.size() < 2) return;
+
+    sf::Color edgeColor;
+
+    try
+    {
+        edgeColor = getEdgeColor(type);
+    }
+    catch(...)
+    {
+        edgeColor = getDefaultEdgeColor();
+    }
 
     for(size_t i = 0, j, L = nodes.size(); i < L - 1; ++i)
     {
@@ -1036,22 +1229,22 @@ void CVNetworkPanel::connectByTags(const string& source,
             {
                 if(bidirectional)
                 {
-                    nodes[i].connect_with(nodes[j]);
+                    nodes[i].connect_with(nodes[j], weight, edgeColor, type);
                 }
                 else
                 {
-                    nodes[i].connect_out(nodes[j]);
+                    nodes[i].connect_out(nodes[j], weight, edgeColor, type);
                 }
             }
             else if(anyEqual(nodes[i].getTag(), targets) && (nodes[j].getTag() == source))
             {
                 if(bidirectional)
                 {
-                    nodes[i].connect_with(nodes[j]);
+                    nodes[i].connect_with(nodes[j], weight, edgeColor, type);
                 }
                 else
                 {
-                    nodes[i].connect_in(nodes[j]);
+                    nodes[i].connect_in(nodes[j], weight, edgeColor, type);
                 }
             }
         }
@@ -1061,8 +1254,23 @@ void CVNetworkPanel::connectByTags(const string& source,
 
 void CVNetworkPanel::connectByTags(const vector<string>& sources,
                                    const string& target,
+                                   const float& weight,
+                                   const string& type,
                                    const bool& bidirectional)
 {
+
+    if(nodes.size() < 2) return;
+
+    sf::Color edgeColor;
+
+    try
+    {
+        edgeColor = getEdgeColor(type);
+    }
+    catch(...)
+    {
+        edgeColor = getDefaultEdgeColor();
+    }
 
     for(size_t i = 0, j, L = nodes.size(); i < L - 1; ++i)
     {
@@ -1073,11 +1281,11 @@ void CVNetworkPanel::connectByTags(const vector<string>& sources,
             {
                 if(bidirectional)
                 {
-                    nodes[i].connect_with(nodes[j]);
+                    nodes[i].connect_with(nodes[j], weight, edgeColor, type);
                 }
                 else
                 {
-                    nodes[i].connect_out(nodes[j]);
+                    nodes[i].connect_out(nodes[j], weight, edgeColor, type);
                 }
             }
             else if(cmpString(nodes[i].getTag(), target, CMP_STR_CASE_INSENSITIVE),
@@ -1085,11 +1293,11 @@ void CVNetworkPanel::connectByTags(const vector<string>& sources,
             {
                 if(bidirectional)
                 {
-                    nodes[i].connect_with(nodes[j]);
+                    nodes[i].connect_with(nodes[j], weight, edgeColor, type);
                 }
                 else
                 {
-                    nodes[i].connect_in(nodes[j]);
+                    nodes[i].connect_in(nodes[j], weight, edgeColor, type);
                 }
             }
         }
@@ -1099,8 +1307,23 @@ void CVNetworkPanel::connectByTags(const vector<string>& sources,
 
 void CVNetworkPanel::connectByTags(const vector<string>& sources,
                                    const vector<string>& targets,
+                                   const float& weight,
+                                   const string& type,
                                    const bool& bidirectional)
 {
+
+    if(nodes.size() < 2) return;
+
+    sf::Color edgeColor;
+
+    try
+    {
+        edgeColor = getEdgeColor(type);
+    }
+    catch(...)
+    {
+        edgeColor = getDefaultEdgeColor();
+    }
 
     for(size_t i = 0, j, L = nodes.size(); i < L - 1; ++i)
     {
@@ -1111,11 +1334,11 @@ void CVNetworkPanel::connectByTags(const vector<string>& sources,
             {
                 if(bidirectional)
                 {
-                    nodes[i].connect_with(nodes[j]);
+                    nodes[i].connect_with(nodes[j], weight, edgeColor, type);
                 }
                 else
                 {
-                    nodes[i].connect_out(nodes[j]);
+                    nodes[i].connect_out(nodes[j], weight, edgeColor, type);
                 }
             }
             else if(cmpStringToList(nodes[i].getTag(), targets, CMP_STR_CASE_INSENSITIVE) &&
@@ -1123,11 +1346,11 @@ void CVNetworkPanel::connectByTags(const vector<string>& sources,
             {
                 if(bidirectional)
                 {
-                    nodes[i].connect_with(nodes[j]);
+                    nodes[i].connect_with(nodes[j], weight, edgeColor, type);
                 }
                 else
                 {
-                    nodes[i].connect_in(nodes[j]);
+                    nodes[i].connect_in(nodes[j], weight, edgeColor, type);
                 }
             }
         }
@@ -1135,9 +1358,136 @@ void CVNetworkPanel::connectByTags(const vector<string>& sources,
 
 }
 
+void CVNetworkPanel::select(CVElement* element)
+{
+    for(auto& node : nodes)
+    {
+        if((node.getElement() == element) &&
+           !node.isSelected())
+        {
+            node.setSelected(true);
+            selected.emplace_back(node);
+            return;
+        }
+    }
+}
+
+void CVNetworkPanel::deselect(CVElement* element)
+{
+    for(size_t i = 0; i < selected.size();)
+    {
+        if(selected[i].getElement() == element)
+        {
+            selected[i].setSelected(false);
+            selected.erase(selected.begin() + i);
+        }
+        else ++i;
+    }
+}
+
+void CVNetworkPanel::toggle_select(CVElement* element)
+{
+    for(auto& node : nodes)
+    {
+        if(node.getElement() == element)
+        {
+            if(node.isSelected())
+            {
+                deselect(node);
+            }
+            else
+            {
+                select(node);
+            }
+
+            return;
+        }
+    }
+}
+
+void CVNetworkPanel::select(CVNetworkNode& node)
+{
+    select(node.getElement());
+}
+
+void CVNetworkPanel::deselect(CVNetworkNode& node)
+{
+    deselect(node.getElement());
+}
+
+void CVNetworkPanel::toggle_select(CVNetworkNode& node)
+{
+    toggle_select(node.getElement());
+}
+
+void CVNetworkPanel::select_all()
+{
+    for(auto& node : nodes)
+    {
+        if(!node.isSelected())
+        {
+            node.setSelected(true);
+            selected.emplace_back(node);
+        }
+    }
+}
+
+void CVNetworkPanel::select_none()
+{
+    for(auto& node : selected)
+    {
+        node.setSelected(false);
+    }
+    selected.clear();
+}
+
 void CVNetworkPanel::setNodeFillColor(const sf::Color& newColor) noexcept
 {
-    defaultNodeFillColor = newColor;
+    nodeLegend["__DEFAULT__"] = newColor;
+}
+
+const sf::Color& CVNetworkPanel::getNodeColor(const string& type) const
+{
+    try
+    {
+        return nodeLegend.at(type);
+    }catch(...)
+    {
+        throw std::out_of_range("CVNetworkPanel: no matching node color in legend for requested type \"" + type + "\"");
+    }
+}
+
+const sf::Color& CVNetworkPanel::getEdgeColor(const string& type) const
+{
+    try
+    {
+        return edgeLegend.at(type);
+    }catch(...)
+    {
+        throw std::out_of_range("CVNetworkPanel: no matching edge color in legend for requested type \"" + type + "\"");
+    }
+}
+
+const sf::Color& CVNetworkPanel::getOutlineLegendColor(const string& type) const
+{
+    try
+    {
+        return outlineLegend.at(type);
+    }catch(...)
+    {
+        throw std::out_of_range("CVNetworkPanel: no matching outline color in legend for requested type \"" + type + "\"");
+    }
+}
+
+const sf::Color& CVNetworkPanel::getTextLegendColor(const string& type) const
+{
+    try
+    {
+        return textColorLegend.at(type);
+    }catch(...)
+    {
+        throw std::out_of_range("CVNetworkPanel: no matching text color in legend for requested type \"" + type + "\"");
+    }
 }
 
 }
