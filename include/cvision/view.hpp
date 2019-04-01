@@ -468,6 +468,8 @@ public:
         }
     }
 
+    void stopAnim(sf::Transformable* element);
+
     std::string tag;
     unsigned int appThreadID;
 

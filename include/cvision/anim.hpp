@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -70,6 +70,8 @@
 
 namespace cvis{
 
+class CVView;
+
 struct CVISION_API CVAnimCheckpoint{
 
     sf::Vector2f destination;
@@ -86,6 +88,9 @@ struct CVISION_API CVAnimCheckpoint{
 
 class CVISION_API CVAnim{ // Runtime movement animator
 protected:
+
+    friend class CVView;
+
     sf::Transformable* animObject;
     sf::Vector2f checkpointStart;
     float timeLastCheckpointBegin,

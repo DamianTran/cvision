@@ -377,6 +377,7 @@ public:
                           const uint8_t& textFitType = CV_TEXT_FIT_NONE,
                           const unsigned char& expandType = CV_TEXT_EXPAND_NONE,
                           const float& expandRate = 0.2f);
+    CVISION_API ~CVTypeBox();
 
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
     CVISION_API bool draw(sf::RenderTarget* target);

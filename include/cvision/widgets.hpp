@@ -120,6 +120,8 @@ public:
                 const float& scrollSpeed = 1000.0f,
                 const uint8_t& animType = CV_OBJ_ANIM_FADE_IN);
 
+    CVISION_API ~CVScrollBar();
+
     CVISION_API bool scroll(const float& delta);
     CVISION_API void setScrollOffset(const float& newOffset);
     CVISION_API void setAnchorPoints(const sf::Vector2f& anchorBegin, const sf::Vector2f& anchorEnd);

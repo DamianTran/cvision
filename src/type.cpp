@@ -212,6 +212,13 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
 
 }
 
+CVTypeBox::~CVTypeBox()
+{
+
+    View->stopAnim(&cursor);
+
+}
+
 void CVTypeBox::setBackgroundString(const std::string& newString)
 {
     bkgString = UTF8_to_UTF16(newString);
@@ -1822,6 +1829,8 @@ CVTextLog::~CVTextLog()
         delete(panel);
     }
     msgPanels.clear();
+
+    View->stopAnim(&scrollBar);
 }
 
 void CVTextLog::move(const sf::Vector2f& distance)

@@ -790,6 +790,18 @@ void CVView::draw(sf::RenderTarget* target)
     }
 }
 
+void CVView::stopAnim(sf::Transformable* element)
+{
+    for(size_t i = 0; i < pendingAnims.size();)
+    {
+        if(pendingAnims[i].animObject == element)
+        {
+            pendingAnims.erase(pendingAnims.begin() + i);
+        }
+        else ++i;
+    }
+}
+
 bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
     if(bClosed || (viewPort == nullptr) || !viewPort->isOpen()) return false;
@@ -850,12 +862,11 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
         }
     }
 
-    for(size_t i = 0; i < numPendingAnims;)
+    for(size_t i = 0; i < pendingAnims.size();)
     {
         if(pendingAnims[i].finished())
         {
             pendingAnims.erase(pendingAnims.begin() + i);
-            --numPendingAnims;
         }
         else
         {

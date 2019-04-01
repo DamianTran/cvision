@@ -324,6 +324,16 @@ CVScrollBar::CVScrollBar(CVView* parentView, const sf::Vector2f& anchorBegin,
     calcHighlightBounds();
 }
 
+CVScrollBar::~CVScrollBar()
+{
+
+    for(auto& item : panel)
+    {
+        View->stopAnim(&item);
+    }
+
+}
+
 void CVScrollBar::calcHighlightBounds(){
     if(anchorBegin.x < anchorEnd.x){
         mouseHighlightBounds.left = anchorBegin.x - 4*bounds.width;
