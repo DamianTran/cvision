@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -174,6 +174,8 @@ public:
     {
         return sf::Vector2f(bounds.width, bounds.height);
     }
+
+    CVISION_API bool fadeComplete() const noexcept;
 
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
 

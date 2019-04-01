@@ -93,6 +93,24 @@ CVTextBox::CVTextBox(CVView* View,
 
 }
 
+bool CVTextBox::fadeComplete() const noexcept
+{
+    if(!CVBox::fadeComplete()) return false;
+
+    if(fadeLayers & CV_LAYER_TEXT)
+    {
+        for(auto& text : displayText)
+        {
+            if(text.getFillColor().a != targetAlpha)
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
 void CVTextBox::alignText()
 {
     sf::FloatRect textBounds;
@@ -738,7 +756,7 @@ bool CVTextBox::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
     if(!CVBox::update(event, mousePos)) return false;
 
-    if(bFade)
+    if(bFade && (fadeLayers & CV_LAYER_TEXT))
     {
         sf::Color tmp;
         uint8_t adjusted_fr = ceil((float)fadeRate*120.0f/View->getFrameRate());

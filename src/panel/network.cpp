@@ -24,14 +24,36 @@ CVNetworkNode::CVNetworkNode(CVElement* element,
     type(newType),
     weight(weight),
     textPadding(24.0f),
+    fScale(1.0f),
     lastElementPosition(element->getPosition()),
     textDisplayOffset(0.0f, 0.0f),
     bDisplayTextOnHover(false),
+    bSelected(false),
     targetTextAlpha(textFillColor.a),
-    textFadeRate(2)
+    textFadeRate(2),
+    textAlignment(alignment),
+    attached_UI(nullptr),
+    UI_alpha(255),
+    bUIFadeout(true),
+    bUIremove(false),
+    bUIremoveOnDeselect(false),
+    bStatic(false),
+    fUISizePaddingScale(1.2f),
+    fadeLayers(CV_LAYER_ALL)
 {
     align_text(alignment);
     displayText.setFillColor(textFillColor);
+}
+
+CVNetworkNode::~CVNetworkNode()
+{
+
+    disconnect();
+    if(hasUI())
+    {
+        delete(attached_UI);
+    }
+
 }
 
 void CVNetworkNode::connect_out(CVNetworkNode& node,
@@ -44,6 +66,7 @@ void CVNetworkNode::connect_out(CVNetworkNode& node,
         if((node.getElement() == link.getNode().getElement()) &&
            (link.getType() == type))
         {
+            link.setWeight(weight);
             goto skip_to;
         }
     }
@@ -54,9 +77,10 @@ void CVNetworkNode::connect_out(CVNetworkNode& node,
 
     for(auto& link : node.connected_from)
     {
-        if((node.getElement() == link.getNode().getElement()) &&
+        if((node.getElement() == link.getOrigin().getElement()) &&
            (link.getType() == type))
         {
+            link.setWeight(weight);
             return;
         }
     }
@@ -72,9 +96,10 @@ void CVNetworkNode::connect_in(CVNetworkNode& node,
 
     for(auto& link : connected_from)
     {
-        if((node.getElement() == link.getNode().getElement()) &&
+        if((node.getElement() == link.getOrigin().getElement()) &&
            (link.getType() == type))
         {
+            link.setWeight(weight);
             goto skip_from;
         }
     }
@@ -88,6 +113,7 @@ void CVNetworkNode::connect_in(CVNetworkNode& node,
         if((node.getElement() == link.getNode().getElement()) &&
            (link.getType() == type))
         {
+            link.setWeight(weight);
             return;
         }
     }
@@ -107,9 +133,9 @@ void CVNetworkNode::connect_with(CVNetworkNode& node,
 void CVNetworkNode::remove_connections(CVNetworkNode& other)
 {
 
-    cout << "Removing...\n";
+    size_t i;
 
-    for(size_t i = 0; i < connected_to.size();)
+    for(i = 0; i < connected_to.size();)
     {
         if(&connected_to[i].getNode() == &other)
         {
@@ -118,22 +144,16 @@ void CVNetworkNode::remove_connections(CVNetworkNode& other)
         else ++i;
     }
 
-    cout << "Check...\n";
-
-    for(size_t i = 0; i < connected_from.size();)
+    for(i = 0; i < connected_from.size();)
     {
         if(&connected_from[i].getOrigin() == &other)
         {
-            cout << "Erasing...\n";
             connected_from.erase(connected_from.begin() + i);
-            cout << "Success\n";
         }
         else ++i;
     }
 
-    cout << "Check...\n";
-
-    for(size_t i = 0; i < other.connected_to.size();)
+    for(i = 0; i < other.connected_to.size();)
     {
         if(&other.connected_to[i].getNode() == this)
         {
@@ -142,9 +162,7 @@ void CVNetworkNode::remove_connections(CVNetworkNode& other)
         else ++i;
     }
 
-    cout << "Check...\n";
-
-    for(size_t i = 0; i < other.connected_from.size();)
+    for(i = 0; i < other.connected_from.size();)
     {
         if(&other.connected_from[i].getOrigin() == this)
         {
@@ -153,22 +171,31 @@ void CVNetworkNode::remove_connections(CVNetworkNode& other)
         else ++i;
     }
 
-    cout << "Done\n";
-
 }
 
 void CVNetworkNode::disconnect()
 {
-    while(!connected_to.empty())
+
+    vector<CVNetworkNode*> disconnect_nodes;
+
+    for(auto& edge : connected_to)
     {
-        connected_to.front().getNode().remove_connections(*this);
-        connected_to.erase(connected_to.begin());
+        disconnect_nodes.emplace_back(&edge.getNode());
     }
-    while(!connected_from.empty())
+
+    for(auto& edge : connected_from)
     {
-        connected_from.front().getNode().remove_connections(*this);
-        connected_from.erase(connected_from.begin());
+        if(!anyEqual(&edge.getOrigin(), disconnect_nodes))
+        {
+            disconnect_nodes.emplace_back(&edge.getOrigin());
+        }
     }
+
+    for(auto& node : disconnect_nodes)
+    {
+        remove_connections(*node);
+    }
+
 }
 
 void CVNetworkNode::setSelected(const bool& state)
@@ -192,7 +219,17 @@ void CVNetworkNode::setPosition(const sf::Vector2f& newPosition)
     move(newPosition - element->getPosition());
 }
 
-void CVNetworkNode::update(const sf::Vector2f& mousePos)
+void CVNetworkNode::setScale(const float& newScale)
+{
+
+    element->setSize(element->getSize() * newScale/fScale);
+    element->setSpriteScale(newScale);
+    align_text(textAlignment);
+    fScale = newScale;
+
+}
+
+void CVNetworkNode::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
 
     if(lastElementPosition != element->getPosition())
@@ -227,11 +264,46 @@ void CVNetworkNode::update(const sf::Vector2f& mousePos)
 
 }
 
+void CVNetworkNode::updateInterface(CVEvent& event, const sf::Vector2f& mousePos)
+{
+    if(attached_UI)
+    {
+        if(bUIremoveOnDeselect && !isSelected())
+        {
+            remove_UI();
+        }
+
+        if(bUIremove)
+        {
+            attached_UI->setFade(0, 12, fadeLayers);
+        }
+
+        attached_UI->update(event, mousePos);
+        attached_UI->setPosition(getPosition());
+
+        if(bUIremove && attached_UI->fadeComplete())
+        {
+            delete(attached_UI);
+            attached_UI = nullptr;
+            bUIremove = false;
+        }
+    }
+
+}
+
 void CVNetworkNode::draw(sf::RenderTarget* target)
 {
     if(element->draw(target))
     {
         target->draw(displayText);
+    }
+}
+
+void CVNetworkNode::drawInterface(sf::RenderTarget* target)
+{
+    if(hasUI())
+    {
+        attached_UI->draw(target);
     }
 }
 
@@ -243,6 +315,37 @@ void CVNetworkNode::drawEdges(sf::RenderTarget* target)
         {
             edge.draw(target);
         }
+    }
+}
+
+void CVNetworkNode::attach_UI(CVElement* newUI,
+                              const uint8_t& alpha,
+                              const unsigned char& fadeLayers)
+{
+    newUI->setSize(getSize() * fUISizePaddingScale);
+    newUI->setPosition(getPosition() - newUI->getSize()/2);
+    newUI->setFade(alpha, 12, fadeLayers);
+    this->fadeLayers = fadeLayers;
+    attached_UI = newUI;
+    UI_alpha = alpha;
+
+}
+
+void CVNetworkNode::remove_UI(const bool& fadeout)
+{
+    if(hasUI())
+    {
+        bUIremove = true;
+    }
+}
+
+void CVNetworkNode::apply_tethers(const float& distance,
+                                  const float& elastic_coefficient,
+                                  const float& range_threshold) noexcept
+{
+    for(auto& edge : connected_to)
+    {
+        edge.apply_tether(distance, elastic_coefficient, range_threshold);
     }
 }
 
@@ -341,6 +444,8 @@ void CVNetworkNode::align_text(const unsigned int& alignment)
         }
     }
 
+    textAlignment = alignment;
+
 }
 
 CVNetworkEdge& CVNetworkNode::getConnection(CVElement* element)
@@ -385,6 +490,27 @@ CVNetworkEdge& CVNetworkNode::getConnection(const string& tag)
     throw invalid_argument("CVNetworkNode: requested connection does not exist");
 }
 
+bool CVNetworkNode::hasConnectionTo(const CVNetworkNode& other)
+{
+    for(auto& edge : connected_to)
+    {
+        if(&edge.getNode() == &other)
+        {
+            return true;
+        }
+    }
+
+    for(auto& edge : connected_from)
+    {
+        if(&edge.getOrigin() == &other)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 CVNetworkEdge::CVNetworkEdge(CVNetworkNode& origin,
                              CVNetworkNode& outNode,
                              const string& type,
@@ -405,6 +531,37 @@ CVNetworkEdge::CVNetworkEdge(CVNetworkNode& origin,
 void CVNetworkEdge::setLineWidth(const float& newWidth) noexcept
 {
     lineWidth = newWidth;
+}
+
+void CVNetworkEdge::apply_tether(const float& distance,
+                                 const float& elastic_coefficient,
+                                 const float& range_threshold)
+{
+
+    float cDist = getDistance(getOrigin().getPosition(), getNode().getPosition());
+    float adjust;
+
+    if(cDist > distance * (1.0f + range_threshold))
+    {
+        adjust = (cDist - distance * (1.0f + range_threshold)) * elastic_coefficient;
+    }
+    else if(cDist < distance)
+    {
+        adjust = (cDist - distance) * elastic_coefficient;
+    }
+    else
+    {
+        return;
+    }
+
+    double theta1 = get_angle(getOrigin().getPosition(), getNode().getPosition());
+    double theta2 = theta1 - PI;
+
+    float totalWeight = getOrigin().getWeight() + getNode().getWeight();
+
+    if(!getOrigin().bStatic) getOrigin().move(components(adjust * getNode().getWeight() / totalWeight, theta1));
+    if(!getNode().bStatic) getNode().move(components(adjust * getOrigin().getWeight() / totalWeight, theta2));
+
 }
 
 void CVNetworkEdge::draw(sf::RenderTarget* target)
@@ -443,16 +600,37 @@ CVNetworkPanel::CVNetworkPanel(CVView* View,
                                  defaultNodePosition(size/2),
                                  defaultNodeSize(sf::Vector2f(96.0f * viewScale(),
                                                               96.0f * viewScale())),
+                                 panOffset(0.0f, 0.0f),
+                                 panVelocity(0.0f, 0.0f),
+                                 zoomAnchor(position + size/2),
                                  fontWeightScale(1.0f),
                                  defaultNodeOutlineThickness(2.0f),
                                  defaultNodeRounding(NAN),
-                                 physicsPushStrength(2.0f),
-                                 physicsPullStrength(2.0f),
-                                 tetherDistanceScale(4.0f),
+                                 fNodePushStrength(8.0f),
+                                 fNodeEdgeWeightScale(0.3f),
+                                 fTetherElasticCoefficient(0.045f),
+                                 fTetherEdgeDistanceModifier(0.0009f),
+                                 fTetherEdgeElasticModifier(0.0001f),
+                                 fTetherBaseDistance(300.0f * viewScale()),
+                                 fTetherRangeThreshold(0.35f),
+                                 fPanInstigateInnerThreshold(0.08),
+                                 fPanInstigateOuterThreshold(0.05),
+                                 fPanRateScale(20.0f),
+                                 fPanAttenutationRate(0.91f),
+                                 fMaxPanSpeed(512.0f * viewScale()),
+                                 fZoomLevel(1.0f),
+                                 fLastZoomLevel(1.0f),
+                                 fMaxZoomLevel(25.0f),
+                                 fMinZoomLevel(0.04f),
+                                 fZoomRateScale(0.5f),
+                                 fZoomAttenutationRate(0.85f),
+                                 fCurrentZoomRate(0.0f),
                                  selectionColor(sf::Color::Yellow),
                                  defaultNodeTextAlignment(ALIGN_CENTER_MIDLINE),
                                  bUniqueNodesOnly(false),
-                                 bSelection(false)
+                                 bSelection(false),
+                                 bCanPan(true),
+                                 bCanZoom(true)
 {
 
     this->textInfo = textInfo;
@@ -475,6 +653,11 @@ CVNetworkPanel::CVNetworkPanel(CVView* View,
 bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
 
+    for(auto& node : nodes)
+    {
+        node.updateInterface(event, mousePos);
+    }
+
     if(!CVBasicViewPanel::update(event, mousePos))
     {
         return false;
@@ -482,8 +665,10 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     for(auto& node : nodes)
     {
-        node.update(mousePos);
+        node.update(event, mousePos);
     }
+
+    // Handle selection
 
     if(!bSelection)
     {
@@ -495,12 +680,29 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
             {
                 if(node.getBounds().contains(event.lastFrameMousePosition))
                 {
-                    if(!ctrlPressed())
+                    if(!node.isSelected())
                     {
-                        select_none();
+
+                        if(!ctrlPressed())
+                        {
+                            select_none();
+                        }
+
+                        select(node);
+                    }
+                    else    // Transduce drag to other selected nodes
+                    {
+
+                        for(auto& node : selected)
+                        {
+                            if(!event.isCaptured(*node.getElement()))
+                            {
+                                event.mouse_capture(*node.getElement());
+                            }
+                        }
+
                     }
 
-                    select(node);
                     goto noCordon;
                 }
             }
@@ -510,18 +712,13 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
                 select_none();
             }
 
-            selectionCordon.setPosition(event.LMBpressPosition);
-            bSelection = true;
+            if(event.captureMouse())
+            {
+                selectionCordon.setPosition(event.LMBpressPosition);
+                bSelection = true;
+            }
 
             noCordon:;
-
-            for(auto& node : selected)
-            {
-                if(!event.isCaptured(*node.getElement()))
-                {
-                    event.mouse_capture(*node.getElement());
-                }
-            }
 
         }
     }
@@ -532,6 +729,16 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     if(event.LMBreleased && (event.LMBreleaseFrames == 1))
     {
+
+        if(bounds.contains(event.LMBpressPosition) &&
+           event.captureMouse())
+        {
+            bHasFocus = true;
+        }
+        else
+        {
+            bHasFocus = false;
+        }
 
         if(bSelection)
         {
@@ -549,35 +756,202 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
             bSelection = false;
 
         }
-        else if(ctrlPressed())
-        {
-
-            for(auto& node : nodes)
-            {
-                if(node.getBounds().contains(mousePos))
-                {
-                    toggle_select(node);
-                    break;
-                }
-            }
-
-        }
+//        else if(ctrlPressed())
+//        {
+//
+//            for(auto& node : nodes)
+//            {
+//                if(node.getBounds().contains(mousePos))
+//                {
+//                    toggle_select(node);
+//                    break;
+//                }
+//            }
+//
+//        }
     }
+
+    // Handle panning
+
+    if(bCanPan && hasFocus())
+    {
+
+        sf::Vector2f panAcceleration(0.0f, 0.0f);
+
+        if((mousePos.x > bounds.left - bounds.width * fPanInstigateOuterThreshold) &&
+           (mousePos.x < bounds.left + bounds.width * fPanInstigateInnerThreshold))
+        {
+            panAcceleration.x = -1.0f + (mousePos.x - (bounds.left - bounds.width * fPanInstigateOuterThreshold)) /
+                                (bounds.width * (fPanInstigateInnerThreshold + fPanInstigateOuterThreshold));
+        }
+        else if((mousePos.x > bounds.left + bounds.width * (1.0f - fPanInstigateInnerThreshold)) &&
+                (mousePos.x < bounds.left + bounds.width * (1.0f + fPanInstigateOuterThreshold)))
+        {
+            panAcceleration.x = 1.0f - (bounds.left + bounds.width * ( 1.0f + fPanInstigateOuterThreshold) - mousePos.x) /
+                                (bounds.width * (fPanInstigateInnerThreshold + fPanInstigateOuterThreshold));
+        }
+        else
+        {
+            panVelocity.x *= fPanAttenutationRate;
+        }
+
+        if((mousePos.y > bounds.top - bounds.height * fPanInstigateOuterThreshold) &&
+           (mousePos.y < bounds.top + bounds.height * fPanInstigateInnerThreshold))
+        {
+            panAcceleration.y = -1.0f + (mousePos.y - (bounds.top - bounds.height * fPanInstigateOuterThreshold)) /
+                                (bounds.height * (fPanInstigateInnerThreshold + fPanInstigateOuterThreshold));
+        }
+        else if((mousePos.y > bounds.top + bounds.height * (1.0f - fPanInstigateInnerThreshold)) &&
+                (mousePos.y < bounds.top + bounds.height * (1.0f + fPanInstigateOuterThreshold)))
+        {
+            panAcceleration.y = 1.0f - (bounds.top + bounds.height * (1.0f + fPanInstigateOuterThreshold) - mousePos.y) /
+                                (bounds.height * (fPanInstigateInnerThreshold + fPanInstigateOuterThreshold));
+        }
+        else
+        {
+            panVelocity.y *= fPanAttenutationRate;
+        }
+
+        panAcceleration *= fPanRateScale;
+
+        panVelocity += panAcceleration;
+        if(scalar(panVelocity) > fMaxPanSpeed)
+        {
+            panVelocity *= fMaxPanSpeed/scalar(panVelocity);
+        }
+
+        // Perform pan
+
+        for(auto& node : nodes)
+        {
+            if(!event.isCaptured(*node.getElement()))
+            {
+                node.move(-panVelocity/event.avgFrameRate());
+            }
+        }
+
+    }
+
+    // Handle deletion
 
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Delete))
     {
-//        for(size_t i = 0; i < nodes.size();)
-//        {
-//            if(nodes[i].isSelected())
-//            {
-//                removePanelElement(nodes[i].getElement());
-//            }
-//            else ++i;
-//        }
 
-        while(numPanels())
+        if(!selected.empty())
         {
-            removePanelElement(nodes.front().getElement());
+            for(size_t i = 0; i < selected.size(); ++i)
+            {
+                removePanelElement(selected[i].getElement());
+            }
+
+            selected.clear();
+        }
+    }
+
+    // Handle zoom
+
+    if(bCanZoom)
+    {
+
+        float fZoomAcceleration = 0.0f;
+
+        if(event.mouseWheelDelta.y)
+        {
+
+            zoomAnchor = mousePos;
+
+            fZoomAcceleration += event.mouseWheelDelta.y * fZoomRateScale;
+        }
+
+        fCurrentZoomRate += fZoomAcceleration;
+
+        // Perform zoom
+
+        if((fCurrentZoomRate > 1e-5f) ||
+           (fCurrentZoomRate < -1e-5f))
+        {
+
+            float zoomInc = fCurrentZoomRate/event.avgFrameRate() * fZoomLevel;
+
+            if(fZoomLevel + zoomInc > fMaxZoomLevel)
+            {
+                fZoomLevel = fMaxZoomLevel;
+            }
+            else if(fZoomLevel + zoomInc < fMinZoomLevel)
+            {
+                fZoomLevel = fMinZoomLevel;
+            }
+            else
+            {
+                fZoomLevel += zoomInc;
+            }
+
+            double dAngle = 0.0;
+            float fMouseDistance = 0.0;
+
+            for(auto& node : nodes)
+            {
+                fMouseDistance = scalar(node.getPosition() - zoomAnchor);
+                dAngle = get_angle(zoomAnchor, node.getPosition());
+                node.setPosition(radial_position(zoomAnchor,
+                                                 fMouseDistance * fZoomLevel/fLastZoomLevel,
+                                                 dAngle));
+                node.setScale(fZoomLevel);
+            }
+
+            fCurrentZoomRate *= fZoomAttenutationRate;
+
+            fLastZoomLevel = fZoomLevel;
+
+        }
+        else
+        {
+            fCurrentZoomRate = 0.0f;
+        }
+
+    }
+
+    // Handle control keys
+
+    if(ctrlPressed() && !event.keyLog.empty())
+    {
+        for(auto& key : event.keyLog)
+        {
+            if(key == 'c')
+            {
+                if(!selected.empty())
+                {
+
+                    stringstream copyData;
+                    for(size_t i = 0, j, S, L = selected.size(); i < L; ++i)
+                    {
+                        for(j = 0, S = selected[i].connected_to.size(); j < S; ++j)
+                        {
+                            copyData << selected[i].getTag() << '\t'
+                                     << selected[i].connected_to[j].getType()
+                                     << '\t' << selected[i].connected_to[j].getNode().getTag();
+                            if(j < S - 1)
+                            {
+                                copyData << '\n';
+                            }
+                        }
+
+                        if(i < L - 1)
+                        {
+                            copyData << '\n';
+                        }
+                    }
+
+                    if(!copyData.str().empty())
+                    {
+                        copyToClipboard(copyData.str());
+                    }
+                }
+            }
+            else if(key == 'a')
+            {
+                select_all();
+            }
         }
 
     }
@@ -586,9 +960,9 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     // Handle physics
 
-    if(physicsPushStrength)
+    if(fNodePushStrength || fTetherElasticCoefficient)
     {
-        updatePhysics(event);
+        updatePhysics(event, mousePos);
     }
 
     // Handle layout requests
@@ -597,7 +971,7 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
 }
 
-void CVNetworkPanel::updatePhysics(CVEvent& event)
+void CVNetworkPanel::updatePhysics(CVEvent& event, const sf::Vector2f& mousePos)
 {
     sf::FloatRect shape1Bounds;
     sf::FloatRect shape2Bounds;
@@ -614,15 +988,18 @@ void CVNetworkPanel::updatePhysics(CVEvent& event)
     double r1;
     double r2;
 
-    std::vector<CVNetworkNode*> mobile_nodes;
-
     for(auto& node : nodes)
     {
-        if(node.isVisible() &&
-           !event.isCaptured(*node.getElement()))
+        if(event.isCaptured(*node.getElement()))
         {
-            mobile_nodes.emplace_back(&node);
+            node.bStatic = true;
         }
+        else
+        {
+            node.bStatic = false;
+        }
+
+        node.setWeight(1.0f + (fNodeEdgeWeightScale * node.numEdges()));
     }
 
     for(size_t i = 0, j, L = nodes.size(); i + 1 < L; ++i){
@@ -661,14 +1038,15 @@ void CVNetworkPanel::updatePhysics(CVEvent& event)
                 distWeight = lin_dist/max_dist;
                 if(distWeight > 1.0) distWeight = 1.0;
 
-                if(anyEqual(&nodes[j], mobile_nodes))
+                if(nodes[i].isVisible() && !nodes[j].bStatic)
                 {
-                    moveDist = sf::Vector2f(components((1.0 - distWeight) * physicsPushStrength * sizeRatio, angle));
+                    moveDist = sf::Vector2f(components((1.0 - distWeight) * fNodePushStrength * sizeRatio, angle));
                     nodes[j].move(moveDist);
                 }
-                if(anyEqual(&nodes[i], mobile_nodes))
+
+                if(nodes[j].isVisible() && !nodes[i].bStatic)
                 {
-                    moveDist = sf::Vector2f(components((1.0 - distWeight) * physicsPushStrength * (1.0 - sizeRatio), angle));
+                    moveDist = sf::Vector2f(components((1.0 - distWeight) * fNodePushStrength * (1.0 - sizeRatio), angle));
                     nodes[i].move(-moveDist);
                 }
 
@@ -677,6 +1055,13 @@ void CVNetworkPanel::updatePhysics(CVEvent& event)
 
         nextLoop:;
 
+    }
+
+    for(auto& node : nodes)
+    {
+        node.apply_tethers(fTetherBaseDistance * fZoomLevel * pow(1.0f + fTetherEdgeDistanceModifier, node.numEdges()),
+                           fTetherElasticCoefficient * pow(1.0f + fTetherEdgeElasticModifier, node.numEdges()),
+                           fTetherRangeThreshold * pow(1.0f + fTetherEdgeDistanceModifier, node.numEdges()*2));
     }
 }
 
@@ -712,6 +1097,11 @@ bool CVNetworkPanel::draw(sf::RenderTarget* target)
         target->draw(text);
     }
 
+    for(auto& node : nodes)
+    {
+        node.drawInterface(target);
+    }
+
     target->draw(selectionCordon);
 
     for(auto& item : mask)
@@ -726,8 +1116,7 @@ bool CVNetworkPanel::draw(sf::RenderTarget* target)
 
     CV_DRAW_CLIP_END
 
-    return true;sf::Color baseColor;
-    sf::Color selectionColor;
+    return true;
 }
 
 void CVNetworkPanel::addPanelElement(CVElement* element,
@@ -748,8 +1137,13 @@ void CVNetworkPanel::addPanelElement(CVElement* element,
         nodeTextColor = getDefaultNodeTextColor();
     }
 
+    element->setSize(element->getSize() * fZoomLevel);
+    element->setSpriteScale(fZoomLevel);
+
     nodes.emplace_back(element, newType, weight, appFont(textInfo.font), textInfo.fontSize, label_orientation, nodeTextColor);
     element->setHighlightColor(selectionColor);
+
+    updateNodeConnections(nodes.back());
 }
 
 void CVNetworkPanel::removePanelElement(CVElement* element)
@@ -1148,6 +1542,19 @@ CVButton* CVNetworkPanel::addImageNode(const string& tag,
     return newNode;
 }
 
+bool CVNetworkPanel::nodeExists(const std::string& str) const noexcept
+{
+    for(size_t i = 0; i < nodes.size(); ++i)
+    {
+        if(cmpString(str, nodes[i].getTag(), CMP_STR_CASE_INSENSITIVE))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 void CVNetworkPanel::connectByTag(const string& source,
                                   const string& target,
                                   const float& weight,
@@ -1439,6 +1846,55 @@ void CVNetworkPanel::select_none()
         node.setSelected(false);
     }
     selected.clear();
+}
+
+void CVNetworkPanel::select_neighbors(CVNetworkNode& center)
+{
+
+    select(center);
+
+    for(auto& node : nodes)
+    {
+        if(&node == &center)
+        {
+            continue;
+        }
+
+        if(node.hasConnectionTo(center))
+        {
+            select(node);
+        }
+    }
+
+}
+
+void CVNetworkPanel::select_neighbors(const std::string& tag)
+{
+
+    for(auto& node : nodes)
+    {
+        if(cmpString(node.getTag(), tag, CMP_STR_CASE_INSENSITIVE))
+        {
+            select_neighbors(node);
+        }
+    }
+
+}
+
+bool CVNetworkPanel::node_has_neighbors(const CVNetworkNode& node)
+{
+    return node.hasConnections();
+}
+
+bool CVNetworkPanel::node_has_neighbors(const std::string& tag)
+{
+    for(auto& node : nodes)
+    {
+        if(cmpString(node.getTag(), tag, CMP_STR_CASE_INSENSITIVE))
+        {
+            return node.hasConnections();
+        }
+    }
 }
 
 void CVNetworkPanel::setNodeFillColor(const sf::Color& newColor) noexcept

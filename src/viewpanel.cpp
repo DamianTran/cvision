@@ -55,7 +55,8 @@ CVViewPanel::CVViewPanel(CVView* parentView, std::string panelTag, sf::Color bac
     bTransduceFocus(false),
     bDragAndDrop(false),
     bOutOfBoundsDraw(false),
-    bOutOfBoundsUpdate(false)
+    bOutOfBoundsUpdate(false),
+    bFadeMembersOnly(false)
 {
 
     IDtag = panelTag;
@@ -171,6 +172,20 @@ void CVViewPanel::clear()
 
 bool CVViewPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
+
+    if(bFade && (bTransduceFade || (fadeLayers & CV_LAYER_MEMBERS)))
+    {
+        for(auto& item : viewPanelElements)
+        {
+            item->setFade(targetAlpha, fadeRate, fadeLayers);
+        }
+    }
+
+    if(fadeLayers & CV_LAYER_MEMBERS)
+    {
+        bFade = false;
+    }
+
     if(!CVTextBox::update(event, mousePos)) return false;
 
     if(bExpand)
@@ -182,14 +197,6 @@ bool CVViewPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
     {
         setPosition(0.0f,0.0f);
         setSize(sf::Vector2f(event.viewBounds.width, event.viewBounds.height));
-    }
-
-    if(bFade && bTransduceFade)
-    {
-        for(auto& item : viewPanelElements)
-        {
-            item->setFade(targetAlpha, fadeRate);
-        }
     }
 
     if(bTransduceFocus)
@@ -382,6 +389,24 @@ void CVViewPanel::setHighlightColor(const sf::Color& color)
     {
         item->setHighlightColor(color);
     }
+}
+
+bool CVViewPanel::fadeComplete() const noexcept
+{
+    if(!bFadeMembersOnly)
+    {
+        if(!CVTextBox::fadeComplete()) return false;
+    }
+
+    if(bTransduceFade || (fadeLayers & CV_LAYER_MEMBERS))
+    {
+        for(auto& element : viewPanelElements)
+        {
+            if(!element->fadeComplete()) return false;
+        }
+    }
+
+    return true;
 }
 
 }

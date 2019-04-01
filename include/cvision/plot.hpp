@@ -628,7 +628,7 @@ public:
 
     inline void addPlotColor(const sf::Color& newColor){ plotColors.emplace_back(newColor); }
 
-    inline const sf::Color& getFillColor() const{ return colorTheme[0]; }
+    inline sf::Color getFillColor() const{ return colorTheme[0]; }
     inline const sf::Color& getBorderColor() const{ return colorTheme[1]; }
 
     inline const sf::Vector2f& getScalePadding(const unsigned int& dimension) const{

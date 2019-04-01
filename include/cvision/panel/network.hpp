@@ -33,6 +33,8 @@ public:
                               const unsigned int& alignment = ALIGN_CENTER_MIDLINE,
                               const sf::Color& textColor = sf::Color::Black);
 
+    CVISION_API ~CVNetworkNode();
+
     CVISION_API void connect_out(CVNetworkNode& other,
                                  const float& weight = 1.0f,
                                  const sf::Color& edgeColor = sf::Color::Black,
@@ -52,9 +54,17 @@ public:
     CVISION_API CVNetworkEdge& getConnection(CVElement* other);
     CVISION_API CVNetworkEdge& getConnection(const std::string& tag);
 
+    CVISION_API bool hasConnectionTo(const CVNetworkNode& node);
+
+    inline size_t numOutEdges() const noexcept{ return connected_to.size(); }
+    inline size_t numInEdges() const noexcept{ return connected_from.size(); }
+    inline size_t numEdges() const noexcept{ return numInEdges() + numOutEdges(); }
+
+    inline bool hasConnections() const noexcept{ return numEdges() > 0; }
+
     inline CVElement * const getElement() noexcept{ return element; }
     inline const CVElement * const getElement() const noexcept{ return element; }
-    inline const std::string& getTag() noexcept{ return element->tag(); }
+    inline const std::string& getTag() const noexcept{ return element->tag(); }
     inline const std::string& getType() const noexcept{ return type; }
     inline const float& getWeight() const noexcept{ return weight; }
 
@@ -68,8 +78,12 @@ public:
     CVISION_API void move(const sf::Vector2f& distance);
     CVISION_API void setPosition(const sf::Vector2f& newPosition);
 
-    inline const sf::FloatRect& getBounds() const{ return getElement()->getBounds(); }
+    inline const sf::FloatRect& getBounds() const noexcept{ return getElement()->getBounds(); }
+    inline sf::Vector2f getSize() noexcept{ return element->getSize(); }
+    inline sf::Vector2f getPosition() const noexcept{ return getElement()->getPosition(); }
     inline const bool& isVisible() const{ return getElement()->isVisible(); }
+
+    CVISION_API void setScale(const float& newScale);
 
     inline void setTextPadding(const float& padding) noexcept{ textPadding = padding; }
     inline void setTextFadeRate(const uint8_t& rate) noexcept{ textFadeRate = rate; }
@@ -79,15 +93,47 @@ public:
     CVISION_API void setSelected(const bool& status = true);
     inline const bool& isSelected() const noexcept{ return bSelected; }
 
-    CVISION_API void update(const sf::Vector2f& mousePos);
+    CVISION_API void update(CVEvent& event, const sf::Vector2f& mousePos);
+    CVISION_API void updateInterface(CVEvent& event, const sf::Vector2f& mousePos);
+
     CVISION_API void draw(sf::RenderTarget* target);
     CVISION_API void drawEdges(sf::RenderTarget* target);
+    CVISION_API void drawInterface(sf::RenderTarget* target);
+
+    CVISION_API void attach_UI(CVElement* newUI,
+                               const uint8_t& alpha = 255,
+                               const unsigned char& fadeLayers = CV_LAYER_ALL);
+    CVISION_API void remove_UI(const bool& fadeout = true);
+    inline void setRemoveUIOnDeselect(const bool& state = true){ bUIremoveOnDeselect = state; }
+    inline void setUISizeScale(const float& newScale){ fUISizePaddingScale = newScale; }
+
+    inline bool hasUI() const noexcept{ return attached_UI != nullptr; }
+
+    CVISION_API void apply_tethers(const float& distance,
+                                   const float& elastic_coefficient,
+                                   const float& range_threshold) noexcept;
 
 protected:
 
     friend class CVNetworkPanel;
+    friend class CVNetworkEdge;
 
     CVISION_API void align_text(const unsigned int& alignment);
+
+    /** Attached UI that fades in on selection and out on deselection */
+
+    CVElement*      attached_UI;
+
+    uint8_t         UI_alpha;
+
+    bool            bUIFadeout;
+    bool            bUIremove;
+    bool            bUIremoveOnDeselect;
+    bool            bStatic;        // Ignore physics
+
+    float           fUISizePaddingScale;
+
+    unsigned char   fadeLayers;
 
 private:
 
@@ -102,6 +148,7 @@ private:
 
     float weight;
     float textPadding;
+    float fScale;
 
     sf::Vector2f lastElementPosition;
     sf::Vector2f textDisplayOffset;
@@ -111,6 +158,8 @@ private:
 
     uint8_t targetTextAlpha;
     uint8_t textFadeRate;
+
+    unsigned int textAlignment;
 
 };
 
@@ -139,6 +188,11 @@ public:
     CVISION_API void setLineWidth(const float& newWidth) noexcept;
     inline void setLineWeightScale(const float& newScale) noexcept{ lineWeightScale = newScale; }
 
+    /** Apply one frame of tether push/pull to distance (0 = no push) */
+    CVISION_API void apply_tether(const float& distance,
+                                  const float& elastic_coefficient,
+                                  const float& range_threshold);
+
     CVISION_API void draw(sf::RenderTarget* target);
     CVISION_API void update();
 
@@ -159,14 +213,14 @@ private:
 
 };
 
-/** Mindmap-type physics-enabled panel */
-
 enum class CVNetworkLayout
 {
     None = 0,
     Force,
     Organic
 };
+
+/** Mindmap-type physics-enabled panel */
 
 class CVISION_API CVNetworkPanel : public CVBasicViewPanel
 {
@@ -186,13 +240,14 @@ public:
 
     // Manual addition/addition of special elements to network
 
-    // Deprecate the original method to avoid confusion
+    /** This method is deprecated in the network panel to avoid confusion */
 
     CVISION_API void addPanelElement(CVElement* newElement,
                                     const std::string& newTag = "",
                                     const unsigned int& index = UINT_MAX) = delete;
 
-    // New method for manual addition
+    /** Add a new custom element.  The element will be wrapped in a CVNetworkNode class and
+        added to the registry of nodes for this panel. */
 
     CVISION_API void addPanelElement(CVElement* newElement,
                                      const std::string& newTag = "",
@@ -246,6 +301,8 @@ public:
     CVISION_API void removeNodesByTag(const std::string& tag);
     CVISION_API void removeNodesByTags(const std::string& tags);
 
+    CVISION_API bool nodeExists(const std::string& node) const noexcept;
+
     // Connection
 
     /** Connect nodes with source tag to nodes with target tag */
@@ -285,14 +342,30 @@ public:
     CVISION_API void select_all();
     CVISION_API void select_none();
 
+    CVISION_API void select_neighbors(CVNetworkNode& node);
+    CVISION_API void select_neighbors(const std::string& tag);
+
+    CVISION_API bool node_has_neighbors(const CVNetworkNode& node);
+    CVISION_API bool node_has_neighbors(const std::string& tag);
+
     // Layouts
 
     CVISION_API void setLayout(const CVNetworkLayout& newLayout);
 
+    // Motion
+
+    inline void setZoom(const float& newZoom) noexcept;
+    inline void zoom(const float& magnitude) noexcept;
+
     // Physics
 
-    inline void setNodeRepulsion(const float& newForce) noexcept{ physicsPushStrength = newForce; }
-    inline void setEdgeAttraction(const float& newForce) noexcept{ physicsPullStrength = newForce; }
+    inline void setNodePushStrength(const float& newCoef) noexcept{ fNodePushStrength = newCoef; }
+
+    inline void setTetherCoefficient(const float& newCoef) noexcept{ fTetherElasticCoefficient = newCoef; }
+    inline void setTetherDistance(const float& newDistance) noexcept{ fTetherBaseDistance = newDistance; }
+    inline void setTetherRangeThreshold(const float& percentage) noexcept{ fTetherRangeThreshold = percentage; }
+    inline void setTetherEdgeDistanceModifier(const float& factorPerEdge) noexcept{ fTetherEdgeDistanceModifier = factorPerEdge; }
+    inline void setTetherEdgeStrengthModifier(const float& factorPerEdge) noexcept{ fTetherEdgeElasticModifier = factorPerEdge; }
 
     // Display
 
@@ -331,6 +404,11 @@ public:
     CVISION_API const sf::Color& getOutlineLegendColor(const std::string& type) const;
     CVISION_API const sf::Color& getTextLegendColor(const std::string& type) const;
 
+    // Options
+
+    inline void setPan(const bool& state) noexcept{ bCanPan = state; }
+    inline void setZoomable(const bool& state) noexcept{ bCanZoom = state; }
+
     // Misc
 
     inline bool isSelected(CVElement* element)
@@ -357,13 +435,32 @@ protected:
 
     sf::Vector2f defaultNodePosition;
     sf::Vector2f defaultNodeSize;
+    sf::Vector2f panOffset;
+    sf::Vector2f panVelocity;
+    sf::Vector2f zoomAnchor;
 
     float fontWeightScale;
     float defaultNodeOutlineThickness;
     float defaultNodeRounding;
-    float physicsPushStrength;
-    float physicsPullStrength;
-    float tetherDistanceScale;
+    float fNodePushStrength;
+    float fNodeEdgeWeightScale;
+    float fTetherElasticCoefficient;
+    float fTetherEdgeElasticModifier;
+    float fTetherEdgeDistanceModifier;
+    float fTetherBaseDistance;
+    float fTetherRangeThreshold;
+    float fPanInstigateInnerThreshold;
+    float fPanInstigateOuterThreshold;
+    float fPanRateScale;
+    float fPanAttenutationRate;
+    float fMaxPanSpeed;
+    float fZoomLevel;
+    float fLastZoomLevel;
+    float fMaxZoomLevel;
+    float fMinZoomLevel;
+    float fZoomRateScale;
+    float fZoomAttenutationRate;
+    float fCurrentZoomRate;
 
     sf::Color selectionColor;
 
@@ -378,8 +475,13 @@ protected:
 
     bool bUniqueNodesOnly;
     bool bSelection;
+    bool bCanZoom;
+    bool bCanPan;
 
-    void updatePhysics(CVEvent& event);
+    void updatePhysics(CVEvent& event, const sf::Vector2f& mousePos);
+
+    /** Override to change how new nodes are connected to the existing network */
+    virtual void updateNodeConnections(CVNetworkNode& node){ }
 
     EZC::reference_vector<CVNetworkNode> selected;
 

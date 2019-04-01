@@ -91,7 +91,7 @@ namespace cvis
         numStates(1),\
         state(0b0),\
         targetAlpha(255),\
-        fadeLayers(0b0),\
+        fadeLayers(CV_LAYER_ALL),\
         fadeRate(0),
 
 CVElement::CVElement():
@@ -225,7 +225,6 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     if(bFade)
     {
-        bool status = false;
         uint8_t adjusted_fr = ceil((float)fadeRate*120.0f/View->getFrameRate());
 
         for(auto& color : colorTheme)
@@ -473,6 +472,19 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
         if(closeButton->getTrigger())
         {
             bDelete = true;
+        }
+    }
+
+    return true;
+}
+
+bool CVElement::fadeComplete() const noexcept
+{
+    for(auto& sprite : spriteList)
+    {
+        if(sprite.getColor().a != targetAlpha)
+        {
+            return false;
         }
     }
 

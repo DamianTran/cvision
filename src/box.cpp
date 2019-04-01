@@ -416,49 +416,60 @@ bool CVBox::update(CVEvent& event, const sf::Vector2f& mousePos)
 
         for(auto& item : panel)
         {
-            tmp = item.getFillColor();
-            if(targetAlpha > tmp.a)
-            {
-                if(tmp.a + adjusted_fr < targetAlpha)
-                {
-                    tmp.a += adjusted_fr;
-                }
-                else tmp.a = targetAlpha;
-            }
-            else
-            {
-                if(tmp.a - adjusted_fr > targetAlpha)
-                {
-                    tmp.a -= adjusted_fr;
-                }
-                else
-                {
-                    tmp.a = targetAlpha;
-                }
-            }
-            item.setFillColor(tmp);
 
-            tmp = item.getOutlineColor();
-            if(targetAlpha > tmp.a)
+            if((fadeLayers | CV_LAYER_SHAPES) || (fadeLayers | CV_LAYER_FILL))
             {
-                if(tmp.a + adjusted_fr < targetAlpha)
+
+                tmp = item.getFillColor();
+                if(targetAlpha > tmp.a)
                 {
-                    tmp.a += adjusted_fr;
-                }
-                else tmp.a = targetAlpha;
-            }
-            else
-            {
-                if(tmp.a - adjusted_fr > targetAlpha)
-                {
-                    tmp.a -= adjusted_fr;
+                    if(int(tmp.a) + adjusted_fr < targetAlpha)
+                    {
+                        tmp.a += adjusted_fr;
+                    }
+                    else tmp.a = targetAlpha;
                 }
                 else
                 {
-                    tmp.a = targetAlpha;
+                    if(int(tmp.a) - adjusted_fr > targetAlpha)
+                    {
+                        tmp.a -= adjusted_fr;
+                    }
+                    else
+                    {
+                        tmp.a = targetAlpha;
+                    }
                 }
+                item.setFillColor(tmp);
+
             }
-            item.setOutlineColor(tmp);
+
+            if((fadeLayers | CV_LAYER_SHAPES) || (fadeLayers | CV_LAYER_OUTLINE))
+            {
+
+                tmp = item.getOutlineColor();
+                if(targetAlpha > tmp.a)
+                {
+                    if(int(tmp.a) + adjusted_fr < targetAlpha)
+                    {
+                        tmp.a += adjusted_fr;
+                    }
+                    else tmp.a = targetAlpha;
+                }
+                else
+                {
+                    if(int(tmp.a) - adjusted_fr > targetAlpha)
+                    {
+                        tmp.a -= adjusted_fr;
+                    }
+                    else
+                    {
+                        tmp.a = targetAlpha;
+                    }
+                }
+                item.setOutlineColor(tmp);
+
+            }
         }
 
     }
@@ -484,6 +495,33 @@ bool CVBox::update(CVEvent& event, const sf::Vector2f& mousePos)
     }
 
     return true;
+}
+
+bool CVBox::fadeComplete() const noexcept
+{
+
+    if(!CVElement::fadeComplete()) return false;
+
+    for(auto& item : panel)
+    {
+        if((fadeLayers & CV_LAYER_SHAPES) || (fadeLayers & CV_LAYER_FILL))
+        {
+            if(item.getFillColor().a != targetAlpha)
+            {
+                return false;
+            }
+        }
+        else if((fadeLayers & CV_LAYER_SHAPES) || (fadeLayers & CV_LAYER_OUTLINE))
+        {
+            if(item.getOutlineColor().a != targetAlpha)
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
+
 }
 
 }

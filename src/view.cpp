@@ -1185,6 +1185,7 @@ bool CVView::handleViewEvents(CVEvent& event)
             {
             case sf::Event::TextEntered:
             {
+
                 event.timeLastKey = 0.0f;
                 event.keyPressed = true;
                 if(!ctrlPressed())
@@ -1192,11 +1193,6 @@ bool CVView::handleViewEvents(CVEvent& event)
 
                     switch(SFevent.text.unicode)
                     {
-                    case sf::Keyboard::Delete:
-                        {
-                            event.keyLog.push_back(CV_KEY_DELETE);
-                            break;
-                        }
                     case sf::Keyboard::Return:
                         {
                             event.keyLog.push_back(CV_KEY_RETURN);
@@ -1238,6 +1234,11 @@ bool CVView::handleViewEvents(CVEvent& event)
 
                 switch(SFevent.key.code)
                 {
+                case sf::Keyboard::Delete:
+                    {
+                        event.keyLog.push_back(CV_KEY_DELETE);
+                        break;
+                    }
                 case sf::Keyboard::Left:
                     {
                         event.keyLog.push_back(CV_KEY_LEFT);

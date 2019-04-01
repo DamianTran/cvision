@@ -44,6 +44,7 @@
 #include "cvision/shape.hpp"
 #include "cvision/element.hpp"
 #include "cvision/event.hpp"
+#include "cvision/algorithm.hpp"
 
 namespace cvis
 {
@@ -86,6 +87,16 @@ void CVShape::move(const sf::Vector2f& offset)
     shapeMask.move(offset);
     inactiveMask.move(offset);
 
+}
+
+void CVShape::setSize(const sf::Vector2f& newSize)
+{
+//    bounds.left -= (newSize.x - getSize().x) * (getOrigin().x / bounds.width);
+//    bounds.top -= (newSize.y - getSize().y) * (getOrigin().y / bounds.height);
+//    origin.x = newSize.x / bounds.width;
+//    origin.y = newSize.y / bounds.height;
+    bounds.width = newSize.x;
+    bounds.height = newSize.y;
 }
 
 void CVShape::setMask(const sf::Texture* texture,

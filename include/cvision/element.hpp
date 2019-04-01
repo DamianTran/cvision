@@ -73,24 +73,27 @@
 
 // ================================================
 
-#define ELEMENT_CENTER_TOP_LEFT         0_BIT
-#define ELEMENT_CENTERED                1_BIT
-#define ELEMENT_CENTER_TOP_RIGHT        2_BIT
-#define ELEMENT_CENTER_BOTTOM_LEFT      3_BIT
-#define ELEMENT_CENTER_BOTTOM_RIGHT     4_BIT
-#define ELEMENT_CENTER_LEFT             5_BIT
-#define ELEMENT_CENTER_RIGHT            6_BIT
-#define ELEMENT_CENTER_TOP              7_BIT
-#define ELEMENT_CENTER_BOTTOM           8_BIT
+#define ELEMENT_CENTER_TOP_LEFT         0
+#define ELEMENT_CENTERED                1
+#define ELEMENT_CENTER_TOP_RIGHT        2
+#define ELEMENT_CENTER_BOTTOM_LEFT      3
+#define ELEMENT_CENTER_BOTTOM_RIGHT     4
+#define ELEMENT_CENTER_LEFT             5
+#define ELEMENT_CENTER_RIGHT            6
+#define ELEMENT_CENTER_TOP              7
+#define ELEMENT_CENTER_BOTTOM           8
 
 // Layer stratification
 
-#define CV_LAYER_ALL                    0b11111111
+#define CV_LAYER_ALL                    0b01111111
 
 #define CV_LAYER_SPRITES                0b1
-#define CV_LAYER_SHAPES                 0b10
-#define CV_LAYER_TEXT                   0b100
-#define CV_LAYER_MEMBERS                0b1000
+#define CV_LAYER_FILL                   0b10
+#define CV_LAYER_OUTLINE                0b100
+#define CV_LAYER_SHAPES                 0b1000
+#define CV_LAYER_HIGHLIGHT              0b10000
+#define CV_LAYER_TEXT                   0b100000
+#define CV_LAYER_MEMBERS                0b10000000
 
 // Development shortcuts
 
@@ -348,6 +351,9 @@ public:
 
     CVISION_API void setState(const uint8_t& newState); // Toggle to a new state
     CVISION_API void setFade(const uint8_t& alpha, const int& rate, const unsigned char& flags = CV_LAYER_ALL);
+    CVISION_API virtual bool fadeComplete() const noexcept;
+    inline bool isFading() const noexcept{ return !fadeComplete(); }
+
     inline void setFadeStatus(const bool& state, const unsigned char& flags = CV_LAYER_ALL)
     {
         bFade = state;
@@ -664,6 +670,18 @@ public:
     inline void setColor(const int& r, const int& g, const int& b)
     {
         setColor(sf::Color(r,g,b));
+    }
+
+    virtual inline sf::Color getFillColor() const{ return sf::Color::Transparent; }
+    virtual inline sf::Color getOutlineColor() const{ return sf::Color::Transparent; }
+
+    virtual inline sf::Color getSpriteColor() const
+    {
+        if(!spriteList.empty())
+        {
+            return spriteList.back().getColor();
+        }
+        else return sf::Color::Transparent;
     }
 
     inline void setControls(const KeyMapping& newControls)

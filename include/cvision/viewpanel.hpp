@@ -81,6 +81,8 @@ public:
     CVISION_API CVElement* getTaggedElement(const std::string& tag);
     CVISION_API bool elementExists(const std::string& tag);
 
+    inline void setFadeMembersOnly(const bool& status = true){ bFadeMembersOnly = status; }
+
     inline const std::vector<CVElement*>& getPanels() const
     {
         return viewPanelElements;
@@ -139,20 +141,23 @@ public:
 
 protected:
 
-    std::vector<CVElement*> viewPanelElements;
-    std::vector<std::string> viewPanelTags;
+    std::vector<CVElement*>     viewPanelElements;
+    std::vector<std::string>    viewPanelTags;
 
-    bool bFitWindow,            // Fit to the window upon creation and upon resize
-         bTransduceFade,        // Transduce fade events to panel elements
-         bTransduceFocus,
-         bDragAndDrop,          // Transfer focus to panel elements
-         bOutOfBoundsDraw,      // Draw items outside of the panel boundary
-         bOutOfBoundsUpdate;    // Update items outside of the panel boundary
+    bool                        bFitWindow;            // Fit to the window upon creation and upon resize
+    bool                        bTransduceFade;        // Transduce fade events to panel elements
+    bool                        bTransduceFocus;
+    bool                        bDragAndDrop;          // Transfer focus to panel elements
+    bool                        bOutOfBoundsDraw;      // Draw items outside of the panel boundary
+    bool                        bOutOfBoundsUpdate;    // Update items outside of the panel boundary
+    bool                        bFadeMembersOnly;
 
-    sf::Sprite* dragShadow;     // If drag-and-drop, a sprite for the item shadow
+    sf::Sprite*                 dragShadow;     // If drag-and-drop, a sprite for the item shadow
 
     CVISION_API void updateBounds();
     CVISION_API void updatePanels(CVEvent& event, const sf::Vector2f& mousePos);
+
+    CVISION_API bool fadeComplete() const noexcept;
 
 private:
 

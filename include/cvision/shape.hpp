@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -104,11 +104,7 @@ public:
         setPosition(sf::Vector2f(x, y));
     }
 
-    virtual void setSize(const sf::Vector2f& newSize)
-    {
-        bounds.width = newSize.x;
-        bounds.height = newSize.y;
-    }
+    CVISION_API void setSize(const sf::Vector2f& newSize);
     inline void setSize(const float& x, const float& y)
     {
         setSize(sf::Vector2f(x, y));

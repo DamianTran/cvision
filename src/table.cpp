@@ -436,7 +436,10 @@ void CVTablePanel::updateExpand()
 
             }
 
-            rowBars[y]->setSize(left_margin(), newCellSize.y);
+            if(y < rowBars.size())
+            {
+                rowBars[y]->setSize(left_margin(), newCellSize.y);
+            }
 
             if(y < cells.size() - 1)
             {
@@ -463,7 +466,7 @@ void CVTablePanel::updateExpand()
 
                 }
 
-                for(size_t i = y + 1; i < cells.size(); ++i)
+                for(size_t i = y + 1; i < rowBars.size(); ++i)
                 {
 
                     rowBars[i]->move(0.0f, moveDist);

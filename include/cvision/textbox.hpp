@@ -208,6 +208,8 @@ public:
     CVISION_API void setExpand(const bool& state);
     CVISION_API void updateBounds();
 
+    CVISION_API bool fadeComplete() const noexcept;
+
     CVISION_API void sendData(CVEvent& event) const;
 
     CVISION_API std::string getText() const;
