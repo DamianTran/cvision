@@ -119,30 +119,30 @@ public:
 
 };
 
-class CVISION_API CVTextBox:public CVBox
+class CVISION_API CVTextBox : public CVBox
 {
-protected:
-
-    friend class CVView;
-
-    uint8_t textAlignment;
-    TextEntry textInfo;
-
-    std::vector<sf::Text> displayText;
-
-    float textPadding;
-
-    const sf::Font* textFont;
-
-    bool bWrapText;
-
-    CVISION_API virtual void alignText();
-    CVISION_API void wrapText();
-
 public:
+
+    CVISION_API CVTextBox(CVView* View,
+              const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f),
+              const float& width = 0.0f,
+              const float& height = 0.0f,
+              const TextEntry& textInfo = TextEntry("", ""),
+              const sf::Color& fillColor = sf::Color::Transparent,
+              const sf::Color& borderColor = sf::Color::Transparent,
+              const float& borderWidth = 0.0f);
+    CVISION_API CVTextBox(CVView* View,
+              const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f),
+              const float& width = 0.0f,
+              const float& height = 0.0f,
+              const sf::Color& fillColor = sf::Color::Transparent,
+              const sf::Color& borderColor = sf::Color::Transparent,
+              const float& borderWidth = 0.0f);
 
     CVISION_API bool draw(sf::RenderTarget* target);
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
+
+    CVISION_API sf::FloatRect getTextBounds() const noexcept;
 
     CVISION_API void setPosition(const sf::Vector2f& position);
     inline void setPosition(const float& x, const float& y)
@@ -196,6 +196,7 @@ public:
 
     CVISION_API void setFont(const std::string& newFont);
     CVISION_API void setFont(const sf::Font& newFont);
+    CVISION_API void setFontSize(const unsigned int& newSize);
 
     CVISION_API void setSize(const sf::Vector2f& newSize);
     inline void setSize(const float& x, const float& y)
@@ -225,21 +226,23 @@ public:
         return colorTheme[2];
     }
 
-    CVISION_API CVTextBox(CVView* View,
-              const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f),
-              const float& width = 0.0f,
-              const float& height = 0.0f,
-              const TextEntry& textInfo = TextEntry("", ""),
-              const sf::Color& fillColor = sf::Color::Transparent,
-              const sf::Color& borderColor = sf::Color::Transparent,
-              const float& borderWidth = 0.0f);
-    CVISION_API CVTextBox(CVView* View,
-              const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f),
-              const float& width = 0.0f,
-              const float& height = 0.0f,
-              const sf::Color& fillColor = sf::Color::Transparent,
-              const sf::Color& borderColor = sf::Color::Transparent,
-              const float& borderWidth = 0.0f);
+protected:
+
+    friend class CVView;
+
+    uint8_t textAlignment;
+    TextEntry textInfo;
+
+    std::vector<sf::Text> displayText;
+
+    float textPadding;
+
+    const sf::Font* textFont;
+
+    bool bWrapText;
+
+    CVISION_API virtual void alignText();
+    CVISION_API void wrapText();
 
 };
 

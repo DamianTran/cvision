@@ -66,6 +66,8 @@ protected:
 
     bool bMasked;
 
+    uint8_t maskAlpha;
+
 public:
 
     CVISION_API void move(const sf::Vector2f& offset);

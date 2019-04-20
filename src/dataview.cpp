@@ -45,10 +45,9 @@
 #include "cvision/coordmap.hpp"
 #include "cvision/algorithm.hpp"
 
-#include "EZC/algorithm.hpp"
-#include "EZC/toolkit/string.hpp"
-
-#include "AIDA/dataStream.hpp"
+#include <EZC/algorithm.hpp>
+#include <EZC/toolkit/string.hpp>
+#include <EZC/toolkit/data_stream.hpp>
 
 using namespace EZC;
 

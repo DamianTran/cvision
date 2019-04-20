@@ -1,3 +1,46 @@
+/** /////////////////////////////////////////////////////////////
+//
+//  CVision: the flexible cascading-style GUI library for C++
+//
+// //////////////////////////////////////////////////////////////
+//
+// Copyright (c) 2017 - 2019 Damian Tran
+//
+// DESCRIPTION:
+//
+// CVision is a graphical user interface (GUI) library that
+// attempts to simplify and speed up the process of desktop
+// app design.  CVision incorporates a cascading structure
+// scheme that resembles the following:
+//
+// App -> View -> Panel -> Element -> Primitives/Sprites
+//
+// The subsequent connection of each "leaf" of the hierarchy
+// automatically ensures that the element will be updated,
+// drawn to the renderer, and otherwise disposed of at
+// the program's termination.
+//
+// LEGAL:
+//
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
+// Author ("Damian Tran") is appreciated but not necessary.
+//
+// CVision is an open source library that is provided to you
+// (the "User") AS IS, with no implied or explicit
+// warranties.  By using CVision, you acknowledge and agree
+// to this disclaimer.  Use of CVision in the Users's programs
+// or as a part of a derivative library is performed at
+// the User's OWN RISK.
+//
+// ACKNOWLEDGEMENTS:
+//
+// CVision makes use of SFML (Simple and Fast Multimedia Library)
+// Copyright (c) Laurent Gomila
+// See licence: www.sfml-dev.org/license.php
+//
+/////////////////////////////////////////////////////////////  **/
+
 #pragma once
 
 #ifndef CVIS_NETWORK_PANEL
@@ -298,8 +341,10 @@ public:
                                        const float& outlineThickness = 1.0f,
                                        const float& rounding = NAN);
 
-    CVISION_API void removeNodesByTag(const std::string& tag);
-    CVISION_API void removeNodesByTags(const std::string& tags);
+    CVISION_API virtual void removeNodesByTag(const std::string& tag);
+    CVISION_API void removeNodesByTags(const std::vector<std::string>& tags);
+    CVISION_API void removeNode(CVNetworkNode& node);
+    CVISION_API virtual void removeSelected();
 
     CVISION_API bool nodeExists(const std::string& node) const noexcept;
 
@@ -348,6 +393,8 @@ public:
     CVISION_API bool node_has_neighbors(const CVNetworkNode& node);
     CVISION_API bool node_has_neighbors(const std::string& tag);
 
+    CVISION_API void setCordonState(const bool& state) noexcept;
+
     // Layouts
 
     CVISION_API void setLayout(const CVNetworkLayout& newLayout);
@@ -356,6 +403,9 @@ public:
 
     inline void setZoom(const float& newZoom) noexcept;
     inline void zoom(const float& magnitude) noexcept;
+
+    inline void setPanInnerThreshold(const float& newThreshold) noexcept{ fPanInstigateInnerThreshold = newThreshold; }
+    inline void setPanOuterThreshold(const float& newThreshold) noexcept{ fPanInstigateOuterThreshold = newThreshold; }
 
     // Physics
 
@@ -379,6 +429,8 @@ public:
     inline void setDefaultNodeFillColor(const sf::Color& newColor) noexcept{ nodeLegend["__DEFAULT__"] = newColor; }
     inline void setDefaultNodeOutlineColor(const sf::Color& newColor) noexcept{ outlineLegend["__DEFAULT__"] = newColor; }
     inline void setDefaultNodeTextColor(const sf::Color& newColor) noexcept{ textColorLegend["__DEFAULT__"] = newColor; }
+
+    inline void setDefaultNodeTextAlignment(const unsigned int& newAlignment) noexcept{ defaultNodeTextAlignment = newAlignment; }
 
     inline void setLegendNodeColor(const std::string& type,
                                    const sf::Color& newColor) noexcept{ nodeLegend[type] = newColor; }
@@ -426,6 +478,12 @@ public:
 
     inline bool anySelected() const noexcept{ return !selected.empty(); }
     inline size_t numSelected() const noexcept{ return selected.size(); }
+
+    inline const EZC::reference_vector<CVNetworkNode>& getSelected() noexcept{ return selected; }
+
+    sf::Vector2f convert_to_local(const sf::Vector2f& screen_coords) const noexcept;
+    sf::Vector2f convert_to_screen(const sf::Vector2f& local_coords) const noexcept;
+    inline const float& getZoomLevel() const noexcept{ return fZoomLevel; }
 
 protected:
 
@@ -477,6 +535,7 @@ protected:
     bool bSelection;
     bool bCanZoom;
     bool bCanPan;
+    bool bCanCordonSelect;
 
     void updatePhysics(CVEvent& event, const sf::Vector2f& mousePos);
 

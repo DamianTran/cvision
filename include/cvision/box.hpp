@@ -110,8 +110,10 @@ public:
         setOutlineColor(sf::Color(r, g, b));
     }
 
-    CVISION_API void setTexture(const sf::Texture* texture);
-    CVISION_API void setTexture(const std::string& texture_name);
+    CVISION_API void setTexture(const sf::Texture* texture,
+                                const sf::IntRect& textureRect = sf::IntRect(INT_MAX, INT_MAX, INT_MAX, INT_MAX));
+    CVISION_API void setTexture(const std::string& texture_name,
+                                const sf::IntRect& textureRect = sf::IntRect(INT_MAX, INT_MAX, INT_MAX, INT_MAX));
 
     CVISION_API void setRounding(const float& newRadius,
                      const unsigned int& pointCount = 10,

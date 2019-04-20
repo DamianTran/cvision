@@ -389,6 +389,10 @@ public:
     {
         return bEnterLine;
     }
+    inline void setEnterLine(const bool& state)
+    {
+        bEnterLine = state;
+    }
 
     inline sf::Vector2f getCursorPos() const
     {
@@ -423,6 +427,10 @@ public:
     {
         bEncode = status;
     }
+    inline void setInnerPadding(const float& newPadding)
+    {
+        xPadding = newPadding;
+    }
 
     CVISION_API void setFillColor(const sf::Color& newColor);
     inline void setFillColor(const int& r, const int& g, const int& b, const int& a = 255)
@@ -435,10 +443,15 @@ public:
         setColor(sf::Color(r, g, b, a));
     }
 
-    inline void setKeyboardEntryStatus(bool status)
+    inline void setKeyboardEntryStatus(const bool& status)
     {
         bEnterLine = status;
     }
+    inline void setClearOnKeyboardEntry(const bool& state = true)
+    {
+        bClearOnEnterLine = state;
+    }
+
     CVISION_API void enterString();
 
     inline void setFontSize(const unsigned int& newSize)
@@ -480,6 +493,16 @@ public:
     {
         output = enteredString;
         enteredString.clear();
+    }
+
+    inline bool checkTypeStringChanged() noexcept
+    {
+        if(bUserTyped)
+        {
+            bUserTyped = false;
+            return true;
+        }
+        return false;
     }
 
     CVISION_API void setAlignment(const uint8_t& alignment);
@@ -579,7 +602,9 @@ protected:
     bool                bCanEdit;
     bool                bModified;
     bool                bEncode;
-    bool                bEnterLine; // Allow info be entered with the enter key
+    bool                bEnterLine;             // Allow info be entered with the enter key
+    bool                bClearOnEnterLine;      // Should the field be cleared if data is entered?
+    bool                bUserTyped;             // Flag for external check for a type action
 
     uint8_t             animType;
     uint8_t             textFitType;

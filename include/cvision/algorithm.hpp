@@ -123,19 +123,23 @@ template<typename T1, typename T2> constexpr sf::Vector2<T1> operator/(const sf:
 
 template<typename T1, typename T2> inline void operator+=(sf::Vector2<T1>& LHS, const sf::Vector2<T2>& RHS)
 {
-    LHS += T1(RHS);
+    LHS.x += T1(RHS.x);
+    LHS.y += T1(RHS.y);
 }
 template<typename T1, typename T2> inline void operator-=(sf::Vector2<T1>& LHS, const sf::Vector2<T2>& RHS)
 {
-    LHS -= T1(RHS);
+    LHS.x -= T1(RHS.x);
+    LHS.y -= T1(RHS.y);
 }
 template<typename T1, typename T2> inline void operator*=(sf::Vector2<T1>& LHS, const sf::Vector2<T2>& RHS)
 {
-    LHS *= T1(RHS);
+    LHS.x *= T1(RHS.x);
+    LHS.y *= T1(RHS.y);
 }
 template<typename T1, typename T2> inline void operator/=(sf::Vector2<T1>& LHS, const sf::Vector2<T2>& RHS)
 {
-    LHS /= T1(RHS);
+    LHS.x /= T1(RHS.x);
+    LHS.y /= T1(RHS.y);
 }
 
 template<typename T1, typename T2> inline void operator+=(sf::Vector2<T1>& LHS, const T2& RHS)

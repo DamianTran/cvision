@@ -93,6 +93,8 @@ public:
     CVISION_API void setFadeIn(const bool& state, const uint8_t& targetAlpha = 255, const uint8_t& rate = 0);
     CVISION_API void setFadeOnClick(const bool& state, const uint8_t& targetAlpha = 255, const uint8_t& rate = 0);
 
+    CVISION_API void setSize(const sf::Vector2f& newSize) override;
+
     template<typename FUNC> void setActivationFunction(FUNC func){ activateFunc = func; } // Allow for custom activation functions by CVView
 
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);

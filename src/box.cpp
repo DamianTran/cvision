@@ -92,9 +92,20 @@ void CVBox::highlight(const bool& state)
     CVElement::highlight(state);
     if(highlighted)
     {
+        sf::Color tmp;
         for(auto& shape : panel)
         {
-            shape.setFillColor(highlightColor);
+            if(highlightColor == sf::Color::Transparent)
+            {
+                tmp = shape.getFillColor();
+                brighten(tmp, 45);
+            }
+            else
+            {
+                tmp = highlightColor;
+                tmp.a = shape.getFillColor().a;
+            }
+            shape.setFillColor(tmp);
         }
     }
     else
@@ -130,17 +141,67 @@ void CVBox::move(const sf::Vector2f& offset)
 
 void CVBox::setSize(const sf::Vector2f& newSize)
 {
-    sf::Vector2f sizeScale = newSize/getSize();
 
-    for(auto& item : panel)
+    if(!bounds.width && !bounds.height)
     {
-        item.setSize(item.getSize()*sizeScale);
+        for(auto& item : panel)
+        {
+            item.setSize(newSize);
+        }
+        for(auto& item : mask)
+        {
+            item.setSize(newSize);
+        }
+        shapeMask.setSize(newSize);
     }
-    for(auto& item : mask)
+    else if(!bounds.width)
     {
-        item.setSize(item.getSize()*sizeScale);
+        float scaleY = newSize.y/getSize().y;
+
+        for(auto& item : panel)
+        {
+            item.setSize(sf::Vector2f(newSize.x,
+                                      item.getSize().y*scaleY));
+        }
+        for(auto& item : mask)
+        {
+            item.setSize(sf::Vector2f(newSize.x,
+                                      item.getSize().y*scaleY));
+        }
+        shapeMask.setSize(sf::Vector2f(newSize.x,
+                                      shapeMask.getSize().y*scaleY));
     }
-    shapeMask.setSize(shapeMask.getSize() * sizeScale);
+    else if(!bounds.height)
+    {
+        float scaleX = newSize.x/getSize().x;
+
+        for(auto& item : panel)
+        {
+            item.setSize(sf::Vector2f(item.getSize().x*scaleX,
+                                      newSize.y));
+        }
+        for(auto& item : mask)
+        {
+            item.setSize(sf::Vector2f(item.getSize().x*scaleX,
+                                      newSize.y));
+        }
+        shapeMask.setSize(sf::Vector2f(shapeMask.getSize().x*scaleX,
+                                            newSize.y));
+    }
+    else
+    {
+        sf::Vector2f sizeScale = newSize/getSize();
+
+        for(auto& item : panel)
+        {
+            item.setSize(item.getSize()*sizeScale);
+        }
+        for(auto& item : mask)
+        {
+            item.setSize(item.getSize()*sizeScale);
+        }
+        shapeMask.setSize(shapeMask.getSize() * sizeScale);
+    }
 
     CVShape::setSize(newSize);
 }
@@ -203,8 +264,7 @@ void CVBox::setSpriteColor(const sf::Color& newColor)
         spr.setColor(newColor);
     }
 
-    colorTheme.resize(3, sf::Color::Transparent);
-    colorTheme[2] = newColor;
+    spriteColor = newColor;
 }
 
 void CVBox::setFillColor(const sf::Color& newColor)
@@ -212,6 +272,17 @@ void CVBox::setFillColor(const sf::Color& newColor)
     for(auto& item : panel)
     {
         item.setFillColor(newColor);
+    }
+
+    if(colorTheme.empty())
+    {
+        colorTheme.emplace_back(newColor);
+    }
+    else colorTheme.front() = newColor;
+
+    if(newColor != sf::Color::Transparent)
+    {
+        bSpriteOnly = false;
     }
 }
 
@@ -223,12 +294,25 @@ void CVBox::setOutlineColor(const sf::Color& newColor)
     }
 }
 
-void CVBox::setTexture(const sf::Texture* texture)
+void CVBox::setTexture(const sf::Texture* texture,
+                       const sf::IntRect& textureRect)
 {
-    panel.front().setTexture(texture);
+    if((textureRect.left != INT_MAX) &&
+       (textureRect.top != INT_MAX) &&
+       (textureRect.width != INT_MAX) &&
+       (textureRect.height != INT_MAX))
+    {
+        panel.front().setTexture(texture, false);
+        panel.front().setTextureRect(textureRect);
+    }
+    else
+    {
+        panel.front().setTexture(texture, true);
+    }
 }
 
-void CVBox::setTexture(const std::string& texture)
+void CVBox::setTexture(const std::string& texture,
+                       const sf::IntRect& textureRect)
 {
     setTexture(appTexture(texture));
 }
@@ -347,12 +431,7 @@ CVBox::CVBox(CVView* View,
     colorTheme.emplace_back(fillColor);
     colorTheme.emplace_back(borderColor);
 
-    highlightColor = fillColor;
-    brighten(highlightColor, 50);
-
     bounds = sf::FloatRect(position.x, position.y, width, height);
-
-    colorTheme = {fillColor, borderColor};
 
     // Main panel
     panel.emplace_back(sf::Vector2f(width, height));
@@ -409,70 +488,79 @@ void CVBox::setExpand(const bool& state)
 bool CVBox::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
     if(!CVShape::update(event, mousePos)) return false;
+
     if(bFade && !bNoFill && !bSpriteOnly)
     {
         sf::Color tmp;
-        uint8_t adjusted_fr = ceil((float)fadeRate*120.0f/View->getFrameRate());
+        uint8_t adjusted_fr = ceil((float)fadeRate*60.0f/View->getFrameRate());
 
         for(auto& item : panel)
         {
 
-            if((fadeLayers | CV_LAYER_SHAPES) || (fadeLayers | CV_LAYER_FILL))
+            if((fadeLayers & CV_LAYER_SHAPES) || (fadeLayers & CV_LAYER_FILL))
             {
 
                 tmp = item.getFillColor();
-                if(targetAlpha > tmp.a)
+
+                if(tmp.a != targetAlpha)
                 {
-                    if(int(tmp.a) + adjusted_fr < targetAlpha)
+                    if(targetAlpha > tmp.a)
                     {
-                        tmp.a += adjusted_fr;
-                    }
-                    else tmp.a = targetAlpha;
-                }
-                else
-                {
-                    if(int(tmp.a) - adjusted_fr > targetAlpha)
-                    {
-                        tmp.a -= adjusted_fr;
+                        if(int(tmp.a) + adjusted_fr < targetAlpha)
+                        {
+                            tmp.a += adjusted_fr;
+                        }
+                        else tmp.a = targetAlpha;
                     }
                     else
                     {
-                        tmp.a = targetAlpha;
+                        if(int(tmp.a) - adjusted_fr > targetAlpha)
+                        {
+                            tmp.a -= adjusted_fr;
+                        }
+                        else
+                        {
+                            tmp.a = targetAlpha;
+                        }
                     }
+                    item.setFillColor(tmp);
                 }
-                item.setFillColor(tmp);
 
             }
 
-            if((fadeLayers | CV_LAYER_SHAPES) || (fadeLayers | CV_LAYER_OUTLINE))
+            if((fadeLayers & CV_LAYER_SHAPES) || (fadeLayers & CV_LAYER_OUTLINE))
             {
-
                 tmp = item.getOutlineColor();
-                if(targetAlpha > tmp.a)
+
+                if(tmp.a != targetAlpha)
                 {
-                    if(int(tmp.a) + adjusted_fr < targetAlpha)
+                    if(targetAlpha > tmp.a)
                     {
-                        tmp.a += adjusted_fr;
-                    }
-                    else tmp.a = targetAlpha;
-                }
-                else
-                {
-                    if(int(tmp.a) - adjusted_fr > targetAlpha)
-                    {
-                        tmp.a -= adjusted_fr;
+                        if(int(tmp.a) + adjusted_fr < targetAlpha)
+                        {
+                            tmp.a += adjusted_fr;
+                        }
+                        else tmp.a = targetAlpha;
                     }
                     else
                     {
-                        tmp.a = targetAlpha;
+                        if(int(tmp.a) - adjusted_fr > targetAlpha)
+                        {
+                            tmp.a -= adjusted_fr;
+                        }
+                        else
+                        {
+                            tmp.a = targetAlpha;
+                        }
                     }
+                    item.setOutlineColor(tmp);
                 }
-                item.setOutlineColor(tmp);
 
             }
         }
 
     }
+
     if(highlightable() && active)
     {
         if((event.focusFree() && bounds.contains(event.lastFrameMousePosition)) || highlighted)
@@ -480,8 +568,17 @@ bool CVBox::update(CVEvent& event, const sf::Vector2f& mousePos)
             sf::Color tmp;
             for(auto& item : panel)
             {
-                tmp = highlightColor;
-                tmp.a = baseFillColor().a;
+                if(highlightColor != sf::Color::Transparent)
+                {
+                    tmp = highlightColor;
+                    tmp.a = baseFillColor().a;
+                }
+                else
+                {
+                    tmp = baseFillColor();
+                    brighten(tmp, 45);
+                }
+
                 item.setFillColor(tmp);
             }
         }

@@ -116,7 +116,9 @@ CVElement::CVElement(CVView* View,
     active(active),
     CVELEMENT_INIT
     View(View),
-    drawTarget(View->viewPort) { }
+    drawTarget(View->viewPort) {
+
+    }
 
 CVElement::~CVElement()
 {
@@ -182,8 +184,7 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
         if(highlighted || (bounds.contains(mousePos) && event.focusFree()))
         {
             setFocus(true);
-            if((baseSpriteColor() == sf::Color::Transparent) ||
-               (highlightColor != sf::Color::Transparent))
+            if(highlightColor != sf::Color::Transparent)
             {
                 for(auto& spr : spriteList)
                 {
@@ -225,7 +226,8 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     if(bFade)
     {
-        uint8_t adjusted_fr = ceil((float)fadeRate*120.0f/View->getFrameRate());
+
+        unsigned int adjusted_fr = ceil((float)fadeRate*60.0f/View->getFrameRate());
 
         for(auto& color : colorTheme)
         {
@@ -251,25 +253,29 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
             }
         }
 
-        if(highlightColor.a != targetAlpha)
+        if((highlightColor != sf::Color::Transparent) &&
+           (fadeLayers & CV_LAYER_HIGHLIGHT))
         {
-            if(targetAlpha > highlightColor.a)
+            if(highlightColor.a != targetAlpha)
             {
-                if(highlightColor.a + adjusted_fr < targetAlpha)
+                if(targetAlpha > highlightColor.a)
                 {
-                    highlightColor.a += adjusted_fr;
-                }
-                else highlightColor.a = targetAlpha;
-            }
-            else
-            {
-                if(highlightColor.a - adjusted_fr > targetAlpha)
-                {
-                    highlightColor.a -= adjusted_fr;
+                    if(highlightColor.a + adjusted_fr < targetAlpha)
+                    {
+                        highlightColor.a += adjusted_fr;
+                    }
+                    else highlightColor.a = targetAlpha;
                 }
                 else
                 {
-                    highlightColor.a = targetAlpha;
+                    if(highlightColor.a - adjusted_fr > targetAlpha)
+                    {
+                        highlightColor.a -= adjusted_fr;
+                    }
+                    else
+                    {
+                        highlightColor.a = targetAlpha;
+                    }
                 }
             }
         }
@@ -301,6 +307,23 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
                     }
                 }
                 sprite.setColor(tmp);
+            }
+
+            if(targetAlpha > spriteColor.a)
+            {
+                if(spriteColor.a + adjusted_fr < targetAlpha)
+                {
+                    spriteColor.a += adjusted_fr;
+                }
+                else spriteColor.a = targetAlpha;
+            }
+            else if(targetAlpha < spriteColor.a)
+            {
+                if(spriteColor.a - adjusted_fr > targetAlpha)
+                {
+                    spriteColor.a -= adjusted_fr;
+                }
+                else spriteColor.a = targetAlpha;
             }
         }
     }
@@ -428,8 +451,7 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
     if(bDragAndDrop && active)
     {
         if(event.LMBhold && (event.LMBholdTime > 0.15f) &&
-                bounds.contains(event.LMBpressPosition) &&
-                event.focusFree() && event.captureMouse())
+                bounds.contains(event.LMBpressPosition))
         {
             createShadow(180);
             View->shadow.move(mousePos - event.LMBpressPosition);
@@ -855,17 +877,19 @@ void CVElement::anim_move(const sf::Vector2f& distance,
 
     bNoInteract = false;
 
+    sf::Vector2f dest;
+
     if(!bMove)
     {
-        destination = getPosition() + distance;
+        dest = getPosition() + distance;
         bMove = true;
     }
     else
     {
-        destination += distance;
+        dest += distance;
     }
 
-    fMoveAngle = get_angle(destination, getPosition());
+    fMoveAngle = get_angle(dest, getPosition());
     this->velocity = components(velocity, fMoveAngle);
     fFriction = abs(drag);
 }
@@ -901,6 +925,11 @@ void CVElement::addSprite(const sf::Texture* texture,
 {
 
     if(!texture) return;
+
+    if(spriteList.empty())
+    {
+        spriteColor = fillColor;
+    }
 
     spriteList.emplace_back(*texture);
     sf::Vector2u texSize = texture->getSize();

@@ -1,3 +1,46 @@
+/** /////////////////////////////////////////////////////////////
+//
+//  CVision: the flexible cascading-style GUI library for C++
+//
+// //////////////////////////////////////////////////////////////
+//
+// Copyright (c) 2017 - 2019 Damian Tran
+//
+// DESCRIPTION:
+//
+// CVision is a graphical user interface (GUI) library that
+// attempts to simplify and speed up the process of desktop
+// app design.  CVision incorporates a cascading structure
+// scheme that resembles the following:
+//
+// App -> View -> Panel -> Element -> Primitives/Sprites
+//
+// The subsequent connection of each "leaf" of the hierarchy
+// automatically ensures that the element will be updated,
+// drawn to the renderer, and otherwise disposed of at
+// the program's termination.
+//
+// LEGAL:
+//
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
+// Author ("Damian Tran") is appreciated but not necessary.
+//
+// CVision is an open source library that is provided to you
+// (the "User") AS IS, with no implied or explicit
+// warranties.  By using CVision, you acknowledge and agree
+// to this disclaimer.  Use of CVision in the Users's programs
+// or as a part of a derivative library is performed at
+// the User's OWN RISK.
+//
+// ACKNOWLEDGEMENTS:
+//
+// CVision makes use of SFML (Simple and Fast Multimedia Library)
+// Copyright (c) Laurent Gomila
+// See licence: www.sfml-dev.org/license.php
+//
+/////////////////////////////////////////////////////////////  **/
+
 #include "cvision/panel/network.hpp"
 #include "cvision/button.hpp"
 #include "cvision/algorithm.hpp"
@@ -606,7 +649,7 @@ CVNetworkPanel::CVNetworkPanel(CVView* View,
                                  fontWeightScale(1.0f),
                                  defaultNodeOutlineThickness(2.0f),
                                  defaultNodeRounding(NAN),
-                                 fNodePushStrength(8.0f),
+                                 fNodePushStrength(0.5f),
                                  fNodeEdgeWeightScale(0.3f),
                                  fTetherElasticCoefficient(0.045f),
                                  fTetherEdgeDistanceModifier(0.0009f),
@@ -630,7 +673,8 @@ CVNetworkPanel::CVNetworkPanel(CVView* View,
                                  bUniqueNodesOnly(false),
                                  bSelection(false),
                                  bCanPan(true),
-                                 bCanZoom(true)
+                                 bCanZoom(true),
+                                 bCanCordonSelect(true)
 {
 
     this->textInfo = textInfo;
@@ -673,7 +717,8 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
     if(!bSelection)
     {
         if(event.LMBhold &&
-           bounds.contains(event.LMBpressPosition))
+           bounds.contains(event.LMBpressPosition) &&
+           event.focusFree())
         {
 
             for(auto& node : nodes)
@@ -707,27 +752,35 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
                 }
             }
 
-            if(!ctrlPressed())
-            {
-                select_none();
-            }
-
             if(event.captureMouse())
             {
-                selectionCordon.setPosition(event.LMBpressPosition);
-                bSelection = true;
+
+                if(!ctrlPressed())
+                {
+                    select_none();
+                }
+
+                if(bCanCordonSelect)
+                {
+
+                    selectionCordon.setPosition(event.LMBpressPosition);
+                    bSelection = true;
+
+                }
+
             }
 
             noCordon:;
 
         }
     }
-    else if(bSelection && event.LMBhold)
+    else if(bSelection && event.LMBhold && bCanCordonSelect)
     {
         selectionCordon.setSize(mousePos - event.LMBpressPosition);
     }
 
-    if(event.LMBreleased && (event.LMBreleaseFrames == 1))
+    if(event.LMBreleased &&
+       (event.LMBreleaseFrames == 1))
     {
 
         if(bounds.contains(event.LMBpressPosition) &&
@@ -740,7 +793,7 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
             bHasFocus = false;
         }
 
-        if(bSelection)
+        if(bSelection && bCanCordonSelect)
         {
 
             for(auto& node : nodes)
@@ -773,7 +826,7 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     // Handle panning
 
-    if(bCanPan && hasFocus())
+    if(bCanPan && event.focusFree())
     {
 
         sf::Vector2f panAcceleration(0.0f, 0.0f);
@@ -822,6 +875,8 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
         // Perform pan
 
+        panOffset += panVelocity/event.avgFrameRate();
+
         for(auto& node : nodes)
         {
             if(!event.isCaptured(*node.getElement()))
@@ -837,15 +892,8 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
     if(sf::Keyboard::isKeyPressed(sf::Keyboard::Delete))
     {
 
-        if(!selected.empty())
-        {
-            for(size_t i = 0; i < selected.size(); ++i)
-            {
-                removePanelElement(selected[i].getElement());
-            }
+        removeSelected();
 
-            selected.clear();
-        }
     }
 
     // Handle zoom
@@ -971,6 +1019,67 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
 }
 
+void CVNetworkPanel::removeSelected()
+{
+
+    if(!selected.empty())
+    {
+        for(size_t i = 0; i < selected.size(); ++i)
+        {
+            removePanelElement(selected[i].getElement());
+        }
+
+        selected.clear();
+    }
+
+}
+
+void CVNetworkPanel::removeNodesByTag(const std::string& tag)
+{
+
+    for(size_t i = 0; i < nodes.size();)
+    {
+
+        if(nodes[i].getTag() == tag)
+        {
+
+            nodes.erase(nodes.begin() + i);
+
+        }
+        else ++i;
+
+    }
+
+}
+
+void CVNetworkPanel::removeNodesByTags(const std::vector<std::string>& tags)
+{
+
+    for(auto& tag : tags)
+    {
+
+        removeNodesByTag(tag);
+
+    }
+
+}
+
+void CVNetworkPanel::removeNode(CVNetworkNode& node)
+{
+
+    for(size_t i = 0; i < nodes.size(); ++i)
+    {
+
+        if(&nodes[i] == &node)
+        {
+            nodes.erase(nodes.begin() + i);
+            break;
+        }
+
+    }
+
+}
+
 void CVNetworkPanel::updatePhysics(CVEvent& event, const sf::Vector2f& mousePos)
 {
     sf::FloatRect shape1Bounds;
@@ -984,7 +1093,7 @@ void CVNetworkPanel::updatePhysics(CVEvent& event, const sf::Vector2f& mousePos)
     double lin_dist;
     double max_dist;
     double angle;
-    double distWeight;
+    double pushDist;
     double r1;
     double r2;
 
@@ -1025,7 +1134,7 @@ void CVNetworkPanel::updatePhysics(CVEvent& event, const sf::Vector2f& mousePos)
 
                 lin_dist = getDistance(shape1ctr, shape2ctr);
 
-                if(!lin_dist)
+                if(lin_dist < 1e-6f)
                 {
                     lin_dist = max_dist / 100;
                     angle = rand(0.0f, 360.0f)/180*PI;
@@ -1035,18 +1144,20 @@ void CVNetworkPanel::updatePhysics(CVEvent& event, const sf::Vector2f& mousePos)
                     angle = get_angle(shape1ctr, shape2ctr);
                 }
 
-                distWeight = lin_dist/max_dist;
-                if(distWeight > 1.0) distWeight = 1.0;
+                pushDist = max_dist - lin_dist;
+                if(pushDist <= 0.0f) continue;
+
+                pushDist *= fNodePushStrength/2;
 
                 if(nodes[i].isVisible() && !nodes[j].bStatic)
                 {
-                    moveDist = sf::Vector2f(components((1.0 - distWeight) * fNodePushStrength * sizeRatio, angle));
+                    moveDist = sf::Vector2f(components(pushDist * sizeRatio, angle));
                     nodes[j].move(moveDist);
                 }
 
                 if(nodes[j].isVisible() && !nodes[i].bStatic)
                 {
-                    moveDist = sf::Vector2f(components((1.0 - distWeight) * fNodePushStrength * (1.0 - sizeRatio), angle));
+                    moveDist = sf::Vector2f(components(pushDist * (1.0f - sizeRatio), angle));
                     nodes[i].move(-moveDist);
                 }
 
@@ -1897,6 +2008,24 @@ bool CVNetworkPanel::node_has_neighbors(const std::string& tag)
     }
 }
 
+void CVNetworkPanel::setCordonState(const bool& state) noexcept
+{
+
+    if(bCanCordonSelect != state)
+    {
+
+        if(!state)
+        {
+            selectionCordon.setSize(sf::Vector2f(0.0f, 0.0f));
+            bSelection = false;
+        }
+
+        bCanCordonSelect = state;
+
+    }
+
+}
+
 void CVNetworkPanel::setNodeFillColor(const sf::Color& newColor) noexcept
 {
     nodeLegend["__DEFAULT__"] = newColor;
@@ -1944,6 +2073,20 @@ const sf::Color& CVNetworkPanel::getTextLegendColor(const string& type) const
     {
         throw std::out_of_range("CVNetworkPanel: no matching text color in legend for requested type \"" + type + "\"");
     }
+}
+
+sf::Vector2f CVNetworkPanel::convert_to_local(const sf::Vector2f& screen_coords) const noexcept
+{
+
+    return (screen_coords - panOffset) * fZoomLevel;
+
+}
+
+sf::Vector2f CVNetworkPanel::convert_to_screen(const sf::Vector2f& local_coords) const noexcept
+{
+
+    return local_coords/fZoomLevel - panOffset;
+
 }
 
 }

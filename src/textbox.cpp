@@ -297,6 +297,7 @@ void CVTextBox::wrapText()
             wstring displayTextString = text.getString();
             for(size_t i = 0; i < displayTextString.size(); ++i)  // Add new line characters to fit text horizontally
             {
+
                 if(text.findCharacterPos(i).x - bounds.left > bounds.width - 2*textPadding)
                 {
                     for(int j = i; j > 0; --j)
@@ -306,7 +307,7 @@ void CVTextBox::wrapText()
                             displayTextString[j-1] = '\n';
                             break;
                         }
-                        else if(isCharType(displayTextString[j-1], ",\\/:._-"))
+                        else if((displayTextString[j] != '\n') && isCharType(displayTextString[j-1], ",\\/:._-"))
                         {
                             displayTextString.insert(displayTextString.begin() + j, '\n');
                             break;
@@ -659,6 +660,15 @@ void CVTextBox::setFont(const string& font)
         {
             text.setFont(*textFont);
         }
+
+         if(bWrapText)
+        {
+            wrapText();
+        }
+        else
+        {
+            alignText();
+        }
     }
 }
 
@@ -670,6 +680,26 @@ void CVTextBox::setFont(const sf::Font& font)
     {
         text.setFont(font);
     }
+
+    if(bWrapText)
+    {
+        wrapText();
+    }
+    else
+    {
+        alignText();
+    }
+}
+
+void CVTextBox::setFontSize(const unsigned int& newSize)
+{
+
+    textInfo.fontSize = newSize;
+    for(auto& text : displayText)
+    {
+        text.setCharacterSize(newSize);
+    }
+
 }
 
 void CVTextBox::setSize(const sf::Vector2f& newSize)
@@ -759,38 +789,63 @@ bool CVTextBox::update(CVEvent& event, const sf::Vector2f& mousePos)
     if(bFade && (fadeLayers & CV_LAYER_TEXT))
     {
         sf::Color tmp;
-        uint8_t adjusted_fr = ceil((float)fadeRate*120.0f/View->getFrameRate());
+        uint8_t adjusted_fr = ceil((float)fadeRate*60.0f/View->getFrameRate());
         for(auto& text : displayText)
         {
             tmp = text.getFillColor();
-            if(targetAlpha > tmp.a)
+            if(tmp.a != targetAlpha)
             {
-                if(tmp.a + adjusted_fr < targetAlpha)
+                if(targetAlpha > tmp.a)
                 {
-                    tmp.a += adjusted_fr;
+                    if(tmp.a + adjusted_fr < targetAlpha)
+                    {
+                        tmp.a += adjusted_fr;
+                    }
+                    else
+                    {
+                        tmp.a = targetAlpha;
+                    }
                 }
                 else
                 {
-                    tmp.a = targetAlpha;
-                    bFade = false;
+                    if(tmp.a - adjusted_fr > targetAlpha)
+                    {
+                        tmp.a -= adjusted_fr;
+                    }
+                    else
+                    {
+                        tmp.a = targetAlpha;
+                    }
                 }
+                text.setFillColor(tmp);
             }
-            else
-            {
-                if(tmp.a - adjusted_fr > targetAlpha)
-                {
-                    tmp.a -= adjusted_fr;
-                }
-                else
-                {
-                    tmp.a = targetAlpha;
-                }
-            }
-            text.setFillColor(tmp);
         }
     }
 
     return true;
+}
+
+sf::FloatRect CVTextBox::getTextBounds() const noexcept
+{
+    if(displayText.empty())
+    {
+        return sf::FloatRect(0, 0, 0, 0);
+    }
+    else if(displayText.size() == 1)
+    {
+        return displayText.front().getGlobalBounds();
+    }
+    else
+    {
+        sf::FloatRect output = displayText.front().getGlobalBounds();
+
+        for(size_t i = 1; i < displayText.size(); ++i)
+        {
+            expandBounds(output, displayText[i].getGlobalBounds());
+        }
+
+        return output;
+    }
 }
 
 void CVTextBox::setText(const unsigned int& textIndex, const char* newText)
@@ -845,7 +900,6 @@ CVText::CVText(CVView* View,
 {
     if(bWrap) setTextWrap(true);
     alignText();
-    bNoInteract = true; // Can be changed if flags are set
 }
 
 }

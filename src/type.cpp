@@ -90,6 +90,8 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
     selectionLineStart(0),
     selectionLineEnd(0),
     bEnterLine(false),
+    bClearOnEnterLine(true),
+    bUserTyped(false),
     textLog(nullptr),
     jumpTarget(nullptr)
 {
@@ -279,10 +281,17 @@ void CVTypeBox::setTypeString(wstring newString)
     typeFrameStart = 0;
     typeFrameEnd = this->typeString.size();
     bTypeStringChanged = true;
-    if(!this->typeString.empty()) cursorPos = this->typeString.size()-1;
+    bUserTyped = true;
+    if(!this->typeString.empty())
+    {
+        cursorPos = this->typeString.size()-1;
+        cursor.setPosition(displayText.front().findCharacterPos(cursorPos));
+    }
     else
     {
         cursorPos = 0;
+        cursor.setPosition(bounds.left + textPadding,
+                           bounds.top + bounds.height/2);
     }
 
 }
@@ -355,9 +364,14 @@ void CVTypeBox::enterString()
 {
     enteredString = UTF16_to_UTF8(typeString);
     selectionStart = UINT_MAX;
-    typeString.clear();
-    bTypeStringChanged = true;
-    cursorPos = 0;
+
+    if(bClearOnEnterLine)
+    {
+        typeString.clear();
+        bTypeStringChanged = true;
+        bUserTyped = true;
+        cursorPos = 0;
+    }
 }
 
 void CVTypeBox::setFillColor(const sf::Color& newColor)
@@ -389,16 +403,49 @@ unsigned int CVTypeBox::cursor_string_position() const
 bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
 
-    if(!CVElement::update(event, mousePos)) return true;
+    if(!CVElement::update(event, mousePos)) return false;
 
-    bool slideCursor = true,
-         cursorChanged = false,
-         mouseCaptured = false;
-    unsigned int rangeBegin = 0, rangeEnd = displayText.back().getString().getSize();
+    bool slideCursor = true;
+    bool cursorChanged = false;
+    bool mouseCaptured = false;
+
+    unsigned int rangeBegin = 0;
+    unsigned int rangeEnd = displayText.back().getString().getSize();
 
     if(!View->cursor_overriden() && event.focusFree() && bounds.contains(mousePos))
     {
-        event.setCursor(sf::Cursor::Text);
+
+        if(cmpStringToList(getTypeString(), { "http", "www.", ".com", ".net", ".org" }))
+        {
+            event.setCursor(sf::Cursor::Hand);
+
+            if(event.LMBreleased &&
+               (event.LMBreleaseFrames == 1) &&
+               (event.LMBholdTime < 0.15f) &&
+               bounds.contains(event.LMBpressPosition))
+            {
+                vector<string> parse;
+
+                splitString(getTypeString(), parse, " ");
+
+                for(auto& term : parse)
+                {
+
+                    if(cmpStringToList(term, { "http", "www.", ".com", ".net", ".org" }))
+                    {
+                        stringstream ss;
+                        ss << "open " << term;
+                        system(ss.str().c_str());
+                    }
+
+                }
+            }
+
+        }
+        else
+        {
+            event.setCursor(sf::Cursor::Text);
+        }
     }
 
     if(highlightable())
@@ -430,79 +477,94 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
         if(!bNoFill && !bSpriteOnly)
         {
 
-            tmp = panel.front().getFillColor();
-            if(targetAlpha > tmp.a)
+            if(fadeLayers & CV_LAYER_FILL)
             {
-                if(tmp.a + adjusted_fr < targetAlpha)
-                {
-                    tmp.a += adjusted_fr;
-                }
-                else tmp.a = targetAlpha;
-            }
-            else
-            {
-                if(tmp.a - adjusted_fr > targetAlpha)
-                {
-                    tmp.a -= adjusted_fr;
-                }
-                else
-                {
-                    tmp.a = targetAlpha;
-                }
-            }
-            panel.front().setFillColor(tmp);
 
-            tmp = panel.front().getOutlineColor();
-            if(targetAlpha > tmp.a)
-            {
-                if(tmp.a + adjusted_fr < targetAlpha)
+                tmp = panel.front().getFillColor();
+                if(targetAlpha > tmp.a)
                 {
-                    tmp.a += adjusted_fr;
-                }
-                else tmp.a = targetAlpha;
-            }
-            else
-            {
-                if(tmp.a - adjusted_fr > targetAlpha)
-                {
-                    tmp.a -= adjusted_fr;
+                    if(tmp.a + adjusted_fr < targetAlpha)
+                    {
+                        tmp.a += adjusted_fr;
+                    }
+                    else tmp.a = targetAlpha;
                 }
                 else
                 {
-                    tmp.a = targetAlpha;
+                    if(tmp.a - adjusted_fr > targetAlpha)
+                    {
+                        tmp.a -= adjusted_fr;
+                    }
+                    else
+                    {
+                        tmp.a = targetAlpha;
+                    }
                 }
+                panel.front().setFillColor(tmp);
+
             }
-            panel.front().setOutlineColor(tmp);
+
+            if(fadeLayers & CV_LAYER_OUTLINE)
+            {
+
+                tmp = panel.front().getOutlineColor();
+                if(targetAlpha > tmp.a)
+                {
+                    if(tmp.a + adjusted_fr < targetAlpha)
+                    {
+                        tmp.a += adjusted_fr;
+                    }
+                    else tmp.a = targetAlpha;
+                }
+                else
+                {
+                    if(tmp.a - adjusted_fr > targetAlpha)
+                    {
+                        tmp.a -= adjusted_fr;
+                    }
+                    else
+                    {
+                        tmp.a = targetAlpha;
+                    }
+                }
+                panel.front().setOutlineColor(tmp);
+
+            }
 
         }
 
-        for(auto& text : displayText)
+        if(fadeLayers & CV_LAYER_TEXT)
         {
-            tmp = text.getFillColor();
-            if(targetAlpha > tmp.a)
+
+            for(auto& text : displayText)
             {
-                if(tmp.a + adjusted_fr < targetAlpha)
+                tmp = text.getFillColor();
+                if(targetAlpha > tmp.a)
                 {
-                    tmp.a += adjusted_fr;
+                    if(tmp.a + adjusted_fr < targetAlpha)
+                    {
+                        tmp.a += adjusted_fr;
+                    }
+                    else
+                    {
+                        tmp.a = targetAlpha;
+                        bFade = false;
+                    }
                 }
                 else
                 {
-                    tmp.a = targetAlpha;
-                    bFade = false;
+                    if(tmp.a - adjusted_fr > targetAlpha)
+                    {
+                        tmp.a -= adjusted_fr;
+                    }
+                    else
+                    {
+                        tmp.a = targetAlpha;
+                    }
                 }
+                text.setFillColor(tmp);
             }
-            else
-            {
-                if(tmp.a - adjusted_fr > targetAlpha)
-                {
-                    tmp.a -= adjusted_fr;
-                }
-                else
-                {
-                    tmp.a = targetAlpha;
-                }
-            }
-            text.setFillColor(tmp);
+
         }
     }
 
@@ -840,6 +902,7 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
 
             cursorChanged = true;
             bTypeStringChanged = true;
+            bUserTyped = true;
         }
 
         for(auto& key : event.keyLog)
@@ -1158,6 +1221,7 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
         {
             cursorChanged = true;
             bTypeStringChanged = true;
+            bUserTyped = true;
             event.keyLog.clear(); // Capture all key strokes
             suggested.clear();
         }
@@ -1442,6 +1506,11 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
     if(hasFocus() && (selectionStart != UINT_MAX) && (selectionStart != cursorPos))
     {
 
+        if(lineFrames.empty())
+        {
+            lineFrames.emplace_back(2, 0);
+        }
+
         sf::Color textHighlightColor;
         if(cursorChanged || bTypeStringChanged)
         {
@@ -1511,9 +1580,10 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
             }
 
         }
+
         float selectionWidth = 0.0f, lineSelectBegin = 0.0f, lineSelectEnd = 0.0f;
 
-        for(size_t i = selectionLineStart, j = 1; i <= selectionLineEnd; ++i, ++j)
+        for(size_t i = selectionLineStart, j = 1; (i <= selectionLineEnd) && (i < lineFrames.size()); ++i, ++j)
         {
             if(cursorChanged || bTypeStringChanged)
             {
@@ -1537,7 +1607,11 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                 lineSelectBegin = displayText.back().findCharacterPos(lineFrames[i][0]).x;
                 lineSelectEnd = displayText.back().findCharacterPos(lineFrames[i][1]).x;
             }
-            panel[j].setPosition(displayText.back().findCharacterPos(lineFrames[i][0]));
+
+            if(j < panel.size())
+            {
+                panel[j].setPosition(displayText.back().findCharacterPos(lineFrames[i][0]));
+            }
 
             if(i == selectionLineEnd)
             {
@@ -1588,7 +1662,11 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                     {
                         lineSelectBegin = cursor.getPosition().x;
                     }
-                    panel[j].setPosition(cursor.getPosition());
+
+                    if(j < panel.size())
+                    {
+                        panel[j].setPosition(cursor.getPosition());
+                    }
                 }
                 else
                 {
@@ -1604,24 +1682,31 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
                     {
                         lineSelectBegin = displayText.back().findCharacterPos(selectionStart).x;
                     }
-                    panel[j].setPosition(sf::Vector2f(displayText.back().findCharacterPos(selectionStart).x,
-                                                      cursor.getPosition().y));
+
+                    if(j < panel.size())
+                    {
+                        panel[j].setPosition(sf::Vector2f(displayText.back().findCharacterPos(selectionStart).x,
+                                                          cursor.getPosition().y));
+                    }
                 }
             }
 
             selectionWidth = lineSelectEnd - lineSelectBegin;
 
-            if(textInfo.alignment == ALIGN_VERTICAL)
+            if(j < panel.size())
             {
-                panel[j].setSize(sf::Vector2f(cursor.getGlobalBounds().width, selectionWidth));
-            }
-            else if(textInfo.alignment == ALIGN_VERTICAL_INVERTED)
-            {
-                panel[j].setSize(sf::Vector2f(cursor.getGlobalBounds().width, selectionWidth));
-            }
-            else
-            {
-                panel[j].setSize(sf::Vector2f(selectionWidth, cursor.getGlobalBounds().height));
+                if(textInfo.alignment == ALIGN_VERTICAL)
+                {
+                    panel[j].setSize(sf::Vector2f(cursor.getGlobalBounds().width, selectionWidth));
+                }
+                else if(textInfo.alignment == ALIGN_VERTICAL_INVERTED)
+                {
+                    panel[j].setSize(sf::Vector2f(cursor.getGlobalBounds().width, selectionWidth));
+                }
+                else
+                {
+                    panel[j].setSize(sf::Vector2f(selectionWidth, cursor.getGlobalBounds().height));
+                }
             }
         }
     }

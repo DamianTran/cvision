@@ -44,10 +44,12 @@
 #include "cvision/viewpanel.hpp"
 #include "cvision/view.hpp"
 
+using namespace std;
+
 namespace cvis
 {
 
-CVViewPanel::CVViewPanel(CVView* parentView, std::string panelTag, sf::Color backgroundColor,
+CVViewPanel::CVViewPanel(CVView* parentView, string panelTag, sf::Color backgroundColor,
                          const sf::Vector2f& size, bool fitToWindow, const sf::Vector2f& position):
     CVTextBox(parentView, position, parentView->getWidth(), parentView->getHeight(), backgroundColor, backgroundColor, 0.0f),
     bFitWindow(fitToWindow),
@@ -130,7 +132,7 @@ void CVViewPanel::setExpand(const bool& state)
     }
 }
 
-void CVViewPanel::addPanelElement(CVElement* newElement, std::string newTag, const unsigned int& index)
+void CVViewPanel::addPanelElement(CVElement* newElement, string newTag, const unsigned int& index)
 {
 
     // Transfer flags
@@ -181,7 +183,7 @@ bool CVViewPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
         }
     }
 
-    if(fadeLayers & CV_LAYER_MEMBERS)
+    if(fadeLayers == CV_LAYER_MEMBERS)
     {
         bFade = false;
     }
@@ -220,7 +222,7 @@ void CVViewPanel::removePanelElement(const unsigned int& index)
     }
     else
     {
-        throw std::out_of_range("In CVViewPanel::removePanelElement: index out of range of element list");
+        throw out_of_range("In CVViewPanel::removePanelElement: index out of range of element list");
     }
 
     if(bExpand)
@@ -241,7 +243,7 @@ void CVViewPanel::removePanelElement(CVElement* element)
     }
 }
 
-void CVViewPanel::removePanelElement(const std::string& tag)
+void CVViewPanel::removePanelElement(const string& tag)
 {
     for(size_t i = 0; i < viewPanelElements.size(); ++i)
     {
@@ -319,7 +321,7 @@ void CVViewPanel::fitElements(const bool& fitX,
     }
 }
 
-CVElement* CVViewPanel::getTaggedElement(const std::string& tag)
+CVElement* CVViewPanel::getTaggedElement(const string& tag)
 {
     unsigned int index = 0;
     for(auto& T : viewPanelTags)
@@ -330,7 +332,7 @@ CVElement* CVViewPanel::getTaggedElement(const std::string& tag)
     return nullptr;
 }
 
-CVElement* CVViewPanel::getOwnedElementByID(const std::string& tag)
+CVElement* CVViewPanel::getOwnedElementByID(const string& tag)
 {
     CVElement* output = nullptr;
     for(auto& element : viewPanelElements)
@@ -352,7 +354,7 @@ CVElement* CVViewPanel::getOwnedElementByID(const std::string& tag)
 
 }
 
-bool CVViewPanel::elementExists(const std::string& tag)
+bool CVViewPanel::elementExists(const string& tag)
 {
     for(auto& T : viewPanelTags)
     {

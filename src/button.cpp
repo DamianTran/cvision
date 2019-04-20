@@ -80,8 +80,6 @@ CVButton::CVButton(CVView* View, const sf::Vector2f& position, float width, floa
     }
 
     canHighlight = true;
-    highlightColor = fillColor;
-    brighten(highlightColor, 40);
 
 }
 
@@ -116,7 +114,6 @@ CVButton::CVButton(CVView* View, const sf::Vector2f& position, const float& widt
     stateTextures.push_back(iconTex);
 
     colorTheme[0] = sf::Color(200,200,200);
-    highlightColor = sf::Color(255,255,255);
 
 }
 
@@ -127,8 +124,6 @@ void CVButton::setColor(const sf::Color& newColor, const unsigned int& state){
     }
 
     colorTheme[0] = newColor;
-    highlightColor = newColor;
-    brighten(highlightColor, 40);
 }
 
 void CVButton::setFadeIn(const bool& state, const uint8_t& targetAlpha,
@@ -165,11 +160,28 @@ void CVButton::setFadeOnClick(const bool& state, const uint8_t& targetAlpha,
     bFadeInToggle = state;
 }
 
+void CVButton::setSize(const sf::Vector2f& newSize)
+{
+
+    sf::Vector2f newScale = newSize/getSize();
+    sf::Vector2f dist;
+
+    CVTextBox::setSize(newSize);
+
+    for(auto& sprite : spriteList)
+    {
+        dist = sprite.getPosition() - sf::Vector2f(bounds.left, bounds.top);
+        dist *= newScale;
+        sprite.setPosition(sf::Vector2f(bounds.left, bounds.top) + dist);
+    }
+
+}
+
 bool CVButton::update(CVEvent& event, const sf::Vector2f& mousePos){
 
     if(!CVTextBox::update(event, mousePos)) return false;
 
-    if(!View->cursor_overriden() && event.focusFree() && bounds.contains(mousePos))
+    if(active && !View->cursor_overriden() && event.focusFree() && bounds.contains(mousePos))
     {
         event.setCursor(sf::Cursor::Hand);
     }
@@ -179,26 +191,30 @@ bool CVButton::update(CVEvent& event, const sf::Vector2f& mousePos){
         toggle();
     }
 
-    if((responseEvent & CV_EVENT_LMB) &&
-       bounds.contains(event.LMBpressPosition) &&
-       bounds.contains(event.LMBreleasePosition)){
-       if((event.LMBreleaseFrames == 1) &&
-          (event.LMBholdTime < 0.5f) &&
-            (hasFocus() || event.captureFocus()) &&
-           event.captureMouse()){ // Cycle states
-                toggle();
-       }
-    }
+    if(bounds.contains(mousePos) &&
+       event.captureMouse())
+    {
 
-    if((responseEvent & CV_EVENT_RMB) &&
-       bounds.contains(event.RMBpressPosition) &&
-       bounds.contains(event.RMBreleasePosition)){
-       if((event.RMBreleaseFrames == 1) &&
-          (event.RMBholdTime < 0.5f) &&
-            (hasFocus() || event.captureFocus()) &&
-           event.captureMouse()){
-                toggle();
-       }
+        setFocus(true);
+
+        if((responseEvent & CV_EVENT_LMB) &&
+           bounds.contains(event.LMBreleasePosition)){
+           if((event.LMBreleaseFrames == 1) &&
+              (event.LMBholdTime < 0.5f) &&
+                (hasFocus() || event.captureFocus())){ // Cycle states
+                    toggle();
+           }
+        }
+
+        if((responseEvent & CV_EVENT_RMB) &&
+           bounds.contains(event.RMBreleasePosition)){
+           if((event.RMBreleaseFrames == 1) &&
+              (event.RMBholdTime < 0.5f) &&
+                (hasFocus() || event.captureFocus())){
+                    toggle();
+           }
+        }
+
     }
 
     if(bFadeInHover){

@@ -52,7 +52,10 @@
 #include "cvision/view.hpp"
 #include "cvision/type.hpp"
 
+namespace EZC
+{
 class _2Dstream;
+}
 
 namespace cvis{
 
@@ -71,8 +74,8 @@ template<typename T> size_t rowSize(const std::vector<std::vector<T>>& M, const 
 class CVISION_API CVDataViewerPanel: public CVTablePanel{
 protected:
 
-    _2Dstream* dataSource, // Requires a double-indexable item with nrow() and ncol() overload
-       * incomingDataSource;
+    EZC::_2Dstream* dataSource; // Requires a double-indexable item with nrow() and ncol() overload
+    EZC::_2Dstream* incomingDataSource;
 
     sf::FloatRect totalBounds,
                 exclusionBounds;
@@ -120,7 +123,7 @@ public:
     inline void set_y(const unsigned int& newY){ view_coords[1] = newY; }
     inline void set_z(const unsigned int& newZ){ view_coords[2] = newZ; }
 
-    inline void changeFocus(_2Dstream* newFocus){
+    inline void changeFocus(EZC::_2Dstream* newFocus){
 
         incomingDataSource = newFocus;
 
@@ -128,7 +131,7 @@ public:
 
     CVISION_API void setup();
 
-    const _2Dstream* getDataSource() const
+    const EZC::_2Dstream* getDataSource() const
     {
         return dataSource;
     }
@@ -232,7 +235,7 @@ public:
 
     virtual bool saveToFile(const std::string& file) const;
 
-    CVDataViewerPanel(CVView* parentView, _2Dstream* dataSource = nullptr, std::string panelTag = "",
+    CVDataViewerPanel(CVView* parentView, EZC::_2Dstream* dataSource = nullptr, std::string panelTag = "",
                       const sf::Color& backgroundColor = sf::Color::Transparent,
                       const sf::Vector2f& size = sf::Vector2f(NAN, NAN),
                       const bool& bFitWindow = true,

@@ -292,6 +292,8 @@ void CVView::init()
     viewPort->setMouseCursor(cursor_rep);
     viewPort->setFramerateLimit(frameRateLimit);
 
+    mainApp->setContextActive();
+
     const float frameTime = 0.5f/frameRateLimit;
 
     moveTarget = viewPort->getPosition();
@@ -1081,7 +1083,10 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
         event.RMBreleaseTime += event.lastFrameTime;
     }
 
-    event.tossData(); // Toss data if conditions are met and not picked up
+    if(event.LMBreleaseFrames > 5)
+    {
+        event.tossData(); // Toss data if conditions are met and not picked up
+    }
     event.eventsProcessed = false;
 
     return true;

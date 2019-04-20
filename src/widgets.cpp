@@ -119,6 +119,7 @@ CVTitleBar::CVTitleBar(CVView* View, const uint8_t& alignment, const float& widt
     align(alignment);
     alignText();
     displayText.front().move(sf::Vector2f(height*1.42, 0));
+    displayText.back().setFillColor(textInfo.textColor);
 
     if(!logo.empty()){
         #ifdef __APPLE__
@@ -280,8 +281,13 @@ bool CVTitleBar::update(CVEvent& event, const sf::Vector2f& mousePos){
         followGlow.setPosition(mousePos.x, followGlow.getPosition().y);
         sf::Color tmp = followGlow.getColor();
 
-
         float glowFactor = 1.0f - abs(mousePos.y - followGlow.getPosition().y)/fGlowDistance;
+
+        if(glowFactor < 0.0f)
+        {
+            glowFactor = 0.0f;
+        }
+
         tmp.a = 60 * glowFactor;
         followGlow.setColor(tmp);
         followGlow.setScale(sf::Vector2f(getSize().y * 10, getSize().y * 10)/followGlow.getTexture()->getSize() * glowFactor);

@@ -50,30 +50,32 @@
 #include <boost/range/adaptor/reversed.hpp>
 
 using namespace EZC;
+using namespace std;
 
 namespace cvis
 {
 
-CVListPanel::CVListPanel(CVView* parentView, std::string panelTag, sf::Color backgroundColor,
-                     const sf::Vector2f& size, bool bFitToWindow,
-                     const sf::Vector2f& position):
-                         CVBasicViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position),
-                         listPadding(12.0f),
-                         scrollBarPadding(24.0f),
-                         outerPadding(30.0f),
-                         innerPadding(12.0f),
-                         listItemHeight(40.0f*View->getViewScale()),
-                         scrollBarY(parentView,
-                                    sf::Vector2f(bounds.left + bounds.width - outerPadding/2,
-                                   bounds.top + scrollBarPadding),
-                                    sf::Vector2f(bounds.left + bounds.width - outerPadding/2,
-                                                        bounds.top + bounds.height - scrollBarPadding),
-                                  size.y, 5.0f, sf::Color(140,140,140), sf::Color::Transparent, 0.0f,
-                                  1000.0f, CV_OBJ_ANIM_FADE_IN),
-                         listItemColorIndex(colorTheme.size()),
-                         listItemHighlightColorIndex(colorTheme.size() + 1),
-                         bSelect(false),
-                         bListItemHighlight(true){
+CVListPanel::CVListPanel(CVView* parentView, string panelTag, sf::Color backgroundColor,
+                         const sf::Vector2f& size, bool bFitToWindow,
+                         const sf::Vector2f& position):
+    CVBasicViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position),
+    listPadding(12.0f),
+    scrollBarPadding(24.0f),
+    outerPadding(30.0f),
+    innerPadding(12.0f),
+    listItemHeight(40.0f*View->getViewScale()),
+    scrollBarY(parentView,
+               sf::Vector2f(bounds.left + bounds.width - outerPadding/2,
+                            bounds.top + scrollBarPadding),
+               sf::Vector2f(bounds.left + bounds.width - outerPadding/2,
+                            bounds.top + bounds.height - scrollBarPadding),
+               size.y, 5.0f, sf::Color(140,140,140), sf::Color::Transparent, 0.0f,
+               1000.0f, CV_OBJ_ANIM_FADE_IN),
+    listItemColorIndex(colorTheme.size()),
+    listItemHighlightColorIndex(colorTheme.size() + 1),
+    bSelect(false),
+    bListItemHighlight(true)
+{
     scrollBarY.setPanelSize(size.y - 2*outerPadding);
     scrollBarY.setPosition(sf::Vector2f(bounds.left + bounds.width - outerPadding/2,
                                         bounds.top + scrollBarPadding));
@@ -96,9 +98,12 @@ void CVListPanel::setSelectionStatus(const bool& status)
     }
 }
 
-void CVListPanel::toggleSelection(CVElement* element){
-    for(size_t i = 0; i < selected.size(); ++i){
-        if(selected[i] == element){
+void CVListPanel::toggleSelection(CVElement* element)
+{
+    for(size_t i = 0; i < selected.size(); ++i)
+    {
+        if(selected[i] == element)
+        {
             selected.erase(selected.begin() + i);
             element->highlight(false);
             return;
@@ -108,24 +113,32 @@ void CVListPanel::toggleSelection(CVElement* element){
     element->highlight(true);
 }
 
-void CVListPanel::toggleSelection(const std::string& tag){
-    for(auto& item : viewPanelElements){
-        if(item->tag() == tag){
+void CVListPanel::toggleSelection(const string& tag)
+{
+    for(auto& item : viewPanelElements)
+    {
+        if(item->tag() == tag)
+        {
             toggleSelection(item);
             return;
         }
     }
 }
 
-void CVListPanel::setSelection(CVElement* element, const bool& state){
-    if(state){
+void CVListPanel::setSelection(CVElement* element, const bool& state)
+{
+    if(state)
+    {
         if(anyEqual(element, selected)) return;
         selected.push_back(element);
         element->highlight(true);
     }
-    else{
-        for(size_t i = 0; i < selected.size(); ++i){
-            if(selected[i] == element){
+    else
+    {
+        for(size_t i = 0; i < selected.size(); ++i)
+        {
+            if(selected[i] == element)
+            {
                 selected.erase(selected.begin() + i);
                 element->highlight(false);
                 return;
@@ -134,71 +147,98 @@ void CVListPanel::setSelection(CVElement* element, const bool& state){
     }
 }
 
-void CVListPanel::setSelection(const std::string& tag, const bool& state){
-    for(auto& item : viewPanelElements){
-        if(item->tag() == tag){
+void CVListPanel::setSelection(const string& tag, const bool& state)
+{
+    for(auto& item : viewPanelElements)
+    {
+        if(item->tag() == tag)
+        {
             setSelection(item);
             return;
         }
     }
 }
 
-std::vector<std::string> CVListPanel::getSelection() const{
-    std::vector<std::string> output;
-    for(auto& element : selected){
+vector<string> CVListPanel::getSelection() const
+{
+    vector<string> output;
+    for(auto& element : selected)
+    {
         output.emplace_back(element->tag());
     }
     return output;
 }
 
-void CVListPanel::clearSelection(){
-    for(auto& item : selected){
+void CVListPanel::clearSelection()
+{
+    for(auto& item : selected)
+    {
         item->highlight(false);
     }
     selected.clear();
 }
 
-bool CVListPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
+bool CVListPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
+{
     if(!CVBasicViewPanel::update(event, mousePos)) return false;
 
-    if(bounds.contains(mousePos) && event.captureFocus()){
+    if(bounds.contains(mousePos) && event.captureFocus())
+    {
         setFocus(true);
         scrollBarY.setScrollable(true);
         event.releaseFocus();
     }
-    else{
+    else
+    {
         setFocus(false);
         scrollBarY.setScrollable(false);
     }
 
 
     float listHeight = 0.0f;
-    if(numPanels() > 0) listHeight = viewPanelElements.back()->getBounds().top +
-       viewPanelElements.back()->getBounds().height -
-       viewPanelElements.front()->getBounds().top;
+    if(numPanels() > 0)
+    {
+        listHeight = viewPanelElements.back()->getBounds().top +
+                     viewPanelElements.back()->getBounds().height -
+                     viewPanelElements.front()->getBounds().top;
+    }
 
     scrollBarY.setScrollMax(listHeight);
     scrollBarY.update(event, mousePos);
 
-    if(listHeight > bounds.height){
-        float moveDist = 2*outerPadding + bounds.top -
-                            viewPanelElements.front()->getBounds().top
-                            - scrollBarY.getScrollOffset();
-        for(auto& item : viewPanelElements){
+    if(listHeight > bounds.height)
+    {
+
+        float moveDist = outerPadding + bounds.top -
+                         viewPanelElements.front()->getBounds().top
+                         - scrollBarY.getScrollOffset();
+
+        for(auto& item : viewPanelElements)
+        {
             item->move(sf::Vector2f(0.0f, moveDist));
         }
+
     }
-    else if(numPanels() > 0){
+    else if(numPanels() > 0)
+    {
+
         float moveDist = bounds.top + outerPadding - viewPanelElements.front()->getBounds().top;
-        for(auto& item : viewPanelElements){
+
+        for(auto& item : viewPanelElements)
+        {
             item->move(sf::Vector2f(0.0f, moveDist));
         }
+
     }
 
-    if(bounds.contains(event.LMBpressPosition) && (event.LMBreleaseFrames == 1)){
-        if(hasFocus()){
-            for(auto& item : boost::adaptors::reverse(viewPanelElements)){
-                if(item->getBounds().contains(mousePos) && event.captureMouse()){
+    if(bounds.contains(event.LMBpressPosition) && (event.LMBreleaseFrames == 1))
+    {
+        if(hasFocus())
+        {
+            for(auto& item : boost::adaptors::reverse(viewPanelElements))
+            {
+                if(item->getBounds().contains(mousePos) && event.captureMouse())
+                {
                     clearSelection();
                     setSelection(item, true);
                 }
@@ -210,19 +250,21 @@ bool CVListPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
     return true;
 }
 
-bool CVListPanel::draw(sf::RenderTarget* target){
+bool CVListPanel::draw(sf::RenderTarget* target)
+{
     if(!CVBasicViewPanel::draw(target)) return false;
     scrollBarY.draw(target);
 
     return true;
 }
 
-void CVListPanel::addTextEntry(const std::string& newText, const unsigned int& index){
+void CVListPanel::addTextEntry(const string& newText, const unsigned int& index)
+{
     CVTextBox* newItem = new CVTextBox(View, sf::Vector2f(bounds.left + innerPadding,
-                                                          bounds.top + innerPadding),
+                                       bounds.top + innerPadding),
                                        bounds.width - 2*outerPadding,
                                        listItemHeight, getListItemColor(),
-                                            sf::Color::Transparent, 0.0f);
+                                       sf::Color::Transparent, 0.0f);
     newItem->setRounding(8.0f*View->getViewScale(), 10);
     newItem->setTextWrap(true);
     newItem->setExpand(true);
@@ -238,59 +280,75 @@ void CVListPanel::addTextEntry(const std::string& newText, const unsigned int& i
     listTags.emplace_back(newText);
 }
 
-void CVListPanel::addTextEntries(const std::vector<std::string>& newText){
-    for(auto& text : newText){
+void CVListPanel::addTextEntries(const vector<string>& newText)
+{
+    for(auto& text : newText)
+    {
         addTextEntry(text);
     }
 }
 
-void CVListPanel::setTextEntries(const std::vector<std::string>& newText){
+void CVListPanel::setTextEntries(const vector<string>& newText)
+{
     size_t i = 0;
-    for(; (i < newText.size() && i < listTags.size()); ++i){
-        if(newText[i] != listTags[i]){
+    for(; (i < newText.size() && i < listTags.size()); ++i)
+    {
+        if(newText[i] != listTags[i])
+        {
             listTags.insert(listTags.begin() + i, newText[i]);
             addTextEntry(newText[i], i);
             ++i;
         }
     }
-    while(i < newText.size()){
+    while(i < newText.size())
+    {
         addTextEntry(newText[i]);
         ++i;
     }
-    for(i = 0; i < listTags.size(); ++i){
-        if(!anyEqual(listTags[i], newText)){
+    for(i = 0; i < listTags.size(); ++i)
+    {
+        if(!anyEqual(listTags[i], newText))
+        {
             removeTextEntry(i);
         }
     }
 }
 
-void CVListPanel::removeTextEntry(const unsigned int& index){
-    if(index < numPanels()){
-        for(size_t i = index; i < numPanels(); ++i){
+void CVListPanel::removeTextEntry(const unsigned int& index)
+{
+    if(index < numPanels())
+    {
+        for(size_t i = index; i < numPanels(); ++i)
+        {
             viewPanelElements[i]->move(0.0f, -viewPanelElements[index]->getBounds().height - listPadding);
         }
         removePanelElement(index);
     }
-    else{
+    else
+    {
         removePanelElement(UINT_MAX);
     }
 }
 
-bool CVListPanel::TextEntryExists(const std::string& text) const
+bool CVListPanel::TextEntryExists(const string& text) const
 {
     return anyEqual(text, listTags);
 }
 
-void CVListPanel::setListPadding(const float& newPadding){
-    for(size_t i = 1; i < viewPanelElements.size(); ++i){
+void CVListPanel::setListPadding(const float& newPadding)
+{
+    for(size_t i = 1; i < viewPanelElements.size(); ++i)
+    {
         viewPanelElements[i]->move(sf::Vector2f(newPadding - listPadding, 0.0f));
     }
     listPadding = newPadding;
 }
 
-void CVListPanel::setOuterPadding(const float& newPadding){
+void CVListPanel::setOuterPadding(const float& newPadding)
+{
     sf::Vector2f moveDist(0.0f,0.0f);
-    for(auto& item : viewPanelElements){
+    for(auto& item : viewPanelElements)
+    {
         moveDist.x = 0.0f;
         moveDist.y = 0.0f;
 
@@ -310,18 +368,22 @@ void CVListPanel::setOuterPadding(const float& newPadding){
     outerPadding = newPadding;
 }
 
-void CVListPanel::setScrollBarPadding(const float& newPadding){
+void CVListPanel::setScrollBarPadding(const float& newPadding)
+{
     scrollBarPadding = newPadding;
     scrollBarY.setAnchorPoints(sf::Vector2f(bounds.left + bounds.width - outerPadding/2,
-                                   bounds.top + scrollBarPadding),
-                                    sf::Vector2f(bounds.left + bounds.width - outerPadding/2,
-                                                        bounds.top + bounds.height - scrollBarPadding));
+                                            bounds.top + scrollBarPadding),
+                               sf::Vector2f(bounds.left + bounds.width - outerPadding/2,
+                                            bounds.top + bounds.height - scrollBarPadding));
 }
 
-void CVListPanel::setInnerPadding(const float& newPadding){
+void CVListPanel::setInnerPadding(const float& newPadding)
+{
     innerPadding = newPadding;
-    for(auto& item : viewPanelElements){
-        if(item->isType<CVTextBox>()){
+    for(auto& item : viewPanelElements)
+    {
+        if(item->isType<CVTextBox>())
+        {
             ((CVTextBox*)item)->setTextPadding(innerPadding);
         }
     }
@@ -350,9 +412,11 @@ void CVListPanel::setListHighlightColor(const sf::Color& newColor)
     }
 }
 
-void CVListPanel::setDragAndDrop(const bool& status){
+void CVListPanel::setDragAndDrop(const bool& status)
+{
     bDragAndDrop = status;
-    for(auto& item : viewPanelElements){
+    for(auto& item : viewPanelElements)
+    {
         item->setDragAndDrop(status);
     }
 }
@@ -369,7 +433,8 @@ void CVListPanel::setListHighlightable(const bool& state)
     }
 }
 
-void CVListPanel::addPanelElement(CVElement* newElement, std::string newTag, const unsigned int& index){
+void CVListPanel::addPanelElement(CVElement* newElement, string newTag, const unsigned int& index)
+{
 
     float outerPaddingActual = outerPadding;
 
@@ -378,21 +443,26 @@ void CVListPanel::addPanelElement(CVElement* newElement, std::string newTag, con
         outerPaddingActual = (getSize().x - newElement->getSize().x)/2;
     }
 
-    if(!numPanels()){
+    if(!numPanels())
+    {
         newElement->setPosition(bounds.left + outerPaddingActual,
-                               bounds.top);
+                                bounds.top);
     }
-    else{
-        if(index < numPanels()){
+    else
+    {
+        if(index < numPanels())
+        {
             newElement->setPosition(viewPanelElements[index]->getPosition());
-            for(size_t i = index; i < numPanels(); ++i){
+            for(size_t i = index; i < numPanels(); ++i)
+            {
                 viewPanelElements[index]->anim_move(sf::Vector2f(0.0f, newElement->getBounds().height + listPadding), 1100);
             }
         }
-        else{
+        else
+        {
             newElement->setPosition(bounds.left + outerPaddingActual,
-                                   viewPanelElements.back()->getBounds().top +
-                                   viewPanelElements.back()->getBounds().height + listPadding);
+                                    viewPanelElements.back()->getBounds().top +
+                                    viewPanelElements.back()->getBounds().height + listPadding);
         }
     }
 
@@ -404,33 +474,217 @@ void CVListPanel::addPanelElement(CVElement* newElement, std::string newTag, con
     CVViewPanel::addPanelElement(newElement, newTag, index);
 }
 
-void CVListPanel::removePanelElement(const unsigned int& index){
+void CVListPanel::removePanelElement(const unsigned int& index)
+{
 
     if(!numPanels()) return;
 
-    if(index > numPanels()){
+    if(index > numPanels())
+    {
         float shiftY = viewPanelElements.back()->getBounds().height;
         remove(viewPanelElements.back(), selected);
         CVViewPanel::removePanelElement(numPanels() - 1);
     }
-    else{
+    else
+    {
         float shiftY = viewPanelElements[index]->getBounds().height;
         remove(viewPanelElements[index], selected);
         CVViewPanel::removePanelElement(index);
-        for(size_t i = index; i < numPanels(); ++i){
-            viewPanelElements[i]->anim_move(sf::Vector2f(0.0f,-shiftY), 1100);
+        for(size_t i = index; i < numPanels(); ++i)
+        {
+            viewPanelElements[i]->move(sf::Vector2f(0.0f,-shiftY));
         }
-        scrollBarY.scroll(-shiftY);
     }
 }
 
-void CVListPanel::move(const sf::Vector2f& distance){
+void CVListPanel::removePanelElement(CVElement * element)
+{
+
+    for(size_t i = 0; i < numPanels(); ++i)
+    {
+        if(viewPanelElements[i] == element)
+        {
+            removePanelElement(i);
+            return;
+        }
+    }
+
+}
+
+void CVListPanel::move(const sf::Vector2f& distance)
+{
     CVViewPanel::move(distance);
     scrollBarY.move(distance);
 }
 
-void CVListPanel::setPosition(const sf::Vector2f& position){
+void CVListPanel::setPosition(const sf::Vector2f& position)
+{
     move(position - getPosition());
+}
+
+CVGridPanel::CVGridPanel(CVView * View,
+                         const string& tag,
+                         const sf::Vector2f& position,
+                         const sf::Vector2f& size,
+                         const size_t& gridWidth,
+                         const sf::Color& fillColor,
+                         const sf::Color& outlineColor,
+                         const float& outlineThickness):
+                             CVListPanel(View, tag,
+                                         fillColor, size, false, position),
+                             cPos(0, 0),
+                             cRowPanel(nullptr),
+                             stGridWidth(gridWidth),
+                             fGridItemPadding(8.0f),
+                             fGridItemWidth(size.x - 2*outerPadding),
+                             bResizeToGrid(true)
+{
+
+    if(gridWidth)
+    {
+        fGridItemWidth = (size.x - 2*outerPadding - fGridItemPadding * (gridWidth - 1)) / gridWidth;
+    }
+
+}
+
+sf::Vector2f CVGridPanel::getGridPosition(const sf::Vector2i& coords) const
+{
+
+    sf::Vector2f output;
+
+    if(coords.y < rowPanels.size())
+    {
+        output.y = rowPanels[coords.y]->getPosition().y;
+    }
+    else
+    {
+        int y = coords.y;
+        if(!rowPanels.empty())
+        {
+            output.y = rowPanels.back()->getPosition().y;
+            y -= rowPanels.size();
+        }
+        else
+        {
+            output.y = getPosition().y + outerPadding;
+        }
+
+        output.y += y * (listItemHeight + listPadding);
+    }
+
+    output.x = getPosition().x + outerPadding + coords.x * (fGridItemWidth + fGridItemPadding);
+
+    return output;
+
+}
+
+sf::Vector2f CVGridPanel::getGridPosition(const size_t& index) const
+{
+
+    if(index < cPos.y * stGridWidth + cPos.x)
+    {
+        return getGridPosition(sf::Vector2i(index % stGridWidth, index / stGridWidth));
+    }
+    else
+    {
+        return getGridPosition(sf::Vector2i(cPos.x, cPos.y));
+    }
+
+}
+
+void CVGridPanel::addPanelElement(CVElement * newElement, string newTag, const unsigned int& index)
+{
+
+    if(!cPos.x)
+    {
+
+        float posY = getPosition().y + outerPadding;
+        if(cRowPanel)
+        {
+            posY = cRowPanel->getPosition().y + cRowPanel->getSize().y + listPadding;
+        }
+
+        CVBasicViewPanel * newRowPanel = new CVBasicViewPanel(View,
+                                                              "",
+                                                              sf::Color::Transparent,
+                                                              sf::Vector2f(getSize().x - outerPadding * 2,
+                                                                           listItemHeight),
+                                                              false,
+                                                              sf::Vector2f(getPosition().x + outerPadding, posY));
+
+        cRowPanel = newRowPanel;
+        rowPanels.emplace_back(cRowPanel);
+        newRowPanel->setOutOfBoundsDraw(true);
+        newRowPanel->setOutOfBoundsUpdate(true);
+
+        CVListPanel::addPanelElement(newRowPanel);
+
+    }
+
+    if(bResizeToGrid)
+    {
+        newElement->setSize(sf::Vector2f(fGridItemWidth, listItemHeight));
+    }
+
+    newElement->setPosition(getGridPosition(index));
+    cRowPanel->addPanelElement(newElement);
+
+    ++cPos.x;
+    if(cPos.x == stGridWidth)
+    {
+        cPos.x = 0;
+        ++cPos.y;
+    }
+
+}
+
+void CVGridPanel::removePanelElement(CVElement * newElement)
+{
+    for(size_t y = 0, x; y < rowPanels.size(); ++y)
+    {
+        for(x = 0; x < rowPanels[y]->getElements().size(); ++x)
+        {
+            if(rowPanels[y]->getElements()[x] == newElement)
+            {
+                rowPanels[y]->removePanelElement(newElement);
+
+                if(rowPanels[y]->numPanels() == 0)
+                {
+                    CVListPanel::removePanelElement(rowPanels[y]);
+                }
+
+                return;
+            }
+        }
+    }
+}
+
+void CVGridPanel::setOuterPadding(const float& newPadding)
+{
+
+    outerPadding = newPadding;
+    fGridItemWidth = (getSize().x - 2*outerPadding - (stGridWidth - 1) * fGridItemPadding)/stGridWidth;
+
+    if(bResizeToGrid)
+    {
+
+        float lastY;
+        for(size_t y = 0, y2, x; y < rowPanels.size(); ++y)
+        {
+            lastY = rowPanels[y]->getSize().y;
+            for(x = 0; x < rowPanels[y]->numPanels(); ++x)
+            {
+                rowPanels[y]->getPanels()[x]->setSize(sf::Vector2f(fGridItemPadding, listItemHeight));
+            }
+            rowPanels[y]->fitElements(false, true);
+            for(y2 = y + 1; y2 < rowPanels.size(); ++y2)
+            {
+                rowPanels[y2]->move(0.0f, rowPanels[y]->getSize().y - lastY);
+            }
+        }
+
+    }
+
 }
 
 }

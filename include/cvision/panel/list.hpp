@@ -52,35 +52,43 @@
 namespace cvis
 {
 
-class CVISION_API CVListPanel : public CVBasicViewPanel{
-protected:
+/** Scrollable list panel
 
-    float listPadding,
-            scrollBarPadding,
-            outerPadding,
-            innerPadding,
-            listItemHeight;
+    New list items are automatically positioned below the last one,
+    but not resized */
 
-    CVScrollBar scrollBarY;
-
-    bool bSelect;
-    bool bListItemHighlight;
-
-    std::vector<std::string> listTags;
-    unsigned int listItemColorIndex;
-    unsigned int listItemHighlightColorIndex;
-
+class CVISION_API CVListPanel : public CVBasicViewPanel
+{
 public:
+
+    CVISION_API CVListPanel(CVView* parentView,
+                            std::string panelTag = "",
+                            sf::Color backgroundColor = sf::Color::Transparent,
+                            const sf::Vector2f& size = sf::Vector2f(NAN, NAN),
+                            bool bFitToWindow = true,
+                            const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
 
     std::vector<CVElement*> selected;
 
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
     CVISION_API bool draw(sf::RenderTarget* target);
 
-    inline const float& getListPadding() const{ return listPadding; }
-    inline const float& getScrollBarPadding() const{ return scrollBarPadding; }
-    inline const float& getOuterPadding() const{ return outerPadding; }
-    inline const float& getInnerPadding() const{ return innerPadding; }
+    inline const float& getListPadding() const
+    {
+        return listPadding;
+    }
+    inline const float& getScrollBarPadding() const
+    {
+        return scrollBarPadding;
+    }
+    inline const float& getOuterPadding() const
+    {
+        return outerPadding;
+    }
+    inline const float& getInnerPadding() const
+    {
+        return innerPadding;
+    }
 
     CVISION_API void setListPadding(const float& newPadding);
     CVISION_API void setScrollBarPadding(const float& newPadding);
@@ -90,9 +98,15 @@ public:
     CVISION_API void setDragAndDrop(const bool& state);
     CVISION_API void setListHighlightable(const bool& state = true);
 
-    inline const sf::Color& getListItemColor() const{ return colorTheme[listItemColorIndex]; }
+    inline const sf::Color& getListItemColor() const
+    {
+        return colorTheme[listItemColorIndex];
+    }
     CVISION_API void setListItemColor(const sf::Color& newColor);
-    inline const sf::Color& getListHighlightColor() const{ return colorTheme[listItemHighlightColorIndex]; }
+    inline const sf::Color& getListHighlightColor() const
+    {
+        return colorTheme[listItemHighlightColorIndex];
+    }
     CVISION_API void setListHighlightColor(const sf::Color& newColor);
 
     CVISION_API void addTextEntry(const std::string& newText, const unsigned int& index = UINT_MAX);
@@ -104,7 +118,10 @@ public:
     CVISION_API void setElementPadding(const float& newPadding);
 
     CVISION_API void setSelectionStatus(const bool& status);
-    inline const bool& canSelect() const{ return bSelect; }
+    inline const bool& canSelect() const
+    {
+        return bSelect;
+    }
     CVISION_API void toggleSelection(CVElement* element);
     CVISION_API void toggleSelection(const std::string& tag);
     CVISION_API void setSelection(CVElement* element, const bool& state = true);
@@ -115,20 +132,89 @@ public:
 
     CVISION_API void addPanelElement(CVElement*, std::string newTag = "", const unsigned int& index = UINT_MAX);
     CVISION_API void removePanelElement(const unsigned int& index);
+    CVISION_API void removePanelElement(CVElement * element);
 
     CVISION_API void setPosition(const sf::Vector2f& newPosition);
-    inline void setPosition(const float& x, const float& y){
+    inline void setPosition(const float& x, const float& y)
+    {
         setPosition(sf::Vector2f(x, y));
     }
 
     CVISION_API void move(const sf::Vector2f& distance);
-    inline void move(const float& x, const float& y){
+    inline void move(const float& x, const float& y)
+    {
         move(sf::Vector2f(x, y));
     }
 
-    CVISION_API CVListPanel(CVView* parentView, std::string panelTag = "", sf::Color backgroundColor = sf::Color::Transparent,
-                     const sf::Vector2f& size = sf::Vector2f(NAN, NAN), bool bFitToWindow = true,
-                     const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
+protected:
+
+    float       listPadding;
+    float       scrollBarPadding;
+    float       outerPadding;
+    float       innerPadding;
+    float       listItemHeight;
+
+    CVScrollBar scrollBarY;
+
+    bool        bSelect;
+    bool        bListItemHighlight;
+
+    std::vector<std::string> listTags;
+
+    unsigned int listItemColorIndex;
+    unsigned int listItemHighlightColorIndex;
+
+};
+
+/** Scrollable grid panel
+
+    Adaptation of list panel where, similarly to the parent class,
+    new items are automatically positioned after the last.  Here,
+    new items are resized by default to fit (fGridItemWidth, listItemHeight), and
+    both vertically and horizontally repositioned.  This behaviour
+    can be overwritten by changing bResizeToGrid. */
+
+class CVISION_API CVGridPanel : public CVListPanel
+{
+public:
+
+    CVISION_API CVGridPanel(CVView * View,
+                const std::string& tag,
+                const sf::Vector2f& position,
+                const sf::Vector2f& size,
+                const size_t& gridWidth,
+                const sf::Color& fillColor,
+                const sf::Color& outlineColor,
+                const float& outlineThickness);
+
+    CVISION_API void addPanelElement(CVElement * newElement, std::string newTag = "", const unsigned int& index = UINT_MAX) override;
+    CVISION_API void removePanelElement(CVElement * element) override;
+
+    CVISION_API sf::Vector2f getGridPosition(const sf::Vector2i& coords) const;
+    CVISION_API sf::Vector2f getGridPosition(const size_t& index) const;
+
+    CVISION_API void setGridWidth(const size_t& newWidth);
+    CVISION_API void setGridItemSize(const sf::Vector2f& newSize);
+    CVISION_API void setGridItemPadding(const float& newPadding);
+
+    CVISION_API void setOuterPadding(const float& newPadding);
+
+protected:
+
+    size_t stGridWidth;
+
+    float fGridItemPadding;
+    float fGridItemWidth;
+
+    bool bResizeToGrid;
+
+private:
+
+    sf::Vector2i cPos;
+    CVBasicViewPanel * cRowPanel;
+
+    std::vector<CVBasicViewPanel*> rowPanels;
+
 };
 
 }

@@ -51,7 +51,8 @@ namespace cvis
 
 CVShape::CVShape(CVView* View):
     CVElement(View),
-    bMasked(false)
+    bMasked(false),
+    maskAlpha(0)
 {
 
 }
@@ -107,7 +108,20 @@ void CVShape::setMask(const sf::Texture* texture,
     shapeMask.setSize(getSize());
     shapeMask.setRotation(getRotation());
     shapeMask.setPosition(getPosition());
-    shapeMask.setFillColor(fillColor);
+
+    maskAlpha = fillColor.a;
+
+    if(maskAlpha < getFillColor().a)
+    {
+        shapeMask.setFillColor(fillColor);
+    }
+    else
+    {
+        sf::Color newColor = fillColor;
+        newColor.a = getFillColor().a;
+        shapeMask.setFillColor(newColor);
+    }
+
     bMasked = true;
 }
 
@@ -131,37 +145,49 @@ void CVShape::setMaskAlpha(const uint8_t& newAlpha)
     sf::Color tmp = shapeMask.getFillColor();
     tmp.a = newAlpha;
     shapeMask.setFillColor(tmp);
+
+    maskAlpha = newAlpha;
 }
 
 bool CVShape::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
     if(!CVElement::update(event, mousePos)) return false;
+
     if(bMasked)
     {
+        shapeMask.setOrigin(getOrigin());
         shapeMask.setSize(getSize());
         shapeMask.setPosition(getPosition());
 
-        sf::Color tmp = shapeMask.getFillColor();
-        if(targetAlpha > tmp.a)
+        if(bFade && (fadeLayers | CV_LAYER_MASK))
         {
-            if(tmp.a + fadeRate < targetAlpha)
+
+            sf::Color tmp = shapeMask.getFillColor();
+
+            if((targetAlpha > tmp.a) &&
+               (tmp.a < maskAlpha))
             {
-                tmp.a += fadeRate;
+                if(int(tmp.a) + fadeRate < maskAlpha)
+                {
+                    tmp.a += fadeRate;
+                }
+                else tmp.a = maskAlpha;
             }
-            else tmp.a = targetAlpha;
+            else if(targetAlpha < tmp.a)
+            {
+                if(int(tmp.a) - fadeRate > targetAlpha)
+                {
+                    tmp.a -= fadeRate;
+                }
+                else
+                {
+                    tmp.a = targetAlpha;
+                }
+            }
+
+            shapeMask.setFillColor(tmp);
+
         }
-        else
-        {
-            if(tmp.a - fadeRate > targetAlpha)
-            {
-                tmp.a -= fadeRate;
-            }
-            else
-            {
-                tmp.a = targetAlpha;
-            }
-        }
-        shapeMask.setFillColor(tmp);
     }
     else if(!active)
     {

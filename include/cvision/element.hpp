@@ -93,6 +93,7 @@
 #define CV_LAYER_SHAPES                 0b1000
 #define CV_LAYER_HIGHLIGHT              0b10000
 #define CV_LAYER_TEXT                   0b100000
+#define CV_LAYER_MASK                   0b1000000
 #define CV_LAYER_MEMBERS                0b10000000
 
 // Development shortcuts
@@ -190,6 +191,7 @@ protected:
 
     ColorTheme                      colorTheme;         // Main element colors
     sf::Color                       highlightColor;     // Highlight color if applicable
+    sf::Color                       spriteColor;        // Base color of main sprites
 
     sf::Vector2f                    pinnedOffset;
     sf::Vector2f                    origin;
@@ -408,15 +410,15 @@ public:
         highlightColor = color;
     }
 
-    inline bool isHighlighted()
+    inline const bool& isHighlighted() const
     {
         return highlighted;
     }
-    inline bool isClickHeld()
+    inline const bool& isClickHeld() const
     {
         return clickHeld;
     }
-    inline bool hasMouseHover()
+    inline const bool& hasMouseHover() const
     {
         return mouseHovering;
     }
@@ -523,7 +525,7 @@ public:
         origin = newOrigin;
     }
 
-    virtual sf::Vector2f getSize() = 0;
+    inline virtual sf::Vector2f getSize(){ return sf::Vector2f(bounds.width, bounds.height); }
     virtual void setSize(const sf::Vector2f& newSize) = 0;
     inline void setSize(const float& x, const float& y)
     {
@@ -630,11 +632,9 @@ public:
             return colorTheme[1];
         return sf::Color::Transparent;
     }
-    inline sf::Color baseSpriteColor() const
+    inline const sf::Color& baseSpriteColor() const
     {
-        if(colorTheme.size() > 2)
-            return colorTheme[2];
-        return baseFillColor();
+        return spriteColor;
     }
     inline sf::Color inactiveColor() const
     {
@@ -642,7 +642,7 @@ public:
         {
             return colorTheme[3];
         }
-        return sf::Color(150,150,150,50);
+        return sf::Color(128, 128, 128, 170);
     }
 
     CVISION_API virtual bool update(CVEvent& event, const sf::Vector2f& mousePos); // Core update function for time-dependent activities (ie. Animations)

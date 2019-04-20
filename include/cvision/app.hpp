@@ -51,6 +51,7 @@
 #include <thread>
 #include <mutex>
 #include <unordered_map>
+#include <chrono>
 
 #include <SFML/Graphics.hpp>
 
@@ -82,6 +83,8 @@ protected:
     sf::Context appGLContext;
 
     std::vector<std::string> unhandledEvents;
+
+    std::chrono::duration<float> updateLatency;
 
 #ifdef __APPLE__
     std::mutex eventLock;

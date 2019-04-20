@@ -180,11 +180,11 @@ bool CVTypePanel::update(CVEvent& event, const sf::Vector2f& mousePos){
         text->update(event, mousePos);
     }
 
-    if(bounds.contains(mousePos)) event.captureFocus();
-
     for(auto& item : viewPanelElements){
         item->update(event, mousePos);
     }
+
+    if(bounds.contains(mousePos)) event.captureFocus();
 
     if(hasFocus() && event.keyPressed){
         for(auto& text : typeElements){
@@ -203,6 +203,10 @@ bool CVTypePanel::update(CVEvent& event, const sf::Vector2f& mousePos){
         for(auto& text : typeElements){
             text->move(sf::Vector2f(0.0f, moveDist));
         }
+        for(auto& element : viewPanelElements)
+        {
+            element->move(sf::Vector2f(0.0f, moveDist));
+        }
         top_margin_line().move(sf::Vector2f(0.0f,moveDist));
         bottom_margin_line().setPosition(sf::Vector2f(bounds.left, itemBounds.top + itemBounds.height));
     }
@@ -219,6 +223,10 @@ bool CVTypePanel::update(CVEvent& event, const sf::Vector2f& mousePos){
         float moveDist = bounds.top + top_margin() - typeElements[minIndex]->getPosition().y;
         for(auto& text : typeElements){
             text->move(sf::Vector2f(0.0f, moveDist));
+        }
+        for(auto& element : viewPanelElements)
+        {
+            element->move(sf::Vector2f(0.0f, moveDist));
         }
 
         top_margin_line().setPosition(sf::Vector2f(bounds.left, bounds.top + top_margin()));
@@ -551,6 +559,7 @@ void CVTypePanel::arrange_media()
 
     sf::FloatRect textBounds;
     sf::FloatRect spriteBounds;
+    sf::FloatRect elementBounds;
     sf::FloatRect otherBounds;
 
     sf::Vector2f textCenter;
@@ -564,6 +573,11 @@ void CVTypePanel::arrange_media()
 
         for(auto& sprite : spriteList)
         {
+
+            if(sprite.getColor().a < 50) // Anything less than this is a watermark
+            {
+                continue;
+            }
 
             spriteBounds = sprite.getGlobalBounds();
 
@@ -593,6 +607,41 @@ void CVTypePanel::arrange_media()
 
             }
 
+        }
+
+        textBounds = text->getBounds();
+        expandBounds(textBounds, textPadding);
+        textCenter = getBoundCenter(textBounds);
+
+        for(auto& element : viewPanelElements)
+        {
+            elementBounds = element->getGlobalBounds();
+
+            if(textBounds.intersects(elementBounds))
+            {
+
+                if(elementBounds.left > textCenter.x)
+                {
+                    float moveDist = text->getSize().y;
+
+                    text->setSize(sf::Vector2f(elementBounds.left - textPadding - textBounds.left,
+                                               text->getSize().y));
+
+                    moveDist = text->getSize().y - moveDist;
+
+                    for(auto& o_text : typeElements)
+                    {
+                        if(o_text == text) continue;
+
+                        if(o_text->getPosition().y >= text->getPosition().y)
+                        {
+                            o_text->move(sf::Vector2f(0.0f, moveDist));
+                        }
+
+                    }
+                }
+
+            }
         }
 
     }
