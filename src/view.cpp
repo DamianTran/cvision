@@ -549,7 +549,7 @@ void CVView::setCursor(const sf::Texture* texture,
                        const sf::Vector2f& origin)
 {
 
-    cursor.setTexture(*texture);
+    cursor.setTexture(*texture, true);
     cursor.setOrigin((origin * texture->getSize())/size);
     cursor.setScale(size/texture->getSize());
     cursor.setColor(fillColor);
@@ -582,7 +582,7 @@ void CVView::setShadow(CVElement& element,
 {
     element.getTexture(shadowTexture);
 
-    shadow.setTexture(shadowTexture);
+    shadow.setTexture(shadowTexture, true);
     shadow.setOrigin(element.getOrigin());
     shadow.setScale(element.getSize()/shadowTexture.getSize() * scale);
     shadow.setPosition(element.getPosition());

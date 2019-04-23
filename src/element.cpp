@@ -931,7 +931,8 @@ void CVElement::addSprite(const sf::Texture* texture,
         spriteColor = fillColor;
     }
 
-    spriteList.emplace_back(*texture);
+    spriteList.emplace_back();
+    spriteList.back().setTexture(*texture, true);
     sf::Vector2u texSize = texture->getSize();
 
     spriteList.back().setScale(
