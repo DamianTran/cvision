@@ -86,7 +86,7 @@ public:
         move(sf::Vector2f(x, y));
     }
 
-    CVISION_API void setColor(const sf::Color& newColor);
+    CVISION_API void setColor(const sf::Color& newColor) override;
     inline void setColor(const int& r, const int& g, const int& b)
     {
         setColor(sf::Color(r, g, b));

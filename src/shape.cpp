@@ -65,6 +65,8 @@ void CVShape::setPosition(const sf::Vector2f& position)
 void CVShape::move(const sf::Vector2f& offset)
 {
 
+    CVElement::move(offset);
+
     if(bStatic) return;
 
     if(bDropShadow)

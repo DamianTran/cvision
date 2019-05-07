@@ -41,9 +41,11 @@
 //
 /////////////////////////////////////////////////////////////  **/
 
-#include "cvision/type.hpp"
-#include "cvision/event.hpp"
-#include "cvision/view.hpp"
+#include <cvision/type.hpp>
+#include <cvision/event.hpp>
+#include <cvision/view.hpp>
+
+#include <cvision/widgets.hpp>
 
 #include "EZC/toolkit/string.hpp"
 
@@ -282,6 +284,7 @@ void CVTypeBox::setTypeString(wstring newString)
     typeFrameEnd = this->typeString.size();
     bTypeStringChanged = true;
     bUserTyped = true;
+
     if(!this->typeString.empty())
     {
         cursorPos = this->typeString.size()-1;
@@ -1807,15 +1810,13 @@ CVTextLog::CVTextLog(CVView* View, const sf::Vector2f& position, const float& wi
     logFile(logFile),
     selectedLogIndex(0),
     maxMessages(1000),
-    initialMessageCount(50),
+    initialMessageCount(100),
     messageLoadInc(25),
     timeWaiting(0.0f),
-    scrollOffsetY(0.0f),
-    msgPopupSpeed(600.0f),
-    msgScrollSpeed(3600.0f),
+    msgPopupSpeed(250.0f),
+    msgScrollSpeed(2600.0f),
     maxPanelWidthPct(0.7f),
     msgPanelPaddingPx(12.0f*View->getViewScale()),
-    scrollBar(sf::Vector2f(width*0.02f, 0.0f), width*0.01f),
     templateTheme(textInfo),
     bClear(false),
     bMsgReady(true),
@@ -1835,76 +1836,23 @@ CVTextLog::CVTextLog(CVView* View, const sf::Vector2f& position, const float& wi
     darken(colorTheme.back(), 50_BIT);
     colorTheme.emplace_back(textInfo.textColor);            // Incoming message text color
 
-    sf::Color scrollBarColor = getMsgPanelFillColor();
-    scrollBarColor.a = 0_BIT;   // Invisible until scroll
-    scrollBar.setFillColor(scrollBarColor);
-    scrollBar.setPosition(sf::Vector2f(bounds.left + bounds.width*0.97f,
-                                       bounds.top + bounds.height*0.025f));
+    sf::Color scrollBarColor = getMsgPanelFillColor() - sf::Color(0, 0, 0, 255);
 
+    scroll_bar = new CVScrollBar(View,
+                                 sf::Vector2f(bounds.left + bounds.width * 0.97f,
+                                              bounds.top + bounds.height * 0.975f),
+                                 sf::Vector2f(bounds.left + bounds.width * 0.97f,
+                                              bounds.top + bounds.height * 0.025f),
+                                 height * 0.925f, 8.0f,
+                                 scrollBarColor,
+                                 sf::Color::Transparent,
+                                 0.0f,
+                                 msgScrollSpeed);
+
+    scroll_bar->reverseY();
     setDrawClipping(true);
 
     this->textInfo = templateTheme;
-}
-
-CVTextLog::CVTextLog(const CVTextLog& other):
-    CVTextBox(other),
-    usrEntryBox(nullptr),
-    logFile(other.logFile),
-    selectedLogIndex(other.selectedLogIndex),
-    maxMessages(other.maxMessages),
-    initialMessageCount(other.initialMessageCount),
-    messageLoadInc(other.messageLoadInc),
-    timeWaiting(other.timeWaiting),
-    scrollOffsetY(other.scrollOffsetY),
-    msgPopupSpeed(other.msgPopupSpeed),
-    msgScrollSpeed(other.msgScrollSpeed),
-    maxPanelWidthPct(other.maxPanelWidthPct),
-    msgPanelPaddingPx(other.msgPanelPaddingPx),
-    scrollBar(other.scrollBar),
-    templateTheme(other.textInfo),
-    bClear(other.bClear),
-    bMsgReady(other.bMsgReady),
-    bCanScroll(other.bCanScroll),
-    animType(other.animType),
-    userTextAlign(other.userTextAlign),
-    otherTextAlign(other.otherTextAlign)
-{
-
-    for(auto& panel : other.msgPanels)
-    {
-        msgPanels.emplace_back(new CVTextLogMsg(*panel));
-    }
-
-}
-
-CVTextLog& CVTextLog::operator=(const CVTextLog& other)
-{
-    CVTextBox::operator=(other);
-
-    logFile = other.logFile;
-    selectedLogIndex = other.selectedLogIndex;
-    maxMessages = other.maxMessages;
-    initialMessageCount = other.initialMessageCount;
-    messageLoadInc = other.messageLoadInc;
-    timeWaiting = other.timeWaiting;
-    scrollOffsetY = other.scrollOffsetY;
-    msgPopupSpeed = other.msgPopupSpeed;
-    msgScrollSpeed = other.msgScrollSpeed;
-    maxPanelWidthPct = other.maxPanelWidthPct;
-    msgPanelPaddingPx = other.msgPanelPaddingPx;
-    scrollBar = other.scrollBar;
-    templateTheme = other.textInfo;
-    bClear = other.bClear;
-    bMsgReady = other.bMsgReady;
-    bCanScroll = other.bCanScroll;
-    animType = other.animType;
-    userTextAlign = other.userTextAlign;
-    otherTextAlign = other.otherTextAlign;
-
-    for(auto& panel : other.msgPanels)
-    {
-        msgPanels.emplace_back(new CVTextLogMsg(*panel));
-    }
 }
 
 CVTextLog::~CVTextLog()
@@ -1914,8 +1862,7 @@ CVTextLog::~CVTextLog()
         delete(panel);
     }
     msgPanels.clear();
-
-    View->stopAnim(&scrollBar);
+    delete(scroll_bar);
 }
 
 void CVTextLog::move(const sf::Vector2f& distance)
@@ -1925,7 +1872,7 @@ void CVTextLog::move(const sf::Vector2f& distance)
     {
         item->move(distance);
     }
-    scrollBar.move(distance);
+    scroll_bar->move(distance);
 }
 
 void CVTextLog::setPosition(const sf::Vector2f& position)
@@ -1935,9 +1882,12 @@ void CVTextLog::setPosition(const sf::Vector2f& position)
 
 void CVTextLog::setSize(const sf::Vector2f& newSize)
 {
-    float offsetY = newSize.y - getSize().y,
-          offsetX = newSize.x - getSize().x;
+
+    float offsetY = newSize.y - getSize().y;
+    float offsetX = newSize.x - getSize().x;
+
     CVBox::setSize(newSize);
+
     for(size_t i = 0; i < msgPanels.size(); ++i)
     {
         if(textLogUserEntered[i])
@@ -1949,23 +1899,35 @@ void CVTextLog::setSize(const sf::Vector2f& newSize)
             msgPanels[i]->move(0.0f, offsetY);
         }
     }
+
+    scroll_bar->setAnchorPoints(sf::Vector2f(bounds.left + bounds.width * 0.97f,
+                                             bounds.top + bounds.height * 0.025f),
+                                sf::Vector2f(bounds.left + bounds.width * 0.97f,
+                                             bounds.top + bounds.height * 0.975f));
+    scroll_bar->setPanelSize(bounds.height * 0.95f);
+}
+
+float CVTextLog::scrollOffsetY() const noexcept
+{
+    return scroll_bar->getScrollOffset();
 }
 
 void CVTextLog::shiftMsgs(const float& dist)
 {
     // Negative is up (SFML coords)
-    for(size_t i = 0; i < msgPanels.size(); ++i)
-    {
-        msgPanels[i]->anim_move(sf::Vector2f(0.0f, dist), msgPopupSpeed);
-    }
+    scroll_bar->scroll(dist);
 }
 
 bool CVTextLog::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
 
+    if(!visible || bNoInteract) return false;
+
+    scroll_bar->update(event, mousePos);
+
     if(bClear)
     {
-        scrollOffsetY = 0.0f;
+        scroll_bar->setScrollOffset(0.0f);
         textLog.clear();
         times.clear();
 
@@ -1985,15 +1947,20 @@ bool CVTextLog::update(CVEvent& event, const sf::Vector2f& mousePos)
         panel->update(event, mousePos);
     }
 
-    if(bMsgReady && (waitingText.size() > 0))
+    if(bMsgReady && (!waitingText.empty()))
     {
+
         printLock.lock();
+
         if(timeWaiting < updateAddDelay.front())
         {
+
             timeWaiting += event.lastFrameTime;
+
         }
         else
         {
+
             updateAddDelay.erase(updateAddDelay.begin());
             timeWaiting = 0.0f;
 
@@ -2013,72 +1980,78 @@ bool CVTextLog::update(CVEvent& event, const sf::Vector2f& mousePos)
             msgPanels.back()->fitText();
             msgPanels.back()->textLogIndex = textLog.size() - 1;
 
-            float moveBump = 0.0f, shiftDist = msgPanels.back()->getSize().y + msgPanelPaddingPx/2;
+            float moveBump = 0.0f;
+
             if(textLogUserEntered.size() > 1)
             {
-                if((textLogUserEntered.back() & !textLogUserEntered[textLogUserEntered.size()-2]) ||
-                        (!textLogUserEntered.back() & textLogUserEntered[textLogUserEntered.size()-2]))
+                if(textLogUserEntered.back() ^ textLogUserEntered[textLogUserEntered.size()-2])
                 {
                     moveBump = msgPanelPaddingPx;
                 }
             }
 
-            for(size_t i = 1; i < msgPanels.size(); ++i)
-            {
-                msgPanels[i-1]->anim_move(sf::Vector2f(0.0f, -(shiftDist + moveBump)), msgPopupSpeed);
-            }
-
             if(textLogUserWaiting.front())
             {
+
                 switch(userTextAlign)
                 {
                 case ALIGN_LEFT:
                 {
                     msgPanels.back()->setPosition(sf::Vector2f(bounds.left + bounds.width*0.05f,
-                                                   bounds.top + bounds.height + scrollOffsetY));
+                                                               bounds.top + bounds.height * 0.95f +
+                                                               msgPanelPaddingPx/2 + scrollOffsetY()));
                     break;
                 }
                 default:  // Right
                 {
                     msgPanels.back()->setPosition(sf::Vector2f(bounds.left + bounds.width*0.92f - msgPanels.back()->getSize().x,
-                                                   bounds.top + bounds.height + scrollOffsetY));
+                                                               bounds.top + bounds.height * 0.95f +
+                                                               msgPanelPaddingPx/2 + scrollOffsetY()));
                     break;
                 }
                 }
+
                 msgPanels.back()->setFillColor(getMsgPanelFillColor());
                 msgPanels.back()->setTextColor(templateTheme.textColor);
                 msgPanels.back()->bUser = true;
+
             }
             else
             {
+
                 switch(otherTextAlign)
                 {
                 case ALIGN_RIGHT:
                 {
                     msgPanels.back()->setPosition(sf::Vector2f(bounds.left + bounds.width*0.92f - msgPanels.back()->getSize().x,
-                                                   bounds.top + bounds.height + scrollOffsetY));
+                                                               bounds.top + bounds.height * 0.95f +
+                                                               msgPanelPaddingPx/2 + scrollOffsetY()));
                     break;
                 }
                 default:  // Left
                 {
                     msgPanels.back()->setPosition(sf::Vector2f(bounds.left + bounds.width*0.05f,
-                                                   bounds.top + bounds.height + scrollOffsetY));
+                                                               bounds.top + bounds.height * 0.95f +
+                                                               msgPanelPaddingPx/2 + scrollOffsetY()));
                     break;
                 }
                 }
+
                 msgPanels.back()->setFillColor(getIncomingMsgPanelFillColor());
                 msgPanels.back()->setTextColor(getOtherTextColor());
                 msgPanels.back()->bUser = false;
-            }
 
-            msgPanels.back()->anim_move(sf::Vector2f(0.0f, -(shiftDist + 12.0f)), msgPopupSpeed);
+            }
 
             waitingText.erase(waitingText.begin());
             textLogUserWaiting.erase(textLogUserWaiting.begin());
 
             save();
+
         }
+
         printLock.unlock();
+
     }
     else
     {
@@ -2088,30 +2061,18 @@ bool CVTextLog::update(CVEvent& event, const sf::Vector2f& mousePos)
     // Process scrolling
 
     if((bounds.contains(mousePos) || (event.LMBhold && bounds.contains(event.LMBpressPosition)))
-            && event.captureFocus()) setFocus(true);
-    else if(event.LMBhold) setFocus(false);
-
-    float scrollRange = 0.0f, scrollDist = 0.0f, scrollSpeed = msgScrollSpeed;
-    if(bCanScroll)
+            && event.captureFocus())
     {
-        if(textLog.size() > 0)
+        setFocus(true);
+        scroll_bar->setScrollable(true);
+    }
+    else
+    {
+        if(event.LMBhold)
         {
-            scrollRange = 2*msgPanelPaddingPx + msgPanels.back()->getPosition().y +
-                            msgPanels.back()->getSize().y -
-                            msgPanels.front()->getPosition().y -
-                            bounds.height;
-
-            if(scrollRange > 0.0f)
-            {
-                scrollBar.setSize(sf::Vector2f(scrollBar.getSize().x,
-                                               0.95f*bounds.height*bounds.height/(scrollRange+bounds.height)));
-                View->anim_to(&scrollBar, sf::Vector2f(bounds.left + bounds.width*0.97f,
-                                                       bounds.top + bounds.height*0.025f +
-                                                       ((bounds.height * 0.95f) - scrollBar.getSize().y)*
-                                                       (1.0f-(scrollOffsetY/(scrollRange)))), msgScrollSpeed*(bounds.height*0.95f-scrollBar.getSize().y)/scrollRange,
-                              CV_OBJ_ANIM_SLIDE, true);
-            }
+            setFocus(false);
         }
+        scroll_bar->setScrollable(false);
     }
 
     // Process clicking
@@ -2120,8 +2081,10 @@ bool CVTextLog::update(CVEvent& event, const sf::Vector2f& mousePos)
        (event.LMBreleaseFrames == 1) &&
        bounds.contains(event.LMBreleasePosition))
     {
+
         if(usrEntryBox && event.captureMouse())
         {
+
             for(auto& item : msgPanels)
             {
 
@@ -2148,69 +2111,50 @@ bool CVTextLog::update(CVEvent& event, const sf::Vector2f& mousePos)
                     }
                 }
             }
+
         }
-    }
-    else if(event.LMBhold)
-    {
-        if((event.LMBpressPosition.x > bounds.left + bounds.width*0.9f) &&
-                (event.LMBpressPosition.x < bounds.left + bounds.width*1.05f))
-        {
-            if((scrollRange > 0.0f) && (event.LMBholdTime > 0.2f))
-            {
-                scrollSpeed *= 3;
-                scrollDist = (scrollBar.getPosition().y + scrollBar.getSize().y/2 - mousePos.y)*event.lastFrameTime*20;
-            }
-        }
+
     }
 
-    bool fadeOut = true;
+    // Process scrolling
 
-    if(bCanScroll && bounds.contains(mousePos) && event.viewHasFocus)
+    if(msgPanels.size() > 0)
     {
 
-        if(event.mouseWheelDelta.y != 0.0f)
-        {
-            scrollDist = 20.0f*event.mouseWheelDelta.y;
-        }
-        if(mousePos.x > bounds.left + bounds.width*0.9f)
-        {
-            if(scrollBar.getFillColor().a < 255_BIT) View->anim_passive(&scrollBar, 1000.0f, CV_OBJ_ANIM_FADE_IN);
-            fadeOut = false;
-        }
-        if(scrollDist != 0.0f)
+        float boundHeight = msgPanels.back()->getPosition().y +
+                            msgPanels.back()->getSize().y -
+                            msgPanels.front()->getPosition().y;
+
+        scroll_bar->setScrollMax(boundHeight);
+
+        if(boundHeight > bounds.height)
         {
 
-            if((scrollDist < 0.0f) && (scrollOffsetY > 0.0f))
+            float moveDist = bounds.top + bounds.height * 0.95f -
+                             (msgPanels.back()->getPosition().y +
+                             msgPanels.back()->getSize().y) +
+                             scroll_bar->getScrollOffset();
+
+            for(auto& panel : msgPanels)
             {
-                if(scrollOffsetY + scrollDist < 0.0f) scrollDist = -scrollOffsetY;
-                scrollOffsetY += scrollDist;
-            }
-            else if((scrollDist > 0.0f) && (scrollOffsetY < scrollRange))
-            {
-                if(scrollDist + scrollOffsetY > scrollRange) scrollDist = scrollRange - scrollOffsetY;
-                scrollOffsetY += scrollDist;
-            }
-            else
-            {
-                scrollDist = 0.0f;
+                panel->anim_move(sf::Vector2f(0.0f, moveDist), msgScrollSpeed * abs(moveDist)/600.0f + 700.0f);
             }
 
-            if(scrollBar.getFillColor().a < 255_BIT) View->anim_passive(&scrollBar, 1000.0f, CV_OBJ_ANIM_FADE_IN);
-
-            if(scrollDist != 0.0f)
-            {
-                for(auto& panel : msgPanels)
-                {
-                    panel->anim_move(sf::Vector2f(sf::Vector2f(0.0f, scrollDist)), msgScrollSpeed);
-                }
-            }
-            fadeOut = false;
         }
-    }
+        else
+        {
 
-    if(fadeOut && (scrollBar.getFillColor().a > 0))
-    {
-        View->anim_passive(&scrollBar, 30.0f, CV_OBJ_ANIM_FADE_OUT);
+            float moveDist = bounds.top + bounds.height * 0.95f -
+                             (msgPanels.back()->getPosition().y +
+                             msgPanels.back()->getSize().y);
+
+            for(auto& panel : msgPanels)
+            {
+                panel->anim_move(sf::Vector2f(0.0f, moveDist), msgScrollSpeed * abs(moveDist)/600.0f + 700.0f);
+            }
+
+        }
+
     }
 
     // Fade elements at the edge of the top scroll boundary
@@ -2411,6 +2355,7 @@ bool CVTextLog::load()
     }
 
     msgPanels.clear();
+    scroll_bar->setScrollOffset(0.0f);
 
     FILE* inFILE = fopen(logFile.c_str(), "rb");
 
@@ -2475,9 +2420,17 @@ bool CVTextLog::load()
             msgPanels.back()->time = times[N];
             msgPanels.back()->bMsg = false;
 
-            for(size_t i = 1; i < msgPanels.size(); ++i)
+            msgPanels.back()->setPosition(sf::Vector2f(bounds.left + bounds.width/2 - msgPanels.back()->getSize().x/2,
+                                                       bounds.top + bounds.height - 2*msgPanelPaddingPx - msgPanels.back()->getSize().y));
+
+            if(msgPanels.size() > 1)
             {
-                msgPanels[i - 1]->move(sf::Vector2f(0.0f, -(msgPanels.back()->getSize().y + 1.5*msgPanelPaddingPx)));
+                float moveDist = msgPanels.back()->getSize().y + 3.5*msgPanelPaddingPx;
+
+                for(size_t i = 1; i < msgPanels.size(); ++i)
+                {
+                    msgPanels[i - 1]->move(sf::Vector2f(0.0f, -moveDist));
+                }
             }
 
             date = newDate;
@@ -2491,17 +2444,16 @@ bool CVTextLog::load()
         msgPanels.back()->setTextPadding(msgPanelPaddingPx);
         msgPanels.back()->setTextWrap(true);
         msgPanels.back()->setText(0, textLog[N]);
-        msgPanels.back()->setPosition(sf::Vector2f(bounds.left + bounds.width/2 - msgPanels.back()->getSize().x/2,
-                                                   bounds.top + bounds.height - msgPanels.back()->getSize().y - 48.0f));
         msgPanels.back()->fitText();
         msgPanels.back()->time = times[N];
         msgPanels.back()->textLogIndex = N;
 
-        float moveBump = 0.0f, shiftDist = msgPanels.back()->getSize().y + msgPanelPaddingPx/2;
+        float moveBump = 0.0f;
+        float shiftDist = msgPanels.back()->getSize().y + msgPanelPaddingPx/2;
+
         if(N > 0)
         {
-            if((textLogUserEntered[N-1] & !textLogUserEntered[N]) ||
-                    (!textLogUserEntered[N-1] & textLogUserEntered[N]))
+            if(textLogUserEntered[N-1] ^ textLogUserEntered[N])
             {
                 moveBump = msgPanelPaddingPx;
             }
@@ -2514,64 +2466,67 @@ bool CVTextLog::load()
 
         if(textLogUserEntered[N])
         {
+
             switch(userTextAlign)
             {
             case ALIGN_LEFT:
             {
                 msgPanels.back()->setPosition(sf::Vector2f(bounds.left + bounds.width*0.05f,
-                                               bounds.top + bounds.height + scrollOffsetY));
+                                                           bounds.top + bounds.height));
                 break;
             }
             default:  // Right
             {
                 msgPanels.back()->setPosition(sf::Vector2f(bounds.left + bounds.width*0.92f - msgPanels.back()->getSize().x,
-                                               bounds.top + bounds.height + scrollOffsetY));
+                                                           bounds.top + bounds.height));
                 break;
             }
             }
+
             msgPanels.back()->setFillColor(getMsgPanelFillColor());
             msgPanels.back()->setTextColor(templateTheme.textColor);
             msgPanels.back()->bUser = true;
+
         }
         else
         {
+
             switch(otherTextAlign)
             {
             case ALIGN_RIGHT:
             {
                 msgPanels.back()->setPosition(sf::Vector2f(bounds.left + bounds.width*0.92f - msgPanels.back()->getSize().x,
-                                               bounds.top + bounds.height + scrollOffsetY));
+                                               bounds.top + bounds.height));
                 break;
             }
             default:  // Left
             {
                 msgPanels.back()->setPosition(sf::Vector2f(bounds.left + bounds.width*0.05f,
-                                               bounds.top + bounds.height + scrollOffsetY));
+                                               bounds.top + bounds.height));
                 break;
             }
             }
+
             msgPanels.back()->setFillColor(getIncomingMsgPanelFillColor());
             msgPanels.back()->setTextColor(getOtherTextColor());
             msgPanels.back()->bUser = false;
+
         }
 
-        msgPanels.back()->move(sf::Vector2f(0.0f,-(shiftDist + 12.0f)));
+        msgPanels.back()->move(sf::Vector2f(0.0f,-shiftDist));
 
     }
 
-    if(textLog.size() > 0)
+    float scrollMax = 0.0f;
+
+    if(!msgPanels.empty())
     {
-        float scrollRange = 2*msgPanelPaddingPx + msgPanels.back()->getPosition().y + msgPanels.back()->getSize().y - msgPanels.front()->getPosition().y
-                            - bounds.height;
-
-        if(scrollRange > 0.0f)
-        {
-            scrollBar.setSize(sf::Vector2f(scrollBar.getSize().x,
-                                           0.95f*bounds.height*bounds.height/(scrollRange+bounds.height)));
-            scrollBar.setPosition(sf::Vector2f(bounds.left + bounds.width*0.97f,
-                                               bounds.top + bounds.height*0.975f - scrollBar.getSize().y));
-        }
+        scrollMax = msgPanels.back()->getPosition().y +
+                    msgPanels.back()->getSize().y -
+                    msgPanels.front()->getPosition().y;
     }
+
+    scroll_bar->setScrollMax(scrollMax);
 
     return true;
 
@@ -2726,7 +2681,8 @@ bool CVTextLog::draw(sf::RenderTarget* target)
     {
         target->draw(item);
     }
-    target->draw(scrollBar);
+
+    scroll_bar->draw(target);
 
     CV_DRAW_CLIP_END
 

@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -52,34 +52,12 @@
 namespace cvis
 {
 
-class CVISION_API CVNodePanel : public CVBasicViewPanel{ // Panel items are distributed radially around source
-protected:
-    CVElement* center;
-    int nodeIndex;
-    unsigned int maxTraceLength;
-    uint8_t nodeAlpha;
-    bool bAutoPan,
-        bNodeOpened,
-        bNodeInteracted,
-        bShowTagOnHover;
-    float panRate,
-            nodeDistance, // Distance where potential is zero
-            elasticCoef, // Proportional to force tugging nodes together
-            pathThickness;
-
-    sf::Vector2f anchorPoint;
-
-    std::vector<sf::RectangleShape> nodePaths;
-    std::vector<CVNodePanel*> branches;
-    std::vector<sf::Text> hoverTags;
-
-    std::vector<bool> pathSelected;     // Record of selected paths
-
-    std::vector<std::string> interactionTrace;
-
-    void logInteraction(const std::string& tag);
-
+class CVISION_API CVNodePanel : public CVBasicViewPanel{    // Panel items are distributed radially around source
 public:
+
+    CVISION_API CVNodePanel(CVView* parentView, std::string panelTag = "", sf::Color backgroundColor = sf::Color::Transparent,
+                     const sf::Vector2f& size = sf::Vector2f(NAN, NAN), bool bFitToWindow = true,
+                     const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
 
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
     CVISION_API bool draw(sf::RenderTarget* target);
@@ -115,9 +93,44 @@ public:
         move(sf::Vector2f(x, y));
     }
 
-    CVISION_API CVNodePanel(CVView* parentView, std::string panelTag = "", sf::Color backgroundColor = sf::Color::Transparent,
-                     const sf::Vector2f& size = sf::Vector2f(NAN, NAN), bool bFitToWindow = true,
-                     const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
+    void getConnectedNodes(std::vector<CVElement*>& output) noexcept;
+
+protected:
+
+    CVElement*      center;
+
+    int             nodeIndex;
+
+    unsigned int    maxTraceLength;
+
+    uint8_t         nodeAlpha;
+
+    bool            bAutoPan;
+    bool            bNodeOpened;
+    bool            bNodeInteracted;
+    bool            bShowTagOnHover;
+    bool            bIsChild;
+
+    float           panRate;
+    float           nodeDistance;       // Distance where potential is zero
+    float           elasticCoef;        // Proportional to force tugging nodes together
+    float           pathThickness;
+    float           fRepulsionCoef;      // Force pushing nodes apart
+
+    sf::Vector2f    anchorPoint;
+
+    std::vector<sf::RectangleShape>     nodePaths;
+    std::vector<CVNodePanel*>           branches;
+    std::vector<sf::Text>               hoverTags;
+
+    std::vector<bool>                   pathSelected;     // Record of selected paths
+
+    std::vector<std::string>            interactionTrace;
+
+    void logInteraction(const std::string& tag);
+
+    void updatePhysics(cvis::CVEvent& event, const sf::Vector2f& mousePos);
+    void updateBounds() override;
 
 };
 

@@ -227,14 +227,14 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
     if(bFade)
     {
 
-        unsigned int adjusted_fr = ceil((float)fadeRate*60.0f/View->getFrameRate());
+        int adjusted_fr = ceil((float)fadeRate*60.0f/View->getFrameRate());
 
         for(auto& color : colorTheme)
         {
             if(color.a == targetAlpha) continue;
             if(targetAlpha > color.a)
             {
-                if(color.a + adjusted_fr < targetAlpha)
+                if((int)color.a + adjusted_fr < (int)targetAlpha)
                 {
                     color.a += adjusted_fr;
                 }
@@ -242,7 +242,7 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
             }
             else
             {
-                if(color.a - adjusted_fr > targetAlpha)
+                if((int)color.a - adjusted_fr > (int)targetAlpha)
                 {
                     color.a -= adjusted_fr;
                 }
@@ -260,7 +260,7 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
             {
                 if(targetAlpha > highlightColor.a)
                 {
-                    if(highlightColor.a + adjusted_fr < targetAlpha)
+                    if((int)highlightColor.a + adjusted_fr < (int)targetAlpha)
                     {
                         highlightColor.a += adjusted_fr;
                     }
@@ -268,7 +268,7 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
                 }
                 else
                 {
-                    if(highlightColor.a - adjusted_fr > targetAlpha)
+                    if((int)highlightColor.a - adjusted_fr > (int)targetAlpha)
                     {
                         highlightColor.a -= adjusted_fr;
                     }
@@ -287,9 +287,10 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
             {
                 tmp = sprite.getColor();
                 if(tmp.a == targetAlpha) continue;
+
                 if(targetAlpha > tmp.a)
                 {
-                    if(tmp.a + adjusted_fr < targetAlpha)
+                    if((int)tmp.a + adjusted_fr < (int)targetAlpha)
                     {
                         tmp.a += adjusted_fr;
                     }
@@ -297,7 +298,7 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
                 }
                 else
                 {
-                    if(tmp.a - adjusted_fr > targetAlpha)
+                    if((int)tmp.a - adjusted_fr > (int)targetAlpha)
                     {
                         tmp.a -= adjusted_fr;
                     }
@@ -306,12 +307,13 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
                         tmp.a = targetAlpha;
                     }
                 }
+
                 sprite.setColor(tmp);
             }
 
             if(targetAlpha > spriteColor.a)
             {
-                if(spriteColor.a + adjusted_fr < targetAlpha)
+                if((int)spriteColor.a + adjusted_fr < (int)targetAlpha)
                 {
                     spriteColor.a += adjusted_fr;
                 }
@@ -319,7 +321,7 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
             }
             else if(targetAlpha < spriteColor.a)
             {
-                if(spriteColor.a - adjusted_fr > targetAlpha)
+                if((int)spriteColor.a - adjusted_fr > (int)targetAlpha)
                 {
                     spriteColor.a -= adjusted_fr;
                 }
@@ -826,6 +828,13 @@ void CVElement::updateBounds()
     }
 }
 
+void CVElement::move(const sf::Vector2f& distance)
+{
+
+    if(bStatic) return;
+
+}
+
 void CVElement::setExpand(const bool& state)
 {
     bExpand = state;
@@ -875,21 +884,25 @@ void CVElement::anim_move(const sf::Vector2f& distance,
 {
     if(bStatic) return;
 
-    bNoInteract = false;
+    if((!distance.x && !distance.y) ||
+       !velocity)
+    {
+        return;
+    }
 
-    sf::Vector2f dest;
+    bNoInteract = false;
 
     if(!bMove)
     {
-        dest = getPosition() + distance;
+        destination = getPosition() + distance;
         bMove = true;
     }
     else
     {
-        dest += distance;
+        destination = getPosition() + distance;
     }
 
-    fMoveAngle = get_angle(dest, getPosition());
+    fMoveAngle = get_angle(getPosition(), destination);
     this->velocity = components(velocity, fMoveAngle);
     fFriction = abs(drag);
 }

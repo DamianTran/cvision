@@ -545,6 +545,9 @@ CVGridPanel::CVGridPanel(CVView * View,
         fGridItemWidth = (size.x - 2*outerPadding - fGridItemPadding * (gridWidth - 1)) / gridWidth;
     }
 
+    setOutlineThickness(outlineThickness);
+    setOutlineColor(outlineColor);
+
 }
 
 sf::Vector2f CVGridPanel::getGridPosition(const sf::Vector2i& coords) const
@@ -559,6 +562,7 @@ sf::Vector2f CVGridPanel::getGridPosition(const sf::Vector2i& coords) const
     else
     {
         int y = coords.y;
+
         if(!rowPanels.empty())
         {
             output.y = rowPanels.back()->getPosition().y;
@@ -589,6 +593,21 @@ sf::Vector2f CVGridPanel::getGridPosition(const size_t& index) const
     {
         return getGridPosition(sf::Vector2i(cPos.x, cPos.y));
     }
+
+}
+
+void CVGridPanel::setGridItemSize(const sf::Vector2f& newSize)
+{
+
+    listItemHeight = newSize.y;
+    fGridItemWidth = newSize.x;
+
+}
+
+void CVGridPanel::setGridItemPadding(const float& newPadding)
+{
+
+    fGridItemPadding = newPadding;
 
 }
 
@@ -640,23 +659,85 @@ void CVGridPanel::addPanelElement(CVElement * newElement, string newTag, const u
 
 void CVGridPanel::removePanelElement(CVElement * newElement)
 {
-    for(size_t y = 0, x; y < rowPanels.size(); ++y)
-    {
-        for(x = 0; x < rowPanels[y]->getElements().size(); ++x)
-        {
-            if(rowPanels[y]->getElements()[x] == newElement)
-            {
-                rowPanels[y]->removePanelElement(newElement);
 
-                if(rowPanels[y]->numPanels() == 0)
+    bool bRemoved = false;
+
+    for(size_t y = 0, i = 0, x; y < rowPanels.size(); ++y)
+    {
+        for(x = 0; x < rowPanels[y]->getElements().size(); ++i)
+        {
+
+            if(!bRemoved)
+            {
+                if(rowPanels[y]->getElements()[x] == newElement)
                 {
-                    CVListPanel::removePanelElement(rowPanels[y]);
+
+                    rowPanels[y]->removePanelElement(newElement);
+
+                    if(cPos.x)
+                    {
+                        --cPos.x;
+                    }
+
+                    bRemoved = true;
+
+                }
+                else
+                {
+                    ++x;
+                }
+            }
+            else
+            {
+
+                CVElement * shiftElement = rowPanels[y]->getElements()[x];
+
+                if(!x && y && (rowPanels[y-1]->numPanels() < stGridWidth))
+                {
+
+                    rowPanels[y]->detachPanelElement(shiftElement);
+                    rowPanels[y-1]->addPanelElement(shiftElement);
+                }
+                else
+                {
+                    ++x;
                 }
 
-                return;
+                shiftElement->setPosition(getGridPosition(i - 1));
+
+            }
+
+        }
+    }
+
+    if(rowPanels.back()->numPanels() == 0)
+    {
+        CVBasicViewPanel::removePanelElement(rowPanels.back());
+        rowPanels.pop_back();
+
+        if(cPos.y)
+        {
+            --cPos.y;
+        }
+    }
+}
+
+CVElement * CVGridPanel::getGridElement(const std::string& tag)
+{
+
+    for(auto& row : rowPanels)
+    {
+        for(auto& element : row->getElements())
+        {
+            if(element->tag() == tag)
+            {
+                return element;
             }
         }
     }
+
+    return nullptr;
+
 }
 
 void CVGridPanel::setOuterPadding(const float& newPadding)

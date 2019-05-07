@@ -195,12 +195,6 @@ bool CVViewPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
         updateBounds();
     }
 
-    if(bFitWindow && event.viewResized)
-    {
-        setPosition(0.0f,0.0f);
-        setSize(sf::Vector2f(event.viewBounds.width, event.viewBounds.height));
-    }
-
     if(bTransduceFocus)
     {
         for(auto& item : viewPanelElements)
@@ -253,6 +247,28 @@ void CVViewPanel::removePanelElement(const string& tag)
             return;
         }
     }
+}
+
+void CVViewPanel::detachPanelElement(const CVElement* element) noexcept
+{
+
+    for(size_t i = 0; i < viewPanelElements.size(); ++i)
+    {
+
+        if(viewPanelElements[i] == element)
+        {
+            viewPanelElements.erase(viewPanelElements.begin() + i);
+            viewPanelTags.erase(viewPanelTags.begin() + i);
+            return;
+        }
+
+    }
+
+    if(bExpand)
+    {
+        updateBounds();
+    }
+
 }
 
 void CVViewPanel::move(const sf::Vector2f& distance)

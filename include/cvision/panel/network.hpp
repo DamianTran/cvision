@@ -95,6 +95,7 @@ public:
     CVISION_API void disconnect();
 
     CVISION_API CVNetworkEdge& getConnection(CVElement* other);
+    CVISION_API CVNetworkEdge& getConnection(CVNetworkNode& other);
     CVISION_API CVNetworkEdge& getConnection(const std::string& tag);
 
     CVISION_API bool hasConnectionTo(const CVNetworkNode& node);
@@ -113,6 +114,7 @@ public:
 
     inline void setWeight(const float& newWeight) noexcept{ weight = newWeight; }
     inline void setType(const std::string& newType) noexcept{ type = newType; }
+    CVISION_API void setTag(const std::string& newTag) noexcept;
 
     inline void setTextDisplayOffset(const sf::Vector2f& newOffset) noexcept{ textDisplayOffset = newOffset; }
 
@@ -229,6 +231,10 @@ public:
     inline const float& getWeight() const noexcept{ return weight; }
 
     CVISION_API void setLineWidth(const float& newWidth) noexcept;
+    inline void setLineColor(const sf::Color& newColor) noexcept
+    {
+        line.setFillColor(newColor);
+    }
     inline void setLineWeightScale(const float& newScale) noexcept{ lineWeightScale = newScale; }
 
     /** Apply one frame of tether push/pull to distance (0 = no push) */

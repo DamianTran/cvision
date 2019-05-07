@@ -48,33 +48,38 @@
 
 using namespace EZC;
 
-namespace cvis{
+namespace cvis
+{
 
 CVButton::CVButton(CVView* View, const sf::Vector2f& position, float width, float height,
-                const TextEntry& textInfo, const std::string& icon, sf::Color fillColor, sf::Color borderColor,
-                float borderWidth):
-                    CVTextBox(View, position, width, height, textInfo, fillColor, borderColor, borderWidth),
-                    bFadeInHover(false),
-                    bFadeInToggle(false),
-                    bToggleFlipX(false),
-                    bToggleFlipY(false),
-                    rotateAngle(NAN),
-                    rotateType(CV_LAYER_ALL),
-                    responseEvent(CV_EVENT_LMB),
-                    baseAlpha(fillColor.a),
-                    activateFunc(nullptr),
-                    stateColors({fillColor})
-                {
+                   const TextEntry& textInfo, const std::string& icon, sf::Color fillColor, sf::Color borderColor,
+                   float borderWidth):
+    CVTextBox(View, position, width, height, textInfo, fillColor, borderColor, borderWidth),
+    bFadeInHover(false),
+    bFadeInToggle(false),
+    bToggleFlipX(false),
+    bToggleFlipY(false),
+    rotateAngle(NAN),
+    rotateType(CV_LAYER_ALL),
+    responseEvent(CV_EVENT_LMB),
+    baseAlpha(fillColor.a),
+    activateFunc(nullptr),
+    stateColors(
+{
+    fillColor
+})
+{
 
-    if(!icon.empty()){
+    if(!icon.empty())
+    {
         const sf::Texture* iconTex = View->mainApp->bitmaps.taggedTexture(icon);
         sf::Vector2f texSize(iconTex->getSize());
 
         float scale = width < height ? width/iconTex->getSize().x : height/iconTex->getSize().y;
 
         addSprite(iconTex,
-              sf::Vector2f(width/2, height/2),
-              sf::Vector2f(texSize*scale));
+                  sf::Vector2f(width/2, height/2),
+                  sf::Vector2f(texSize*scale));
 
         stateTextures.push_back(iconTex);
     }
@@ -84,20 +89,24 @@ CVButton::CVButton(CVView* View, const sf::Vector2f& position, float width, floa
 }
 
 CVButton::CVButton(CVView* View, const sf::Vector2f& position, const float& width,
-             const float& height, const std::string& icon, const unsigned int& numStates,
-             const unsigned int& initialState, const bool& bHighlight,
-             void (*activateFunc)(const unsigned int&, CVView*)):
-                 CVTextBox(View, position, width, height, sf::Color::Transparent, sf::Color::Transparent, 0.0f),
-                 bFadeInHover(false),
-                 bFadeInToggle(false),
-                 bToggleFlipX(false),
-                 bToggleFlipY(false),
-                 rotateAngle(NAN),
-                 rotateType(CV_LAYER_ALL),
-                 responseEvent(CV_EVENT_LMB),
-                 baseAlpha(255),
-                 activateFunc(activateFunc),
-                 stateColors({sf::Color(200,200,200)}){
+                   const float& height, const std::string& icon, const unsigned int& numStates,
+                   const unsigned int& initialState, const bool& bHighlight,
+                   void (*activateFunc)(const unsigned int&, CVView*)):
+    CVTextBox(View, position, width, height, sf::Color::Transparent, sf::Color::Transparent, 0.0f),
+    bFadeInHover(false),
+    bFadeInToggle(false),
+    bToggleFlipX(false),
+    bToggleFlipY(false),
+    rotateAngle(NAN),
+    rotateType(CV_LAYER_ALL),
+    responseEvent(CV_EVENT_LMB),
+    baseAlpha(255),
+    activateFunc(activateFunc),
+    stateColors(
+{
+    sf::Color(200,200,200)
+})
+{
 
     stateNum = initialState;
     setNumStates(numStates);
@@ -117,26 +126,38 @@ CVButton::CVButton(CVView* View, const sf::Vector2f& position, const float& widt
 
 }
 
-void CVButton::setColor(const sf::Color& newColor, const unsigned int& state){
-    while(colorTheme.size() < 2) colorTheme.emplace_back(sf::Color::Transparent);
-    while(stateColors.size() < state){
+void CVButton::setColor(const sf::Color& newColor, const unsigned int& state)
+{
+
+    while(colorTheme.size() < 2)
+    {
+        colorTheme.emplace_back(sf::Color::Transparent);
+    }
+
+    while(stateColors.size() < state)
+    {
         stateColors.emplace_back(baseFillColor());
     }
 
-    colorTheme[0] = newColor;
+    CVBox::setColor(newColor);
 }
 
 void CVButton::setFadeIn(const bool& state, const uint8_t& targetAlpha,
-                         const uint8_t& fadeSpeed){
+                         const uint8_t& fadeSpeed)
+{
     fadeRate = fadeSpeed;
     baseAlpha = targetAlpha;
-    if(state){
-        for(auto& color : colorTheme){
+    if(state)
+    {
+        for(auto& color : colorTheme)
+        {
             color.a = 0;
         }
     }
-    else{
-        for(auto& color : colorTheme){
+    else
+    {
+        for(auto& color : colorTheme)
+        {
             color.a = targetAlpha;
         }
     }
@@ -144,19 +165,26 @@ void CVButton::setFadeIn(const bool& state, const uint8_t& targetAlpha,
 }
 
 void CVButton::setFadeOnClick(const bool& state, const uint8_t& targetAlpha,
-                              const uint8_t& fadeSpeed){
+                              const uint8_t& fadeSpeed)
+{
     fadeRate = fadeSpeed;
     baseAlpha = targetAlpha;
-    if(state){
-        for(auto& color : colorTheme){
+
+    if(state)
+    {
+        for(auto& color : colorTheme)
+        {
             color.a = 0;
         }
     }
-    else{
-        for(auto& color : colorTheme){
+    else
+    {
+        for(auto& color : colorTheme)
+        {
             color.a = targetAlpha;
         }
     }
+
     bFadeInToggle = state;
 }
 
@@ -177,7 +205,8 @@ void CVButton::setSize(const sf::Vector2f& newSize)
 
 }
 
-bool CVButton::update(CVEvent& event, const sf::Vector2f& mousePos){
+bool CVButton::update(CVEvent& event, const sf::Vector2f& mousePos)
+{
 
     if(!CVTextBox::update(event, mousePos)) return false;
 
@@ -192,36 +221,43 @@ bool CVButton::update(CVEvent& event, const sf::Vector2f& mousePos){
     }
 
     if(bounds.contains(mousePos) &&
-       event.captureMouse())
+            event.captureMouse())
     {
 
         setFocus(true);
 
         if((responseEvent & CV_EVENT_LMB) &&
-           bounds.contains(event.LMBreleasePosition)){
-           if((event.LMBreleaseFrames == 1) &&
-              (event.LMBholdTime < 0.5f) &&
-                (hasFocus() || event.captureFocus())){ // Cycle states
-                    toggle();
-           }
+                bounds.contains(event.LMBreleasePosition))
+        {
+            if((event.LMBreleaseFrames == 1) &&
+                    (event.LMBholdTime < 0.5f) &&
+                    (hasFocus() || event.captureFocus()))  // Cycle states
+            {
+                toggle();
+            }
         }
 
         if((responseEvent & CV_EVENT_RMB) &&
-           bounds.contains(event.RMBreleasePosition)){
-           if((event.RMBreleaseFrames == 1) &&
-              (event.RMBholdTime < 0.5f) &&
-                (hasFocus() || event.captureFocus())){
-                    toggle();
-           }
+                bounds.contains(event.RMBreleasePosition))
+        {
+            if((event.RMBreleaseFrames == 1) &&
+                    (event.RMBholdTime < 0.5f) &&
+                    (hasFocus() || event.captureFocus()))
+            {
+                toggle();
+            }
         }
 
     }
 
-    if(bFadeInHover){
-        if(bounds.contains(mousePos)){
+    if(bFadeInHover)
+    {
+        if(bounds.contains(mousePos))
+        {
             setFade(baseAlpha, fadeRate);
         }
-        else{
+        else
+        {
             setFade(0, fadeRate);
         }
     }
@@ -230,50 +266,62 @@ bool CVButton::update(CVEvent& event, const sf::Vector2f& mousePos){
 
 }
 
-void CVButton::toggle(){
+void CVButton::toggle()
+{
 
     if(!active) return;
 
     sendTriggers();
 
-    if(stateNum + 1 < numStates){
+    if(stateNum + 1 < numStates)
+    {
         ++stateNum;
         if(this->activateFunc != nullptr) activateFunc(stateNum, View);
     }
-    else{
+    else
+    {
         stateNum = 0;
         if(this->activateFunc != nullptr) activateFunc(stateNum, View);
     }
 
-    if(!isnan(rotateAngle)){
+    if(!isnan(rotateAngle))
+    {
         rotate(rotateAngle, rotateType);
     }
 
-    if(bToggleFlipX){
+    if(bToggleFlipX)
+    {
         spriteList.front().setScale(-spriteList.front().getScale().x, spriteList.front().getScale().y);
     }
-    if(bToggleFlipY){
+    if(bToggleFlipY)
+    {
         spriteList.front().setScale(spriteList.front().getScale().x, -spriteList.front().getScale().y);
     }
     bTriggered = true;
 
-    if(bFadeInToggle){
-        if(stateNum == 0){
+    if(bFadeInToggle)
+    {
+        if(stateNum == 0)
+        {
             setFade(0, fadeRate);
         }
-        else{
+        else
+        {
             setFade(baseAlpha, fadeRate);
         }
     }
 }
 
-void CVButton::setState(const unsigned int& state){
-    while(stateNum != state){
-       toggle();
+void CVButton::setState(const unsigned int& state)
+{
+    while(stateNum != state)
+    {
+        toggle();
     }
 }
 
-bool CVButton::draw(sf::RenderTarget* target){
+bool CVButton::draw(sf::RenderTarget* target)
+{
     if(!target || !visible) return false;
 
     CV_DRAW_CLIP_BEGIN
@@ -283,18 +331,22 @@ bool CVButton::draw(sf::RenderTarget* target){
         target->draw(dropShadow);
     }
 
-    if(!bSpriteOnly){
-        for(auto& item : panel){
+    if(!bSpriteOnly)
+    {
+        for(auto& item : panel)
+        {
             target->draw(item);
         }
     }
 
     if(bMasked) target->draw(shapeMask);
 
-    for(auto& spr : spriteList){
+    for(auto& spr : spriteList)
+    {
         target->draw(spr);
     }
-    for(auto& text : displayText){
+    for(auto& text : displayText)
+    {
         target->draw(text);
     }
 

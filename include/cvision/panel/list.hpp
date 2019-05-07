@@ -189,9 +189,12 @@ public:
 
     CVISION_API void addPanelElement(CVElement * newElement, std::string newTag = "", const unsigned int& index = UINT_MAX) override;
     CVISION_API void removePanelElement(CVElement * element) override;
+    CVISION_API CVElement * getGridElement(const std::string& tag);
 
     CVISION_API sf::Vector2f getGridPosition(const sf::Vector2i& coords) const;
     CVISION_API sf::Vector2f getGridPosition(const size_t& index) const;
+    inline sf::Vector2f getGridItemSize() const noexcept{ return sf::Vector2f(fGridItemWidth, listItemHeight); }
+    inline void setGridItemsSquared() noexcept{ listItemHeight = fGridItemWidth; }
 
     CVISION_API void setGridWidth(const size_t& newWidth);
     CVISION_API void setGridItemSize(const sf::Vector2f& newSize);
@@ -208,12 +211,12 @@ protected:
 
     bool bResizeToGrid;
 
+    std::vector<CVBasicViewPanel*> rowPanels;
+
 private:
 
     sf::Vector2i cPos;
     CVBasicViewPanel * cRowPanel;
-
-    std::vector<CVBasicViewPanel*> rowPanels;
 
 };
 

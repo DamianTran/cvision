@@ -272,6 +272,14 @@ void CVNetworkNode::setScale(const float& newScale)
 
 }
 
+void CVNetworkNode::setTag(const std::string& newTag) noexcept
+{
+
+    element->setTag(newTag);
+    displayText.setString(newTag);
+
+}
+
 void CVNetworkNode::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
 
@@ -509,7 +517,28 @@ CVNetworkEdge& CVNetworkNode::getConnection(CVElement* element)
         }
     }
 
-    throw invalid_argument("CVNetworkNode: requested connection does not exist");
+    throw invalid_argument("CVNetworkNode: requested element connection does not exist");
+}
+
+CVNetworkEdge& CVNetworkNode::getConnection(CVNetworkNode& other)
+{
+    for(auto& connection : connected_to)
+    {
+        if(&connection.getNode() == &other)
+        {
+            return connection;
+        }
+    }
+
+    for(auto& connection : connected_from)
+    {
+        if(&connection.getNode() == &other)
+        {
+            return connection;
+        }
+    }
+
+    throw invalid_argument("CVNetworkNode: requested node connection does not exist");
 }
 
 CVNetworkEdge& CVNetworkNode::getConnection(const string& tag)
@@ -530,7 +559,7 @@ CVNetworkEdge& CVNetworkNode::getConnection(const string& tag)
         }
     }
 
-    throw invalid_argument("CVNetworkNode: requested connection does not exist");
+    throw invalid_argument("CVNetworkNode: requested tag connection \"" + tag + "\" does not exist");
 }
 
 bool CVNetworkNode::hasConnectionTo(const CVNetworkNode& other)

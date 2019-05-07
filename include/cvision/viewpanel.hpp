@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -74,6 +74,8 @@ public:
     virtual void removePanelElement(CVElement* element);
     virtual void removePanelElement(const std::string& tag);
     virtual void removePanelElement(const unsigned int& index);
+
+    virtual void detachPanelElement(const CVElement* element) noexcept;
 
     virtual void clear();
 
@@ -154,7 +156,7 @@ protected:
 
     sf::Sprite*                 dragShadow;     // If drag-and-drop, a sprite for the item shadow
 
-    CVISION_API void updateBounds();
+    CVISION_API virtual void updateBounds() override;
     CVISION_API void updatePanels(CVEvent& event, const sf::Vector2f& mousePos);
 
     CVISION_API bool fadeComplete() const noexcept;

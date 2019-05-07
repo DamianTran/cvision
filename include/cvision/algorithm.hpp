@@ -106,15 +106,15 @@ template<typename T1, typename T2> constexpr sf::Vector2<T1> operator/(const sf:
 
 template<typename T1, typename T2> constexpr sf::Vector2<T1> operator+(const sf::Vector2<T1>& LHS, const T2& RHS)
 {
-    return sf::Vector2<T1>(LHS.x / RHS, LHS.y / RHS);
+    return sf::Vector2<T1>(LHS.x + RHS, LHS.y + RHS);
 }
 template<typename T1, typename T2> constexpr sf::Vector2<T1> operator-(const sf::Vector2<T1>& LHS, const T2& RHS)
 {
-    return sf::Vector2<T1>(LHS.x / RHS, LHS.y / RHS);
+    return sf::Vector2<T1>(LHS.x - RHS, LHS.y - RHS);
 }
 template<typename T1, typename T2> constexpr sf::Vector2<T1> operator*(const sf::Vector2<T1>& LHS, const T2& RHS)
 {
-    return sf::Vector2<T1>(LHS.x / RHS, LHS.y / RHS);
+    return sf::Vector2<T1>(LHS.x * RHS, LHS.y * RHS);
 }
 template<typename T1, typename T2> constexpr sf::Vector2<T1> operator/(const sf::Vector2<T1>& LHS, const T2& RHS)
 {

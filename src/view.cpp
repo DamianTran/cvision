@@ -1118,11 +1118,13 @@ bool CVView::handleViewEvents(CVEvent& event)
         case sf::Event::Resized:
         {
             event.lastViewBounds = event.viewBounds;
-            viewPort->setView(sf::View(sf::FloatRect(0, 0, SFevent.size.width, SFevent.size.height)));
+//            viewPort->setView(sf::View(sf::FloatRect(0, 0, SFevent.size.width, SFevent.size.height)));
             event.viewBounds = sf::FloatRect(viewPort->getPosition().x, viewPort->getPosition().y,
                                              viewPort->getSize().x, viewPort->getSize().y);
             event.lastViewBounds = event.viewBounds;
             event.viewResized = true;
+
+//            resize(event.lastViewBounds, event.viewBounds);
             break;
         }
         case sf::Event::MouseButtonPressed:

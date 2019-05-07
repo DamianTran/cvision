@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -156,6 +156,11 @@ public:
     inline void setScrollable(const bool& status){ bCanScroll = status; }
     inline void setDirection(const uint8_t& direction){ responseDir = direction; }
 
+    inline void reverseY() noexcept{ bReverseY = !bReverseY; }
+    inline void setYReverse(const bool& status = true) noexcept{ bReverseY = status; }
+    inline void reverseX() noexcept{ bReverseX = !bReverseX; }
+    inline void setXReverse(const bool& status = true) noexcept{ bReverseX = status; }
+
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
 
 protected:
@@ -176,6 +181,9 @@ protected:
 
     bool            bCanScroll;
     bool            bReleaseOnEnd;
+    bool            bReverseY;
+    bool            bReverseX;
+
     sf::FloatRect   mouseHighlightBounds;
 
     CVISION_API void calcHighlightBounds();

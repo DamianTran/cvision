@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -43,7 +43,10 @@
 
 #include "cvision/panel/toggle.hpp"
 
+#include <boost/range/adaptor/reversed.hpp>
+
 using namespace std;
+using namespace boost;
 
 namespace cvis
 {
@@ -52,7 +55,8 @@ CVTogglePanel::CVTogglePanel(CVView* parentView, const string& panelTag, const s
                      const sf::Vector2f& size, const bool& bFitToWindow,
                      const sf::Vector2f& position):
                          CVBasicViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position),
-                         active_index(0)
+                         active_index(0),
+                         bUpdateNonFocused(false)
 {
 
 
@@ -70,6 +74,18 @@ bool CVTogglePanel::update(CVEvent& event, const sf::Vector2f& mousePos)
     if(active_index < numPanels())
     {
         viewPanelElements[active_index]->update(event, mousePos);
+    }
+
+    if(bUpdateNonFocused)
+    {
+        for(int i = int(numPanels()) - 1; i >= 0; --i)
+        {
+            if(size_t(i) == active_index)
+            {
+                continue;
+            }
+            viewPanelElements[i]->update(event, mousePos);
+        }
     }
 
     if(trigger_waiting())

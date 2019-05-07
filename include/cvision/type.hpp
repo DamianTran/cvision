@@ -91,6 +91,7 @@ namespace cvis
 {
 
 class CVTypeBox;
+class CVScrollBar;
 
 class CVISION_API CVTextLogMsg : public CVTextBox
 {
@@ -116,9 +117,6 @@ public:
                           const TextEntry& textInfo, const sf::Color& fillColor, const sf::Color& borderColor,
                           const float& borderWidth, const uint8_t& animType = CV_OBJ_ANIM_SLIDE,
                           const std::string& logFile = "", CVTypeBox* usrEntryBox = nullptr);
-
-    CVISION_API CVTextLog(const CVTextLog& other);
-    CVISION_API CVTextLog& operator=(const CVTextLog& other);
 
     CVISION_API ~CVTextLog();
 
@@ -342,7 +340,6 @@ protected:
     std::mutex                  printLock;
 
     float                       timeWaiting;
-    float                       scrollOffsetY;
     float                       msgPopupSpeed;
     float                       msgScrollSpeed;
     float                       maxPanelWidthPct;
@@ -357,9 +354,11 @@ protected:
     uint8_t                     otherTextAlign;
 
     std::vector<CVTextLogMsg*>  msgPanels;
-    rounded_rectangle           scrollBar;
 
     CVTextLogMsg*               selectedEntry;
+    CVScrollBar*                scroll_bar;
+
+    CVISION_API float scrollOffsetY() const noexcept;
 
     TextEntry                   templateTheme;
 

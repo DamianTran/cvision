@@ -490,13 +490,16 @@ public:
 
     // ===================================================================== **/
 
-    virtual void move(const sf::Vector2f& offset) = 0;
+    CVISION_API virtual void move(const sf::Vector2f& offset);
     inline void move(const float& x, const float& y)
     {
         move(sf::Vector2f(x,y));
     }
 
-    virtual void setPosition(const sf::Vector2f& position) = 0;
+    virtual void setPosition(const sf::Vector2f& position)
+    {
+        move(position - getPosition());
+    }
     inline void setPosition(const float& posX, const float& posY)
     {
         setPosition(sf::Vector2f(posX, posY));
@@ -666,6 +669,8 @@ public:
 
         highlightColor = newColor;
         brighten(highlightColor, 40);
+
+        spriteColor = newColor;
     }
     inline void setColor(const int& r, const int& g, const int& b)
     {
