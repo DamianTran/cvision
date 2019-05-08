@@ -46,7 +46,7 @@
 #include "cvision/view.hpp"
 #include "cvision/app.hpp"
 
-using namespace EZC;
+using namespace hyperC;
 
 namespace cvis
 {

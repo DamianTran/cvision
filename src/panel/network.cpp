@@ -46,10 +46,10 @@
 #include "cvision/algorithm.hpp"
 #include "cvision/view.hpp"
 
-#include <EZC/algorithm.hpp>
-#include <EZC/toolkit/string.hpp>
+#include <hyper/algorithm.hpp>
+#include <hyper/toolkit/string.hpp>
 
-using namespace EZC;
+using namespace hyperC;
 using namespace std;
 
 namespace cvis

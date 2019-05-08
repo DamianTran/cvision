@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -46,7 +46,7 @@
 #ifndef CVIS_PLOT
 #define CVIS_PLOT
 
-#include "EZC/toolkit/string.hpp"
+#include "hyper/toolkit/string.hpp"
 
 #include "cvision/type.hpp"
 #include "cvision/textbox.hpp"
@@ -107,7 +107,7 @@
 
 #define CV_PLOT_UPDATE_ALL              0b11111111
 
-#ifndef EZC_ALGORITHM
+#ifndef HYPER_ALGORITHM
 #define DATA_TYPE_UNKNOWN               0
 #define DATA_TYPE_NUMERIC               1
 #define DATA_TYPE_VERBAL                2
@@ -318,15 +318,15 @@ protected:
             if((plot->xAxis().dataType == DATA_TYPE_NUMERIC) &&
                (plot->yAxis().dataType == DATA_TYPE_NUMERIC))
                     if(labels.size() < 1)
-                        return std::to_string(dataIndex) + ": [" + EZC::strDigits(dimValues[DIMX], 3) + ',' + EZC::strDigits(dimValues[DIMY], 3) + "]";
-                    else return EZC::concatenateString(labels, ",") + ": [" + EZC::strDigits(dimValues[DIMX], 3) + ',' + EZC::strDigits(dimValues[DIMY], 3) + "]";
+                        return std::to_string(dataIndex) + ": [" + hyperC::strDigits(dimValues[DIMX], 3) + ',' + hyperC::strDigits(dimValues[DIMY], 3) + "]";
+                    else return hyperC::concatenateString(labels, ",") + ": [" + hyperC::strDigits(dimValues[DIMX], 3) + ',' + hyperC::strDigits(dimValues[DIMY], 3) + "]";
             else if((plot->xAxis().dataType == DATA_TYPE_VERBAL) &&
                 (plot->yAxis().dataType == DATA_TYPE_NUMERIC)){
-                    return std::to_string(dataIndex) + ": [" + EZC::strDigits(dimValues[DIMY], 3) + "]\nCategory: " + labels[DIMX];
+                    return std::to_string(dataIndex) + ": [" + hyperC::strDigits(dimValues[DIMY], 3) + "]\nCategory: " + labels[DIMX];
             }
             else if((plot->xAxis().dataType == DATA_TYPE_NUMERIC) &&
                 (plot->yAxis().dataType == DATA_TYPE_VERBAL)){
-                    return std::to_string(dataIndex) + ": [" + EZC::strDigits(dimValues[DIMX], 3) + "]\nCategory: " + labels[DIMY];
+                    return std::to_string(dataIndex) + ": [" + hyperC::strDigits(dimValues[DIMX], 3) + "]\nCategory: " + labels[DIMY];
             }
             return std::string();
         }
@@ -736,7 +736,7 @@ public:
         bool output = false;
         for(auto& set : datasets){
             for(auto& point : set.points){
-                if(EZC::cmpStringToList(tags, point.labels, CMP_STR_MATCH)){
+                if(hyperC::cmpStringToList(tags, point.labels, CMP_STR_MATCH)){
                     point.setSelection(true);
                     output = true;
                 }
@@ -833,10 +833,10 @@ public:
 };
 
 inline uint8_t parse_regression_type(const std::string& type){
-    if(EZC::cmpString(type, "pearson")){
+    if(hyperC::cmpString(type, "pearson")){
         return CV_LINE_REGRESSION_PEARSON;
     }
-    if(EZC::cmpString(type, "spearman")){
+    if(hyperC::cmpString(type, "spearman")){
         return CV_LINE_REGRESSION_SPEARMAN;
     }
     return CV_LINE_REGRESSION_NONE;

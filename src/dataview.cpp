@@ -45,11 +45,11 @@
 #include "cvision/coordmap.hpp"
 #include "cvision/algorithm.hpp"
 
-#include <EZC/algorithm.hpp>
-#include <EZC/toolkit/string.hpp>
-#include <EZC/toolkit/data_stream.hpp>
+#include <hyper/algorithm.hpp>
+#include <hyper/toolkit/string.hpp>
+#include <hyper/toolkit/data_stream.hpp>
 
-using namespace EZC;
+using namespace hyperC;
 
 namespace cvis
 {
@@ -115,9 +115,9 @@ bool CVDataViewerPanel::updateCells()
     while(br.left - br.width < bounds.left + bounds.width)
     {
 
-        if(coordOffset.x + EZC::maxSize(cells) >= dataSize.x) break;
+        if(coordOffset.x + hyperC::maxSize(cells) >= dataSize.x) break;
 
-        extend_coord = EZC::maxSize(cells);
+        extend_coord = hyperC::maxSize(cells);
 
         for(size_t y = 0; y < cells.size(); ++y)
         {
@@ -229,7 +229,7 @@ bool CVDataViewerPanel::updateCells()
         }
 
         insertRow(0);
-        extend_coord = EZC::maxSize(cells);
+        extend_coord = hyperC::maxSize(cells);
 
         for(size_t x = 0; x < extend_coord; ++x)
         {

@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -371,19 +371,19 @@ public:
 
     inline void bringToFront(CVViewPanel* panel)
     {
-        EZC::bringToFront(panel, viewPanels);
+        hyperC::bringToFront(panel, viewPanels);
     }
     inline void sendToBack(CVViewPanel* panel)
     {
-        EZC::sendToBack(panel, viewPanels);
+        hyperC::sendToBack(panel, viewPanels);
     }
     inline void bringForward(CVViewPanel* panel)
     {
-        EZC::bringForward(panel, viewPanels);
+        hyperC::bringForward(panel, viewPanels);
     }
     inline void sendBackward(CVViewPanel* panel)
     {
-        EZC::sendBackward(panel, viewPanels);
+        hyperC::sendBackward(panel, viewPanels);
     }
 
     inline void animate(sf::Transformable* object, const std::vector<CVAnimCheckpoint>& checkpoints)

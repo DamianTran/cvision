@@ -1211,19 +1211,9 @@ bool CVView::handleViewEvents(CVEvent& event)
 
                     switch(SFevent.text.unicode)
                     {
-                    case sf::Keyboard::Return:
-                        {
-                            event.keyLog.push_back(CV_KEY_RETURN);
-                            break;
-                        }
                     case 13: // Carriage-return
                         {
                             event.keyLog.push_back(CV_KEY_RETURN);
-                            break;
-                        }
-                    case sf::Keyboard::Tab:
-                        {
-                            event.keyLog.push_back(CV_KEY_TAB);
                             break;
                         }
                     default:

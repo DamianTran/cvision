@@ -44,7 +44,7 @@
 #include "cvision/algorithm.hpp"
 #include "cvision/element.hpp"
 
-#include <EZC/toolkit/string.hpp>
+#include <hyper/toolkit/string.hpp>
 
 #ifndef CVIS_TEXT_BOX
 #define ALIGN_LEFT                      0
@@ -64,7 +64,7 @@
 #define ALIGN_HORIZONTAL                15
 #endif // CVIS_TEXT_BOX
 
-using namespace EZC;
+using namespace hyperC;
 
 namespace cvis{
 

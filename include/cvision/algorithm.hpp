@@ -52,7 +52,7 @@
 #include <windows.h>
 #endif
 
-#include "EZC/algorithm.hpp"
+#include "hyper/algorithm.hpp"
 #include <SFML/Graphics.hpp>
 
 // Dimension space

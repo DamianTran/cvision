@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -45,12 +45,12 @@
 #include "cvision/view.hpp"
 #include "cvision/app.hpp"
 
-#include "EZC/algorithm.hpp"
-#include "EZC/toolkit/string.hpp"
+#include "hyper/algorithm.hpp"
+#include "hyper/toolkit/string.hpp"
 
 #include <boost/range/adaptor/reversed.hpp>
 
-using namespace EZC;
+using namespace hyperC;
 
 namespace cvis{
 

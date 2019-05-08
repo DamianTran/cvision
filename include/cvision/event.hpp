@@ -53,7 +53,7 @@
 
 #include <SFML/Graphics.hpp>
 
-#include <EZC/algorithm.hpp>
+#include <hyper/algorithm.hpp>
 
 #define CV_ZOOM_NONE                    0
 #define CV_ZOOM_IN                      1
@@ -216,7 +216,7 @@ public:
                                        const unsigned char& releaseCond,
                                        const sf::Keyboard::Key& releaseKey = sf::Keyboard::Unknown)
     {
-        if(EZC::getTypeID(*input) == EZC::getTypeID<char>())
+        if(hyperC::getTypeID(*input) == hyperC::getTypeID<char>())
         {
             transferData.emplace_back(input, length, CV_DATA_STRING,
                                       releaseCond, releaseKey);
