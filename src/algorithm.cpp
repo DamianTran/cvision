@@ -46,6 +46,11 @@
 
 #include <hyper/toolkit/string.hpp>
 
+#ifdef __APPLE__
+#import <Foundation/Foundation.h>
+#import <Cocoa/Cocoa.h>
+#endif
+
 #ifndef CVIS_TEXT_BOX
 #define ALIGN_LEFT                      0
 #define ALIGN_LEFT_MIDLINE              1
@@ -65,66 +70,84 @@
 #endif // CVIS_TEXT_BOX
 
 using namespace hyperC;
+using namespace std;
 
-namespace cvis{
+namespace cvis
+{
 
-void alignText(std::vector<sf::Text>& textItems, std::vector<sf::Vector2f> coords){
-    std::vector<sf::Vector2f>::iterator coordsIT = coords.begin();
-    for(std::vector<sf::Text>::iterator it = textItems.begin();
-    it != textItems.end(); ++it){
+void alignText(vector<sf::Text>& textItems, vector<sf::Vector2f> coords)
+{
+    vector<sf::Vector2f>::iterator coordsIT = coords.begin();
+    for(vector<sf::Text>::iterator it = textItems.begin();
+            it != textItems.end(); ++it)
+    {
         it->setPosition(*coordsIT);
         if(coordsIT != coords.end()) ++coordsIT;
     }
 }
-void alignShapes(std::vector<sf::Shape*>& textItems, std::vector<sf::Vector2f> coords){
-    std::vector<sf::Vector2f>::iterator coordsIT = coords.begin();
-    for(std::vector<sf::Shape*>::iterator it = textItems.begin();
-    it != textItems.end(); ++it){
+void alignShapes(vector<sf::Shape*>& textItems, vector<sf::Vector2f> coords)
+{
+    vector<sf::Vector2f>::iterator coordsIT = coords.begin();
+    for(vector<sf::Shape*>::iterator it = textItems.begin();
+            it != textItems.end(); ++it)
+    {
         (*it)->setPosition(*coordsIT);
         if(coordsIT != coords.end()) ++coordsIT;
     }
 }
 
-void sigFigs(std::string& numeric){
+void sigFigs(string& numeric)
+{
     if(numeric.find('.') >= numeric.size()) return;
     while(numeric.back() == '0') numeric.pop_back();
     while(numeric.back() == '.') numeric.pop_back();
 }
 
-std::string sigFigs(const float& number){
-    std::string output = std::to_string(number);
+string sigFigs(const float& number)
+{
+    string output = to_string(number);
     sigFigs(output);
     return output;
 }
-void sleep(float time){
-    std::chrono::high_resolution_clock::time_point t0 = TIME_NOW,
-                                                    t1 = t0;
-    while(std::chrono::duration_cast<std::chrono::duration<float>>(t1-t0).count() < time){
+void sleep(float time)
+{
+    chrono::high_resolution_clock::time_point t0 = TIME_NOW,
+                                              t1 = t0;
+    while(chrono::duration_cast<chrono::duration<float>>(t1-t0).count() < time)
+    {
         t1 = TIME_NOW;
     }
 }
 
-void wrapText(sf::Text& textItem, const sf::FloatRect& bounds, const float& padding){
+void wrapText(sf::Text& textItem, const sf::FloatRect& bounds, const float& padding)
+{
     sf::FloatRect textBounds = textItem.getGlobalBounds();
 
-    if(textBounds.width > bounds.width - 2*padding){
-        std::string displayTextString = textItem.getString();
+    if(textBounds.width > bounds.width - 2*padding)
+    {
+        string displayTextString = textItem.getString();
 
-        for(size_t i = 0; i < displayTextString.size(); ++i){ // Add new line characters to fit text horizontally
-            if(textItem.findCharacterPos(i).x - bounds.left > bounds.width - 2*padding){
-                for(int j = i; j > 0; --j){
-                    if(displayTextString[j-1] == ' '){
+        for(size_t i = 0; i < displayTextString.size(); ++i)  // Add new line characters to fit text horizontally
+        {
+            if(textItem.findCharacterPos(i).x - bounds.left > bounds.width - 2*padding)
+            {
+                for(int j = i; j > 0; --j)
+                {
+                    if(displayTextString[j-1] == ' ')
+                    {
                         displayTextString[j-1] = '\n';
                         break;
                     }
                     else if(isCharType(displayTextString[j-1], ",\\/:._-") &&
-                            (displayTextString[j] != '\n')){
+                            (displayTextString[j] != '\n'))
+                    {
                         displayTextString.insert(displayTextString.begin() + j, '\n');
                         break;
                     }
                     else if((abs(textItem.findCharacterPos(i).x -
-                            textItem.findCharacterPos(j).x) > bounds.width - 2*padding) &&
-                            (displayTextString[i-1] != '\n')){
+                                 textItem.findCharacterPos(j).x) > bounds.width - 2*padding) &&
+                            (displayTextString[i-1] != '\n'))
+                    {
                         displayTextString.insert(displayTextString.begin() + i - 1, '\n');
                         ++i;
                         break;
@@ -140,182 +163,202 @@ void wrapText(sf::Text& textItem, const sf::FloatRect& bounds, const float& padd
 }
 
 sf::Vector2f getTextHorizontalAlignment(sf::Text& text, sf::Rect<float>& bounds, uint8_t alignment,
-                         float borderPadding){
+                                        float borderPadding)
+{
     sf::Vector2f cPosition(bounds.left, text.getPosition().y);
     sf::Rect<float> textBounds = text.getLocalBounds();
-    switch(alignment){
-        case ALIGN_LEFT:{
-            cPosition.x += borderPadding;
-            break;
-        }
-        case ALIGN_CENTER:{
-            cPosition.x += (bounds.width/2 - textBounds.width/2);
-            break;
-        }
-        case ALIGN_RIGHT:{
-            cPosition.x += (bounds.width - textBounds.width - borderPadding);
-            break;
-        }
-        default:{
-            cPosition.x += (bounds.width/2 - textBounds.width/2);
-            break;
-        }
+    switch(alignment)
+    {
+    case ALIGN_LEFT:
+    {
+        cPosition.x += borderPadding;
+        break;
+    }
+    case ALIGN_CENTER:
+    {
+        cPosition.x += (bounds.width/2 - textBounds.width/2);
+        break;
+    }
+    case ALIGN_RIGHT:
+    {
+        cPosition.x += (bounds.width - textBounds.width - borderPadding);
+        break;
+    }
+    default:
+    {
+        cPosition.x += (bounds.width/2 - textBounds.width/2);
+        break;
+    }
     }
     return cPosition;
 }
 
-sf::Rect<float> averageTextSize(std::vector<sf::Text>& textItems){
+sf::Rect<float> averageTextSize(vector<sf::Text>& textItems)
+{
     sf::Rect<float> output = textItems.begin()->getLocalBounds();
     size_t L = 1;
-    for(std::vector<sf::Text>::iterator it = textItems.begin();
-        it != textItems.end(); ++it){
-            if(it == textItems.begin()){
-                continue;
-            }
-            output += it->getLocalBounds();
-            ++L;
+    for(vector<sf::Text>::iterator it = textItems.begin();
+            it != textItems.end(); ++it)
+    {
+        if(it == textItems.begin())
+        {
+            continue;
         }
+        output += it->getLocalBounds();
+        ++L;
+    }
     if(L > 1) output /= L;
     return output;
 }
 
-bool copyToClipboard(const std::string& cpyString){
-    #if defined WIN32 || defined _WIN32
-    if(!OpenClipboard(0)){
-        std::cout << ">> Unable to open clipboard\n";
+bool copyToClipboard(const string& cpyString)
+{
+#if defined WIN32 || defined _WIN32
+    if(!OpenClipboard(0))
+    {
+        cout << ">> Unable to open clipboard\n";
         return false;
     }
-    if(!EmptyClipboard()){
-        std::cout << ">> Unable to empty clipboard\n";
+    if(!EmptyClipboard())
+    {
+        cout << ">> Unable to empty clipboard\n";
         return false;
     }
     HGLOBAL hg = GlobalAlloc(GMEM_MOVEABLE, cpyString.size()+1);
-    if(!hg){
-        std::cout << ">> Unable to allocate memory in Windows environment\n";
+    if(!hg)
+    {
+        cout << ">> Unable to allocate memory in Windows environment\n";
         CloseClipboard();
         return false;
     }
     memcpy(GlobalLock(hg), cpyString.c_str(), cpyString.size()+1);
     GlobalUnlock(hg);
-    if(SetClipboardData(CF_TEXT, hg) == NULL){
-        std::cout << ">> Unable to set clipboard data\n";
+    if(SetClipboardData(CF_TEXT, hg) == NULL)
+    {
+        cout << ">> Unable to set clipboard data\n";
         return false;
     }
     CloseClipboard();
     GlobalFree(hg);
     return true;
-    #elif defined __APPLE__
-    system((std::string("echo '") + cpyString + "' | pbcopy").c_str());
-    return true;
-    #elif defined __linux__
-    std::cout << ">> Clipboard support for Linux OS is not yet implemented\n";
-    return false;
-    #endif
+#elif defined __APPLE__
 
-    std::cout << ">> Could not detect operating system environment for clipboard copy\n";
+    NSPasteboard * pboard = [NSPasteboard generalPasteboard];
+
+    NSInteger status = [pboard clearContents];
+
+    NSString * convString = [NSString stringWithUTF8String:cpyString.c_str()];
+
+    [pboard setString:convString forType:NSStringPboardType];
+
+    return true;
+#elif defined __linux__
+    cout << ">> Clipboard support for Linux OS is not yet implemented\n";
+    return false;
+#endif
+
+    cout << ">> Could not detect operating system environment for clipboard copy\n";
     return false;
 }
 
-std::string getClipboardText(){
+string getClipboardText()
+{
 
-    #if defined WIN32 || defined _WIN32
-    if(!OpenClipboard(0)){
-        std::cout << ">> Unable to open clipboard\n";
-        return std::string();
+#if defined WIN32 || defined _WIN32
+    if(!OpenClipboard(0))
+    {
+        cout << ">> Unable to open clipboard\n";
+        return string();
     }
 
     HANDLE hData = GetClipboardData(CF_TEXT);
-    if(hData == nullptr){
-        std::cout << ">> Unable to find clipboard data\n";
-        return std::string();
+    if(hData == nullptr)
+    {
+        cout << ">> Unable to find clipboard data\n";
+        return string();
     }
     char* clipText = (char*)(GlobalLock(hData));
-    if(clipText == nullptr){
+    if(clipText == nullptr)
+    {
 
-        std::cout << ">> Unable to access clipboard data\n";
+        cout << ">> Unable to access clipboard data\n";
 
         GlobalUnlock(hData);
 
-        return std::string();
+        return string();
     }
-    std::string output(clipText);
+    string output(clipText);
     GlobalUnlock(hData);
     CloseClipboard();
     return output;
-    #elif defined __APPLE__
-    std::string output;
-    system("pbpaste > memory/OSXclip.tmp");
-    //if(access("memory/OSXclip.tmp", F_OK)){
-        FILE* inFILE = fopen("memory/OSXclip.tmp", "rb");
-        fseek(inFILE, 0, SEEK_END);
-        size_t dataSIZE = ftell(inFILE);
-        fseek(inFILE, 0, SEEK_SET);
+#elif defined __APPLE__
 
-        if(dataSIZE > 1){
-            char clipData[dataSIZE];
-            clipData[dataSIZE-1] = '\0';
-            fread(clipData, dataSIZE-1, sizeof(char), inFILE);
+    NSPasteboard*  pboard  = [NSPasteboard generalPasteboard];
+    NSString* myString = [pboard stringForType:NSPasteboardTypeString];
 
-            output = clipData;
-        }
-
-        remove("memory/OSXclip.tmp");
-    //}
-    return output;
-    #elif defined __linux__
-    return std::string();
-    #else
-    std::cout << ">> Could not detect operating system environment for clipboard access\n";
-    return std::string();
-    #endif
+    return string([myString UTF8String]);
+#elif defined __linux__
+    return string();
+#else
+    cout << ">> Could not detect operating system environment for clipboard access\n";
+    return string();
+#endif
 
 }
 
-void physicsSpread(std::vector<sf::Sprite>& sprites,
+void physicsSpread(vector<sf::Sprite>& sprites,
                    const float& strength,
-                   const BYTE& direction){
+                   const BYTE& direction)
+{
 
     sf::FloatRect shape1Bounds, shape2Bounds;
     sf::Vector2f moveDist(0.0f, 0.0f),
-                oriDist(0.0f, 0.0f),
-                maxDist(0.0f, 0.0f);
+    oriDist(0.0f, 0.0f),
+    maxDist(0.0f, 0.0f);
     float sizeRatio;
 
-    for(size_t i = 0, j, L = sprites.size(); i + 1 < L; ++i){
-        for(j = i + 1; j < L; ++j){
+    for(size_t i = 0, j, L = sprites.size(); i + 1 < L; ++i)
+    {
+        for(j = i + 1; j < L; ++j)
+        {
 
             shape1Bounds = sprites[i].getGlobalBounds();
             shape2Bounds = sprites[j].getGlobalBounds();
 
-            if(shape1Bounds.intersects(shape2Bounds)){
+            if(shape1Bounds.intersects(shape2Bounds))
+            {
 
                 sizeRatio = (shape1Bounds.width*shape1Bounds.height)/
-                (shape1Bounds.width*shape1Bounds.height + shape2Bounds.height*shape2Bounds.width);
+                            (shape1Bounds.width*shape1Bounds.height + shape2Bounds.height*shape2Bounds.width);
 
-                if(direction & CV_DIRECTION_X){
+                if(direction & CV_DIRECTION_X)
+                {
                     oriDist.x = shape1Bounds.left + shape1Bounds.width/2 - shape2Bounds.left - shape2Bounds.width/2;
                     maxDist.x = shape1Bounds.width/2 + shape2Bounds.width/2;
                     if((shape2Bounds.left + shape2Bounds.width/2) >
-                       (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (maxDist.x - oriDist.x)*strength/2;
+                            (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (maxDist.x - oriDist.x)*strength/2;
                     else if((shape2Bounds.left + shape2Bounds.width/2) <
-                       (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (oriDist.x - maxDist.x)*strength/2;
-                    else{
+                            (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (oriDist.x - maxDist.x)*strength/2;
+                    else
+                    {
                         if(rand(0.0f,10.0f) >= 5.0f) moveDist.x = (maxDist.x - oriDist.x)*strength;
                         else moveDist.x = (oriDist.x - maxDist.x)*strength;
-                   }
+                    }
                 }
 
-                if(direction & CV_DIRECTION_Y){
+                if(direction & CV_DIRECTION_Y)
+                {
                     oriDist.y = shape1Bounds.top + shape1Bounds.height/2 - shape2Bounds.top - shape2Bounds.height/2;
                     maxDist.y = shape1Bounds.height/2 + shape2Bounds.height/2;
                     if((shape2Bounds.top + shape2Bounds.height/2) >
-                       (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
+                            (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
                     else if((shape2Bounds.top + shape2Bounds.height/2) <
-                       (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (oriDist.y - maxDist.y)*strength/2;
-                    else{
+                            (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (oriDist.y - maxDist.y)*strength/2;
+                    else
+                    {
                         if(rand(0.0f,10.0f) >= 5.0f) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
                         else moveDist.y = (oriDist.y - maxDist.y)*strength/2;
-                   }
+                    }
                 }
 
                 sprites[j].move(moveDist.x*sizeRatio, moveDist.y*sizeRatio);
@@ -327,51 +370,59 @@ void physicsSpread(std::vector<sf::Sprite>& sprites,
 
 }
 
-void physicsSpread(std::vector<sf::Shape*>& shapes,
+void physicsSpread(vector<sf::Shape*>& shapes,
                    const float& strength,
-                   const BYTE& direction){
+                   const BYTE& direction)
+{
 
     sf::FloatRect shape1Bounds, shape2Bounds;
     sf::Vector2f moveDist(0.0f, 0.0f),
-                oriDist(0.0f, 0.0f),
-                maxDist(0.0f, 0.0f);
+    oriDist(0.0f, 0.0f),
+    maxDist(0.0f, 0.0f);
     float sizeRatio;
 
-    for(size_t i = 0, j, L = shapes.size(); i + 1 < L; ++i){
-        for(j = i + 1; j < L; ++j){
+    for(size_t i = 0, j, L = shapes.size(); i + 1 < L; ++i)
+    {
+        for(j = i + 1; j < L; ++j)
+        {
 
             shape1Bounds = shapes[i]->getGlobalBounds();
             shape2Bounds = shapes[j]->getGlobalBounds();
 
-            if(shape1Bounds.intersects(shape2Bounds)){
+            if(shape1Bounds.intersects(shape2Bounds))
+            {
 
                 sizeRatio = (shape1Bounds.width*shape1Bounds.height)/
-                (shape1Bounds.width*shape1Bounds.height + shape2Bounds.height*shape2Bounds.width);
+                            (shape1Bounds.width*shape1Bounds.height + shape2Bounds.height*shape2Bounds.width);
 
-                if(direction & CV_DIRECTION_X){
+                if(direction & CV_DIRECTION_X)
+                {
                     oriDist.x = shape1Bounds.left + shape1Bounds.width/2 - shape2Bounds.left - shape2Bounds.width/2;
                     maxDist.x = shape1Bounds.width/2 + shape2Bounds.width/2;
                     if((shape2Bounds.left + shape2Bounds.width/2) >
-                       (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (maxDist.x - oriDist.x)*strength/2;
+                            (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (maxDist.x - oriDist.x)*strength/2;
                     else if((shape2Bounds.left + shape2Bounds.width/2) <
-                       (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (oriDist.x - maxDist.x)*strength/2;
-                    else{
+                            (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (oriDist.x - maxDist.x)*strength/2;
+                    else
+                    {
                         if(rand(0.0f,10.0f) >= 5.0f) moveDist.x = (maxDist.x - oriDist.x)*strength;
                         else moveDist.x = (oriDist.x - maxDist.x)*strength;
-                   }
+                    }
                 }
 
-                if(direction & CV_DIRECTION_Y){
+                if(direction & CV_DIRECTION_Y)
+                {
                     oriDist.y = shape1Bounds.top + shape1Bounds.height/2 - shape2Bounds.top - shape2Bounds.height/2;
                     maxDist.y = shape1Bounds.height/2 + shape2Bounds.height/2;
                     if((shape2Bounds.top + shape2Bounds.height/2) >
-                       (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
+                            (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
                     else if((shape2Bounds.top + shape2Bounds.height/2) <
-                       (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (oriDist.y - maxDist.y)*strength/2;
-                    else{
+                            (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (oriDist.y - maxDist.y)*strength/2;
+                    else
+                    {
                         if(rand(0.0f,10.0f) >= 5.0f) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
                         else moveDist.y = (oriDist.y - maxDist.y)*strength/2;
-                   }
+                    }
                 }
 
                 shapes[j]->move(moveDist.x*sizeRatio, moveDist.y*sizeRatio);
@@ -382,51 +433,59 @@ void physicsSpread(std::vector<sf::Shape*>& shapes,
     }
 }
 
-void physicsSpread(std::vector<sf::Sprite*>& shapes,
+void physicsSpread(vector<sf::Sprite*>& shapes,
                    const float& strength,
-                   const BYTE& direction){
+                   const BYTE& direction)
+{
 
     sf::FloatRect shape1Bounds, shape2Bounds;
     sf::Vector2f moveDist(0.0f, 0.0f),
-                oriDist(0.0f, 0.0f),
-                maxDist(0.0f, 0.0f);
+    oriDist(0.0f, 0.0f),
+    maxDist(0.0f, 0.0f);
     float sizeRatio;
 
-    for(size_t i = 0, j, L = shapes.size(); i + 1 < L; ++i){
-        for(j = i + 1; j < L; ++j){
+    for(size_t i = 0, j, L = shapes.size(); i + 1 < L; ++i)
+    {
+        for(j = i + 1; j < L; ++j)
+        {
 
             shape1Bounds = shapes[i]->getGlobalBounds();
             shape2Bounds = shapes[j]->getGlobalBounds();
 
-            if(shape1Bounds.intersects(shape2Bounds)){
+            if(shape1Bounds.intersects(shape2Bounds))
+            {
 
                 sizeRatio = (shape1Bounds.width*shape1Bounds.height)/
-                (shape1Bounds.width*shape1Bounds.height + shape2Bounds.height*shape2Bounds.width);
+                            (shape1Bounds.width*shape1Bounds.height + shape2Bounds.height*shape2Bounds.width);
 
-                if(direction & CV_DIRECTION_X){
+                if(direction & CV_DIRECTION_X)
+                {
                     oriDist.x = shape1Bounds.left + shape1Bounds.width/2 - shape2Bounds.left - shape2Bounds.width/2;
                     maxDist.x = shape1Bounds.width/2 + shape2Bounds.width/2;
                     if((shape2Bounds.left + shape2Bounds.width/2) >
-                       (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (maxDist.x - oriDist.x)*strength/2;
+                            (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (maxDist.x - oriDist.x)*strength/2;
                     else if((shape2Bounds.left + shape2Bounds.width/2) <
-                       (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (oriDist.x - maxDist.x)*strength/2;
-                    else{
+                            (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (oriDist.x - maxDist.x)*strength/2;
+                    else
+                    {
                         if(rand(0.0f,10.0f) >= 5.0f) moveDist.x = (maxDist.x - oriDist.x)*strength;
                         else moveDist.x = (oriDist.x - maxDist.x)*strength;
-                   }
+                    }
                 }
 
-                if(direction & CV_DIRECTION_Y){
+                if(direction & CV_DIRECTION_Y)
+                {
                     oriDist.y = shape1Bounds.top + shape1Bounds.height/2 - shape2Bounds.top - shape2Bounds.height/2;
                     maxDist.y = shape1Bounds.height/2 + shape2Bounds.height/2;
                     if((shape2Bounds.top + shape2Bounds.height/2) >
-                       (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
+                            (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
                     else if((shape2Bounds.top + shape2Bounds.height/2) <
-                       (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (oriDist.y - maxDist.y)*strength/2;
-                    else{
+                            (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (oriDist.y - maxDist.y)*strength/2;
+                    else
+                    {
                         if(rand(0.0f,10.0f) >= 5.0f) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
                         else moveDist.y = (oriDist.y - maxDist.y)*strength/2;
-                   }
+                    }
                 }
 
                 shapes[j]->move(moveDist.x*sizeRatio, moveDist.y*sizeRatio);
@@ -437,56 +496,64 @@ void physicsSpread(std::vector<sf::Sprite*>& shapes,
     }
 }
 
-void physicsSpread(std::vector<CVElement*>& elements,
+void physicsSpread(vector<CVElement*>& elements,
                    const float& strength,
-                   const BYTE& direction){
+                   const BYTE& direction)
+{
 
     sf::FloatRect shape1Bounds, shape2Bounds;
     sf::Vector2f moveDist(0.0f, 0.0f),
-                oriDist(0.0f, 0.0f),
-                maxDist(0.0f, 0.0f);
+    oriDist(0.0f, 0.0f),
+    maxDist(0.0f, 0.0f);
     float sizeRatio;
 
-    for(size_t i = 0, j, L = elements.size(); i + 1 < L; ++i){
+    for(size_t i = 0, j, L = elements.size(); i + 1 < L; ++i)
+    {
 
         if(!elements[i]->isVisible()) continue;
 
-        for(j = i + 1; j < L; ++j){
+        for(j = i + 1; j < L; ++j)
+        {
 
             if(!elements[j]->isVisible()) continue;
 
             shape1Bounds = elements[i]->getBounds();
             shape2Bounds = elements[j]->getBounds();
 
-            if(shape1Bounds.intersects(shape2Bounds)){
+            if(shape1Bounds.intersects(shape2Bounds))
+            {
 
                 sizeRatio = (shape1Bounds.width*shape1Bounds.height)/
-                (shape1Bounds.width*shape1Bounds.height + shape2Bounds.height*shape2Bounds.width);
+                            (shape1Bounds.width*shape1Bounds.height + shape2Bounds.height*shape2Bounds.width);
 
-                if(direction & CV_DIRECTION_X){
+                if(direction & CV_DIRECTION_X)
+                {
                     oriDist.x = shape1Bounds.left + shape1Bounds.width/2 - shape2Bounds.left - shape2Bounds.width/2;
                     maxDist.x = shape1Bounds.width/2 + shape2Bounds.width/2;
                     if((shape2Bounds.left + shape2Bounds.width/2) >
-                       (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (maxDist.x - oriDist.x)*strength/2;
+                            (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (maxDist.x - oriDist.x)*strength/2;
                     else if((shape2Bounds.left + shape2Bounds.width/2) <
-                       (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (oriDist.x - maxDist.x)*strength/2;
-                    else{
+                            (shape1Bounds.left + shape1Bounds.width/2)) moveDist.x = (oriDist.x - maxDist.x)*strength/2;
+                    else
+                    {
                         if(rand(0.0f,10.0f) >= 5.0f) moveDist.x = (maxDist.x - oriDist.x)*strength;
                         else moveDist.x = (oriDist.x - maxDist.x)*strength;
-                   }
+                    }
                 }
 
-                if(direction & CV_DIRECTION_Y){
+                if(direction & CV_DIRECTION_Y)
+                {
                     oriDist.y = shape1Bounds.top + shape1Bounds.height/2 - shape2Bounds.top - shape2Bounds.height/2;
                     maxDist.y = shape1Bounds.height/2 + shape2Bounds.height/2;
                     if((shape2Bounds.top + shape2Bounds.height/2) >
-                       (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
+                            (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
                     else if((shape2Bounds.top + shape2Bounds.height/2) <
-                       (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (oriDist.y - maxDist.y)*strength/2;
-                    else{
+                            (shape1Bounds.top + shape1Bounds.height/2)) moveDist.y = (oriDist.y - maxDist.y)*strength/2;
+                    else
+                    {
                         if(rand(0.0f,10.0f) >= 5.0f) moveDist.y = (maxDist.y - oriDist.y)*strength/2;
                         else moveDist.y = (oriDist.y - maxDist.y)*strength/2;
-                   }
+                    }
                 }
 
                 elements[j]->move(moveDist.x*sizeRatio, moveDist.y*sizeRatio);
@@ -497,15 +564,18 @@ void physicsSpread(std::vector<CVElement*>& elements,
     }
 }
 
-double get_angle(const sf::Vector2f& origin, const sf::Vector2f& destination){
+double get_angle(const sf::Vector2f& origin, const sf::Vector2f& destination)
+{
     if(origin == destination) return 0.0;
     double dist = sqrt(pow(double(destination.x - origin.x),2) + pow(double(destination.y - origin.y), 2));
     double vDist = destination.y - origin.y;
-    if(destination.y >= origin.y){
+    if(destination.y >= origin.y)
+    {
         if(destination.x >= origin.x) return asin(vDist/dist); // Q1
         else return PI - asin(vDist/dist); // Q2
     }
-    else{
+    else
+    {
         if(destination.x >= origin.x) return 2*PI + asin(vDist/dist); // Q4
         else return PI - asin(vDist/dist); // Q3
     }
@@ -514,33 +584,40 @@ double get_angle(const sf::Vector2f& origin, const sf::Vector2f& destination){
 sf::Vector2f internal_arc(const sf::Vector2f& origin,
                           const sf::FloatRect& bounds,
                           const float& distance,
-                          const float& resolution){
+                          const float& resolution)
+{
 
     if((origin.x - distance > bounds.left) &&
-       (origin.y - distance > bounds.top) &&
-       (origin.x + distance < bounds.left + bounds.width) &&
-       (origin.y + distance < bounds.top + bounds.height)) return sf::Vector2f(0.0f,2*PI);
-       // None of the surfaces are contacting the boundary
+            (origin.y - distance > bounds.top) &&
+            (origin.x + distance < bounds.left + bounds.width) &&
+            (origin.y + distance < bounds.top + bounds.height)) return sf::Vector2f(0.0f,2*PI);
+    // None of the surfaces are contacting the boundary
 
     sf::Vector2f output(NAN, NAN);
     float angle = 0.0f;
     sf::Vector2f spoint;
     bool bMeasure = false;
 
-    while(isnan(output.y)){ // Sample in a circle
+    while(isnan(output.y))  // Sample in a circle
+    {
 
         spoint = radial_position(origin, distance, -angle);
-        if(!bMeasure){
-            if(!bounds.contains(spoint)){
+        if(!bMeasure)
+        {
+            if(!bounds.contains(spoint))
+            {
                 bMeasure = true;
             }
         }
-        else if(isnan(output.x)){
-            if(bounds.contains(spoint)){
+        else if(isnan(output.x))
+        {
+            if(bounds.contains(spoint))
+            {
                 output.x = angle;
             }
         }
-        else if(!bounds.contains(spoint)){
+        else if(!bounds.contains(spoint))
+        {
             output.y = angle - resolution;
         }
         angle += resolution;
