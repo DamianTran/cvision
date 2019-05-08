@@ -86,10 +86,6 @@ protected:
 
     std::chrono::duration<float> updateLatency;
 
-#ifdef __APPLE__
-    std::mutex eventLock;
-#endif
-
     inline void lock()
     {
         appSyncLock.lock();
@@ -183,11 +179,6 @@ public:
                   uint32_t style = sf::Style::Default);
 
     CVISION_API bool addView(CVView* View, const std::string& viewTag);
-
-#ifdef __APPLE__
-    // Send event polling to the main thread on OSX
-    void handleViewEvents();
-#endif
 
     CVISION_API void closeView(const unsigned int viewIndex);
     CVISION_API void closeView(const std::string& tag);

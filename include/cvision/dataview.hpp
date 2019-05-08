@@ -145,7 +145,7 @@ public:
 
     }
 
-    inline void setHighlightColor(const sf::Color& newColor){
+    inline void setHighlightColor(const sf::Color& newColor) override{
 
         CVTablePanel::setHighlightColor(newColor);
         setCellHighlightColor(newColor);
@@ -176,7 +176,7 @@ public:
 
     }
 
-    inline void clear(){
+    inline void clear() override{
 
         CVTablePanel::clear();
         coordOffset.x = 0;
@@ -189,9 +189,9 @@ public:
 
     }
 
-    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
+    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos) override;
 
-    inline bool draw(sf::RenderTarget* target){
+    inline bool draw(sf::RenderTarget* target) override{
         if(!CVTextBox::draw(target)) return false;
 
         CV_DRAW_CLIP_BEGIN

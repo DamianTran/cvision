@@ -54,7 +54,7 @@
 
 #elif defined __APPLE__
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
 #include <AvailabilityMacros.h>
 #import <Cocoa/Cocoa.h>
 
@@ -243,6 +243,73 @@ STDMETHODIMP CVDropTarget::Drop(LPDATAOBJECT pDataObj,
     return NOERROR;
 
 }
+#elif defined __APPLE__
+
+CVDropTarget::CVDropTarget(CVView * View):
+    viewHandle(View){ }
+
+bool CVDropTarget::getWaitingData(vector<string>& output)
+{
+
+    NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+
+    if ( [[pboard types] containsObject:NSFilenamesPboardType] ) {
+        NSArray *files = [pboard propertyListForType:NSFilenamesPboardType];
+        int L = [files count];
+
+        if(L > 0)
+        {
+
+           CVEvent& event = viewHandle->eventTrace;
+
+           if(event.LMBholdFrames == 1)
+           {
+
+               for(int i = 0; i < L; ++i)
+               {
+                   NSString* newPath = [files objectAtIndex:i];
+                   waiting_data.emplace_back([newPath UTF8String]);
+               }
+
+               [pboard clearContents];
+
+           }
+
+       }
+
+    }
+
+    if(waiting_data.empty())
+    {
+        return false;
+    }
+    else if(viewHandle->eventTrace.LMBreleased)
+    {
+
+        if(viewHandle->getBounds().contains(viewHandle->eventTrace.LMBreleasePosition))
+        {
+
+            dropLock.lock();
+
+            output.insert(output.end(),
+                          waiting_data.begin(),
+                          waiting_data.end());
+
+            dropLock.unlock();
+
+            waiting_data.clear();
+
+            return true;
+        }
+
+        waiting_data.clear();
+
+    }
+
+    return false;
+
+}
+
 #endif
 
 CVView::CVView(unsigned int x, unsigned int y, string winName,
@@ -276,23 +343,32 @@ CVView::CVView(unsigned int x, unsigned int y, string winName,
     mainApp(mainApp),
     tag(winName)
 {
+    cout << "Activating OpenGL context\n";
     mainApp->setContextActive();
 }
 
 void CVView::init()
 {
 
-    cursor_rep.loadFromSystem(sf::Cursor::Arrow);
+    cout << "Initializing CVView\n";
 
     sf::ContextSettings contextSettings;
+
+    #ifdef __APPLE__
+    contextSettings.antialiasingLevel = 0;
+    #else
     contextSettings.antialiasingLevel = 4;
+    #endif
+
+    cout << "Creating render window (" << width << " x " << height << ")\n";
+    cout << "Antialiasing: " << contextSettings.antialiasingLevel << "x\n";
 
     viewPort = new sf::RenderWindow(sf::VideoMode(width, height), name, style, contextSettings);
     viewPort->setVerticalSyncEnabled(true);
     viewPort->setMouseCursor(cursor_rep);
     viewPort->setFramerateLimit(frameRateLimit);
 
-    mainApp->setContextActive();
+    cursor_rep.loadFromSystem(sf::Cursor::Arrow);
 
     const float frameTime = 0.5f/frameRateLimit;
 
@@ -304,12 +380,16 @@ void CVView::init()
 
     chrono::duration<float> duration;
 
+    cout << "Initializing event tracer\n";
+
     eventTrace.viewBounds = sf::FloatRect(moveTarget.x, moveTarget.y, width, height);
     eventTrace.lastViewBounds = eventTrace.viewBounds;
     eventTrace.lastFrameMousePosition =
         sf::Vector2f(sf::Mouse::getPosition(*viewPort));
 
     setState(VIEW_STATE_MAIN);
+
+    cout << "Main sequence\n";
 
     while(!bClosed)
     {
@@ -373,7 +453,7 @@ CVElement* CVView::getElementById(const string& tag)
             return panel;
         }
 
-        if(output = panel->getOwnedElementByID(tag))
+        if(output == panel->getOwnedElementByID(tag))
         {
             return output;
         }
@@ -393,13 +473,7 @@ void CVView::activateWindow()
 void CVView::setDropable(const bool& status)
 {
 
-    #if defined WIN32 || defined __WIN32 || defined _WIN32
-
     bDropable = status;
-
-    #elif defined __APPLE__
-
-    #endif // WIN32
 
 }
 
@@ -819,14 +893,18 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     if(bDropable && !dropTarget)
     {
+
+        dropTarget = new CVDropTarget(this);
         #if defined WIN32 || defined __WIN32 || defined _WIN32
 
         HWND winHandle = viewPort->getSystemHandle();
-        dropTarget = new CVDropTarget(this);
 
         RegisterDragDrop(winHandle, (LPDROPTARGET)dropTarget);
 
         #elif defined __APPLE__
+
+        const NSWindow* viewWindow = (NSWindow*)viewPort->getSystemHandle();
+
 
         #endif // WIN32
     }
@@ -843,6 +921,9 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
         #elif defined __APPLE__
 
         #endif // WIN32
+
+        delete(dropTarget);
+        dropTarget = nullptr;
     }
 
     if(dropTarget)
@@ -877,18 +958,7 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
         }
     }
 
-#ifndef __APPLE__
     if(!handleViewEvents(event)) return false;
-#else
-    while(!event.eventsProcessed)
-    {
-        if(bClosed || (!viewPort))
-        {
-            return false;
-        }
-        this_thread::sleep_for(chrono::duration<float>(0.01f));
-    }
-#endif
 
     if(viewPort->getPosition() != moveTarget)
     {
@@ -993,13 +1063,11 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
         if(resizeFLAG) viewPort->setSize(viewSize);
     }
 
-#ifndef __APPLE__
     if(bClosed || (viewPort == nullptr))
     {
         close();
         return false;
     }
-#endif
 
     if(event.viewHasFocus)
     {

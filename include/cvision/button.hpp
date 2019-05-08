@@ -97,8 +97,8 @@ public:
 
     template<typename FUNC> void setActivationFunction(FUNC func){ activateFunc = func; } // Allow for custom activation functions by CVView
 
-    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
-    CVISION_API bool draw(sf::RenderTarget* target);
+    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos) override;
+    CVISION_API bool draw(sf::RenderTarget* target) override;
 
     CVISION_API CVButton(CVView* View, const sf::Vector2f& position, float width, float height,
                 const TextEntry& textInfo, const std::string& icon = "",

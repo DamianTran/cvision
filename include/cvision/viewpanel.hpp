@@ -89,7 +89,7 @@ public:
     {
         return viewPanelElements;
     }
-    virtual void setHighlightableStatus(const bool& status);
+    virtual void setHighlightableStatus(const bool& status) override;
 
     inline void setOutOfBoundsUpdate(const bool& state = true)
     {
@@ -100,26 +100,26 @@ public:
         bOutOfBoundsDraw = state;
     }
 
-    CVISION_API void setFocus(const bool& state);
+    CVISION_API void setFocus(const bool& state) override;
 
     inline unsigned int numPanels() const
     {
         return viewPanelElements.size();
     }
 
-    CVISION_API void move(const sf::Vector2f& distance);
+    CVISION_API void move(const sf::Vector2f& distance) override;
     inline void move(const float& x, const float& y)
     {
         move(sf::Vector2f(x, y));
     }
 
-    CVISION_API void setPosition(const sf::Vector2f& position);
+    CVISION_API void setPosition(const sf::Vector2f& position) override;
     inline void setPosition(const float& x, const float& y)
     {
         setPosition(sf::Vector2f(x, y));
     }
 
-    CVISION_API void setSize(const sf::Vector2f& newSize);
+    CVISION_API void setSize(const sf::Vector2f& newSize) override;
     inline void setSize(const float& x, const float& y)
     {
         setSize(sf::Vector2f(x, y));
@@ -128,16 +128,16 @@ public:
     CVISION_API void fitElements(const bool& fitX = true,
                                  const bool& fitY = true); // Fit the panel boundaries to the attached elements
 
-    CVISION_API void setHighlightColor(const sf::Color& color);
+    CVISION_API void setHighlightColor(const sf::Color& color) override;
     inline void setHighlightColor(const int& r, const int& g, const int& b)
     {
         setHighlightColor(sf::Color(r, g, b));
     }
 
-    CVISION_API void setExpand(const bool& state);
+    CVISION_API void setExpand(const bool& state) override;
 
-    virtual bool draw(sf::RenderTarget* target) = 0;
-    virtual bool update(CVEvent& event, const sf::Vector2f& mousePos);
+    virtual bool draw(sf::RenderTarget* target) override = 0;
+    virtual bool update(CVEvent& event, const sf::Vector2f& mousePos) override;
 
     ~CVViewPanel();
 
@@ -159,7 +159,7 @@ protected:
     CVISION_API virtual void updateBounds() override;
     CVISION_API void updatePanels(CVEvent& event, const sf::Vector2f& mousePos);
 
-    CVISION_API bool fadeComplete() const noexcept;
+    CVISION_API bool fadeComplete() const noexcept override;
 
 private:
 

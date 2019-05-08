@@ -46,6 +46,8 @@
 #ifndef CVIS_NETWORK_PANEL
 #define CVIS_NETWORK_PANEL
 
+#include <unordered_map>
+
 #include "cvision/panel.hpp"
 
 #include <hyper/toolkit/reference_vector.hpp>
@@ -304,7 +306,7 @@ public:
                                      const float& weight = 1.0f,
                                      const unsigned int& label_orientation = ALIGN_CENTER_MIDLINE);
 
-    CVISION_API void removePanelElement(CVElement* element);
+    CVISION_API void removePanelElement(CVElement* element) override;
 
     // Add/remove nodes
 

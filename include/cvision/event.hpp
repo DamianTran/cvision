@@ -95,10 +95,6 @@
 namespace cvis
 {
 
-#ifdef __APPLE__
-const static std::chrono::duration<float> VIEW_EVENT_WAIT(0.01f);
-#endif
-
 class CVElement;
 
 struct CVISION_API CVData
@@ -384,10 +380,6 @@ public:
     {
         return closeSignal;
     }
-
-#ifdef __APPLE__
-    CVISION_API void transfer(const CVEvent& other);
-#endif
 
     CVISION_API friend std::ostream& operator<<(std::ostream& output, const CVEvent& event);
 

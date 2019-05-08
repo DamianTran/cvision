@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -46,10 +46,14 @@
 #ifndef CVISION_API_LIB
 #define CVISION_API_LIB
 
+#if defined WIN32 || defined __WIN32 || defined _WIN32
 #ifdef CVISION_EXPORTS
 #define CVISION_API __declspec(dllexport)
 #else
 #define CVISION_API __declspec(dllimport)
+#endif
+#else
+#define CVISION_API
 #endif
 
 #endif // CVISION_API_LIB

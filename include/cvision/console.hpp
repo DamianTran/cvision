@@ -49,6 +49,8 @@
 #include "cvision/type.hpp"
 #include "cvision/algorithm.hpp"
 
+#include <hyper/toolkit/string.hpp>
+
 namespace cvis{
 
 class CVISION_API CVConsoleLog: public CVTextLog{

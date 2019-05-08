@@ -97,45 +97,8 @@ const sf::Font* CVApp::getTypeFont(const std::string& type) const
     }
 }
 
-#ifdef __APPLE__
-void CVApp::handleViewEvents()
-{
-    this->eventLock.lock();
-    for(auto& view : viewList)
-    {
-        if(!view->eventTrace.eventsProcessed)
-        {
-            view->updateLock.lock();
-            view->handleViewEvents(view->eventTrace);
-            view->updateLock.unlock();
-        }
-    }
-    this->eventLock.unlock();
-}
-#endif
-
 void CVApp::mainUpdate()
 {
-
-#ifdef __APPLE__
-    for(auto& view : viewList)
-    {
-
-        if(view->bWindowCreateWaiting)
-        {
-
-            sf::ContextSettings newWinSettings;
-            view->viewPort->
-            create(sf::VideoMode(view->width, view->height),
-                   view->name, view->style, newWinSettings);
-            view->activateWindow();
-
-            view->bWindowCreateWaiting = false;
-
-        }
-
-    }
-#endif
 
 }
 
