@@ -118,9 +118,20 @@ CVTitleBar::CVTitleBar(CVView* View, const uint8_t& alignment, const float& widt
 #endif
 
     this->textInfo = textInfo;
+
+    #ifdef __APPLE__
+    this->textInfo.alignment = ALIGN_CENTER_MIDLINE;
+    #else
+    this->textInfo.alignment = ALIGN_LEFT_MIDLINE;
+    #endif
+
     align(alignment);
     alignText();
+
+    #ifndef __APPLE__
     displayText.front().move(sf::Vector2f(height*1.42, 0));
+    #endif
+
     displayText.back().setFillColor(textInfo.textColor);
 
     if(!logo.empty())
@@ -348,16 +359,8 @@ CVScrollBar::CVScrollBar(CVView* parentView, const sf::Vector2f& anchorBegin,
     responseDir(CV_WHEEL_DIR_VERTICAL),
     bCanScroll(true),
     bReleaseOnEnd(false),
-    #ifdef __APPLE__
-    bReverseY(true),
-    #else
     bReverseY(false),
-    #endif
-    #ifdef __APPLE__
-    bReverseX(true)
-    #else
     bReverseX(false)
-    #endif
 {
     panel.front().setOrigin(width/2, 0.0f);
     panel.front().setRotation(scrollAngle*180.0f/PI - 90.0f);

@@ -306,7 +306,7 @@ public:
                                      const float& weight = 1.0f,
                                      const unsigned int& label_orientation = ALIGN_CENTER_MIDLINE);
 
-    CVISION_API void removePanelElement(CVElement* element);
+    CVISION_API void removePanelElement(CVElement* element) override;
 
     // Add/remove nodes
 

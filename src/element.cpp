@@ -653,7 +653,11 @@ string CVElement::take_trigger(const string& tag)
             output = incoming_triggers[i];
             output.erase(output.begin(),
                          output.begin() + tag.size());
-            trim_all(output);
+
+            if(!output.empty())
+            {
+                output.erase(output.begin());
+            }
 
             incoming_triggers.erase(incoming_triggers.begin() + i);
 

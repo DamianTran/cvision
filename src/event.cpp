@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -283,44 +283,6 @@ void CVEvent::reset()
     keyLog.clear();
     mouseCapturedShapes.clear();
 }
-
-#ifdef __APPLE__
-void CVEvent::transfer(const CVEvent& other)
-{
-    LMBhold = other.LMBhold;
-    RMBhold = other.RMBhold;
-    LMBreleased = other.LMBreleased;
-    RMBreleased = other.RMBreleased;
-    viewClosed = other.viewClosed;
-    viewHasFocus = other.viewHasFocus;
-    viewResized = other.viewResized;
-    LMBholdFrames = other.LMBholdFrames;
-    RMBholdFrames = other.RMBholdFrames;
-    LMBreleaseFrames = other.LMBreleaseFrames;
-    RMBreleaseFrames = other.RMBreleaseFrames;
-    awaitingCursorType = other.awaitingCursorType;
-    LMBpressPosition = other.LMBpressPosition;
-    RMBpressPosition = other.RMBpressPosition;
-    lastLMBpressPosition = other.lastLMBpressPosition;
-    lastRMBpressPosition = other.lastRMBpressPosition;
-    LMBreleasePosition = other.LMBreleasePosition;
-    RMBreleasePosition = other.RMBreleasePosition;
-    LMBholdTime = other.LMBholdTime;
-    RMBholdTime = other.RMBholdTime;
-    LMBreleaseTime = other.LMBreleaseTime;
-    RMBreleaseTime = other.RMBreleaseTime;
-    zoomDelta = other.zoomDelta;
-    zoomState = other.zoomState;
-    viewResizeScale = other.viewResizeScale;
-    viewBounds = other.viewBounds;
-    lastViewBounds = other.lastViewBounds;
-    keyLog = other.keyLog;
-    transferData = other.transferData;
-    mouseCapturedShapes = other.mouseCapturedShapes;
-    mouseTraceBuffer = other.mouseTraceBuffer;
-    wheelDirection = other.wheelDirection;
-}
-#endif
 
 CVEvent::CVEvent():
     LMBhold(false),

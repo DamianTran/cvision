@@ -143,6 +143,29 @@ private:
     CVDropTarget& operator=(const CVDropTarget& other) = delete;
 
 };
+#elif defined __APPLE__
+
+class CVDropTarget
+{
+public:
+
+    CVDropTarget(CVView* View);
+
+    bool getWaitingData(std::vector<std::string>& output);
+
+private:
+
+    std::mutex dropLock;
+
+    CVView * viewHandle;
+
+    std::vector<std::string> waiting_data;
+
+    CVDropTarget(const CVDropTarget& other) = delete;
+    CVDropTarget& operator=(const CVDropTarget& other) = delete;
+
+};
+
 #endif
 
 class CVISION_API CVView
@@ -157,11 +180,11 @@ protected:
     friend class CVApp;
     friend class CVElement;
 
-#if defined WIN32 || defined _WIN32 || defined __WIN32
+    #ifdef __APPLE__
+    friend class CVDropTarget;
+    #endif
+
     CVDropTarget* dropTarget;
-#else
-    void * dropTarget;
-#endif
 
     bool                        forceClose;
     bool                        render;
