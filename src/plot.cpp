@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -45,12 +45,12 @@
 #include "cvision/view.hpp"
 #include "cvision/app.hpp"
 
-#include "EZC/algorithm.hpp"
+#include "hyper/algorithm.hpp"
 
 #include <boost/range/adaptor/reversed.hpp>
 
 using namespace std;
-using namespace EZC;
+using namespace hyperC;
 
 namespace cvis
 {
@@ -343,7 +343,7 @@ void CVPlot::Dataset::update()
     vector<unsigned int> allIdx;
     for(auto& idx : indices)
     {
-        EZC::append(allIdx, idx);
+        hyperC::append(allIdx, idx);
     }
 
     for(size_t i = 0; i < L; ++i)
@@ -352,7 +352,7 @@ void CVPlot::Dataset::update()
         {
             if(point.dataIndex == allIdx[i])
             {
-                point.dimValues = EZC::getCrossSection(i, matrix);
+                point.dimValues = hyperC::getCrossSection(i, matrix);
             }
         }
     }
@@ -361,11 +361,11 @@ void CVPlot::Dataset::update()
     {
         if(subset.size() > 0)
         {
-            if(!EZC::anyEqual(points[i].dataIndex, subset)) points[i].visible = false;
+            if(!hyperC::anyEqual(points[i].dataIndex, subset)) points[i].visible = false;
         }
         if(plot->subset.size() > 0)
         {
-            if(!EZC::anyEqual(points[i].dataIndex, plot->subset)) points[i].visible = false;
+            if(!hyperC::anyEqual(points[i].dataIndex, plot->subset)) points[i].visible = false;
         }
     }
 
@@ -383,7 +383,7 @@ vector<float> CVPlot::Dataset::getSubsetData(const unsigned int& dimension) cons
         if(this->subset.size() == 0)
         {
             if(plot->subset.size() == 0) return matrix[dimension];
-            else if(EZC::anyEqual(point.dataIndex, plot->subset))
+            else if(hyperC::anyEqual(point.dataIndex, plot->subset))
             {
                 output.push_back(point[dimension]);
             }
@@ -391,7 +391,7 @@ vector<float> CVPlot::Dataset::getSubsetData(const unsigned int& dimension) cons
         else
         {
             if(plot->subset.size() == 0) return matrix[dimension];
-            else if(EZC::anyEqual(point.dataIndex, plot->subset) && EZC::anyEqual(point.dataIndex, this->subset))
+            else if(hyperC::anyEqual(point.dataIndex, plot->subset) && hyperC::anyEqual(point.dataIndex, this->subset))
             {
                 output.push_back(point[dimension]);
             }
@@ -420,14 +420,14 @@ vector<CVPlot::dataPoint*> CVPlot::Dataset::getSubsetPoints()
     {
         if(this->subset.size() < 1)
         {
-            if(EZC::anyEqual(point.dataIndex, plot->subset))
+            if(hyperC::anyEqual(point.dataIndex, plot->subset))
             {
                 output.push_back(&point);
             }
         }
         else
         {
-            if(EZC::anyEqual(point.dataIndex, plot->subset) && EZC::anyEqual(point.dataIndex, this->subset))
+            if(hyperC::anyEqual(point.dataIndex, plot->subset) && hyperC::anyEqual(point.dataIndex, this->subset))
             {
                 output.push_back(&point);
             }
@@ -442,9 +442,9 @@ vector<CVPlot::dataPoint*> CVPlot::Dataset::getLabelledPoints(const string& tag)
     vector<CVPlot::dataPoint*> output;
     for(auto& point : points)
     {
-        if(EZC::anyEqual(tag, point.labels))
+        if(hyperC::anyEqual(tag, point.labels))
         {
-            if((plot->subset.size() > 0) && !EZC::anyEqual(point.dataIndex, plot->subset)) continue;
+            if((plot->subset.size() > 0) && !hyperC::anyEqual(point.dataIndex, plot->subset)) continue;
             output.push_back(&point);
         }
     }
@@ -456,9 +456,9 @@ vector<float> CVPlot::Dataset::getLabelledData(const string& tag, const unsigned
     vector<float> output;
     for(auto& point : points)
     {
-        if(EZC::anyEqual(tag, point.labels))
+        if(hyperC::anyEqual(tag, point.labels))
         {
-            if((plot->subset.size() > 0) && !EZC::anyEqual(point.dataIndex, plot->subset)) continue;
+            if((plot->subset.size() > 0) && !hyperC::anyEqual(point.dataIndex, plot->subset)) continue;
             output.push_back(point[dimension]);
         }
     }
@@ -473,15 +473,15 @@ sf::Vector2f CVPlot::Dataset::getScale(const unsigned int& dimension) const
     if((plot->subset.size() > 0) || (subset.size() > 0))
     {
         vector<float> subsetData = getSubsetData(dimension);
-        return sf::Vector2f(EZC::min(subsetData), EZC::max(subsetData));
+        return sf::Vector2f(hyperC::min(subsetData), hyperC::max(subsetData));
     }
 
-    return sf::Vector2f(EZC::min(matrix[dimension]), EZC::max(matrix[dimension]));
+    return sf::Vector2f(hyperC::min(matrix[dimension]), hyperC::max(matrix[dimension]));
 }
 
 size_t CVPlot::Dataset::size() const
 {
-    return EZC::minSize(matrix);
+    return hyperC::minSize(matrix);
 }
 
 CVPlot::axis::axis(const float& pos, const unsigned int& dimension, CVPlot* plot,
@@ -1249,7 +1249,7 @@ void CVPlot::dataPoint::setSelection(const bool& state)
         {
             sprite.setColor(spriteColor);
             selected = false;
-            EZC::remove(this, plot->selectedPoints);
+            hyperC::remove(this, plot->selectedPoints);
         }
     }
 }
@@ -1379,7 +1379,7 @@ bool CVPlot::select_indices(const vector<unsigned int>& idx)
     {
         for(auto& point : set.points)
         {
-            if(EZC::anyEqual(point.dataIndex, idx))
+            if(hyperC::anyEqual(point.dataIndex, idx))
             {
                 point.setSelection(true);
                 output = true;
@@ -1722,7 +1722,7 @@ void CVPlot::move(const sf::Vector2f& distance)
 
 void CVPlot::addData(const vector<float>& xData, const vector<float>& yData,
                      const vector<unsigned int>& indices,
-                     const string& name, const EZC::StringVector& pointTags)
+                     const string& name, const hyperC::StringVector& pointTags)
 {
     if(indices.empty())
     {
@@ -1734,9 +1734,9 @@ void CVPlot::addData(const vector<float>& xData, const vector<float>& yData,
     }
     callUpdate();
 }
-void CVPlot::addData(const EZC::StringVector& xLabels, const EZC::numMatrix& yData,
+void CVPlot::addData(const hyperC::StringVector& xLabels, const hyperC::numMatrix& yData,
                      const vector<vector<unsigned int>>& indices,
-                     const string& name, const EZC::StringVector& pointTags)
+                     const string& name, const hyperC::StringVector& pointTags)
 {
     if(indices.empty())
     {
@@ -1754,7 +1754,7 @@ void CVPlot::addData(const EZC::StringVector& xLabels, const EZC::numMatrix& yDa
     }
     callUpdate();
 }
-void CVPlot::addData(const EZC::numMatrix& xData, const EZC::StringVector& yLabels,
+void CVPlot::addData(const hyperC::numMatrix& xData, const hyperC::StringVector& yLabels,
                      const vector<vector<unsigned int>>& indices,
                      const string& name)
 {
@@ -1774,9 +1774,9 @@ void CVPlot::addData(const EZC::numMatrix& xData, const EZC::StringVector& yLabe
     }
     callUpdate();
 }
-void CVPlot::addData(const EZC::numMatrix& matrix,
+void CVPlot::addData(const hyperC::numMatrix& matrix,
                      const vector<unsigned int>& indices,
-                     const EZC::StringMatrix& labels,
+                     const hyperC::StringMatrix& labels,
                      const string& name)
 {
     if(indices.empty())
@@ -2375,17 +2375,17 @@ void CVScatterPlot::RegLineInfo::getLinearModel(const vector<float>& xData, cons
     {
     case CV_LINE_REGRESSION_SPEARMAN:
     {
-        coefficient = EZC::spearman_coefficient(xData, yData);
+        coefficient = hyperC::spearman_coefficient(xData, yData);
         break;
     }
     default:  // Pearson
     {
-        coefficient = EZC::pearson_coefficient(xData, yData);
+        coefficient = hyperC::pearson_coefficient(xData, yData);
         break;
     }
     }
 
-    EZC::least_squares_fit(xData, yData, slope, intercept);
+    hyperC::least_squares_fit(xData, yData, slope, intercept);
 }
 
 CVCategoryPlot::CVCategoryPlot(CVView* View, const sf::Vector2f& position, const float& width, const float& height,

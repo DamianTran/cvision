@@ -45,11 +45,11 @@
 #include "cvision/view.hpp"
 #include "cvision/app.hpp"
 
-#include <EZC/algorithm.hpp>
+#include <hyper/algorithm.hpp>
 
 #include <boost/range/adaptor/reversed.hpp>
 
-using namespace EZC;
+using namespace hyperC;
 using namespace std;
 
 namespace cvis

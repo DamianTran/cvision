@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -46,13 +46,13 @@
 #include "cvision/app.hpp"
 #include "cvision/button.hpp"
 
-#include <EZC/algorithm.hpp>
-#include <EZC/toolkit/string.hpp>
-#include <EZC/toolkit/time.hpp>
+#include <hyper/algorithm.hpp>
+#include <hyper/toolkit/string.hpp>
+#include <hyper/toolkit/time.hpp>
 
 namespace cvis{
 
-using namespace EZC;
+using namespace hyperC;
 
 CVCalendarPanel::CVCalendarPanel(CVView* parentView, const std::string& panelTag,
                                  const sf::Color& bkgColor, const sf::Vector2f& size,

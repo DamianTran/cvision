@@ -47,9 +47,9 @@
 #include "cvision/view.hpp"
 #include "cvision/app.hpp"
 
-#include "EZC/toolkit/string.hpp"
+#include "hyper/toolkit/string.hpp"
 
-using namespace EZC;
+using namespace hyperC;
 using namespace std;
 
 namespace cvis

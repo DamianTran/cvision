@@ -99,13 +99,13 @@
 // Development shortcuts
 
 #define CV_UPDATE_OVERRIDE  \
-    bool update(cvis::CVEvent& event, const sf::Vector2f& mousePos)
+    bool update(cvis::CVEvent& event, const sf::Vector2f& mousePos) override
 
 #define CV_DEFINE_UPDATE(class) \
     bool class::update(CVEvent& event, const sf::Vector2f& mousePos)
 
 #define CV_DRAW_OVERRIDE    \
-    bool draw(sf::RenderTarget* target)
+    bool draw(sf::RenderTarget* target) override
 
 #define CV_DEFINE_DRAW(class)   \
     bool class::draw(sf::RenderTarget* target)

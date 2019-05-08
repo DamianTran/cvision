@@ -72,15 +72,15 @@ public:
 
     void updateTriggers() { }
 
-    CVISION_API bool draw(sf::RenderTarget* target);
+    CVISION_API bool draw(sf::RenderTarget* target) override;
 
-    CVISION_API void setPosition(const sf::Vector2f& position);
+    CVISION_API void setPosition(const sf::Vector2f& position) override;
     inline void setPosition(const float& x, const float& y)
     {
         setPosition(sf::Vector2f(x, y));
     }
 
-    CVISION_API void move(const sf::Vector2f& offset);
+    CVISION_API void move(const sf::Vector2f& offset) override;
     inline void move(const float& x, const float& y)
     {
         move(sf::Vector2f(x, y));
@@ -122,30 +122,30 @@ public:
     CVISION_API const float& getRoundingRadius() const;
     CVISION_API const unsigned int& getRoundingPointCount() const;
 
-    CVISION_API sf::Color getFillColor() const;
+    CVISION_API sf::Color getFillColor() const override;
     CVISION_API sf::Color getColor() const;
-    CVISION_API sf::Color getOutlineColor() const;
+    CVISION_API sf::Color getOutlineColor() const override;
 
     CVISION_API void setOutlineThickness(const float& newThickness);
 
     CVISION_API void setClearFill(const bool& state = true);
 
-    CVISION_API void setExpand(const bool& state);
-    CVISION_API void updateBounds();
+    CVISION_API void setExpand(const bool& state) override;
+    CVISION_API void updateBounds() override;
 
     CVISION_API void rotate(const float& angle,
                 const unsigned char& flags = CV_LAYER_ALL,
-                const sf::Vector2f& origin = sf::Vector2f(NAN, NAN));
+                const sf::Vector2f& origin = sf::Vector2f(NAN, NAN)) override;
     CVISION_API void setRotation(const float& angle,
                      const unsigned char& flags = CV_LAYER_ALL,
-                     const sf::Vector2f& origin = sf::Vector2f(NAN, NAN));
-    CVISION_API void setSize(const sf::Vector2f& newSize);
+                     const sf::Vector2f& origin = sf::Vector2f(NAN, NAN)) override;
+    CVISION_API void setSize(const sf::Vector2f& newSize) override;
     inline void setSize(const float& x, const float& y)
     {
         setSize(sf::Vector2f(x, y));
     }
 
-    CVISION_API float getRotation(const unsigned char& flags = CV_LAYER_ALL) const;
+    CVISION_API float getRotation(const unsigned char& flags = CV_LAYER_ALL) const override;
 
     inline const rounded_rectangle& getPanelObject(const unsigned int order)
     {
@@ -166,20 +166,20 @@ public:
 
     CVISION_API void highlight(const bool& state = true);
 
-    inline float getOutlineThickness() const
+    inline float getOutlineThickness() const override
     {
         return panel.front().getOutlineThickness();
     }
 
-    void setFillTexture(sf::Texture* texture) { }
-    inline sf::Vector2f getSize()
+    void setFillTexture(sf::Texture* texture) override{ }
+    inline sf::Vector2f getSize() override
     {
         return sf::Vector2f(bounds.width, bounds.height);
     }
 
-    CVISION_API bool fadeComplete() const noexcept;
+    CVISION_API bool fadeComplete() const noexcept override;
 
-    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
+    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos) override;
 
     CVISION_API CVBox(CVView* View,
           sf::Vector2f position = sf::Vector2f(0.0f,0.0f),

@@ -59,8 +59,8 @@ public:
                      const sf::Vector2f& size = sf::Vector2f(NAN, NAN), bool bFitToWindow = true,
                      const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
 
-    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
-    CVISION_API bool draw(sf::RenderTarget* target);
+    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos) override;
+    CVISION_API bool draw(sf::RenderTarget* target) override;
 
     CVISION_API void setHoverTag(const bool& status);
 
@@ -70,7 +70,7 @@ public:
     CVISION_API void setNode(const int& node);
     CVISION_API void setNodeRadius(const float& newRadiusPx);
 
-    inline sf::Vector2f getPosition() const{
+    inline sf::Vector2f getPosition() const override{
         if(center != nullptr) return center->getPosition();
         return anchorPoint; }
 
@@ -81,14 +81,14 @@ public:
     CVISION_API void setCenterAnchor(const sf::Vector2f& position); // Set the anchor point to center the node map
 
     CVISION_API void addPanelElement(CVElement* newElement, std::string newTag = "");
-    CVISION_API void removePanelElement(const unsigned int& index);
+    CVISION_API void removePanelElement(const unsigned int& index) override;
 
-    CVISION_API void setPosition(const sf::Vector2f& newPosition);
+    CVISION_API void setPosition(const sf::Vector2f& newPosition) override;
     inline void setPosition(const float& x, const float& y){
         setPosition(sf::Vector2f(x, y));
     }
 
-    CVISION_API void move(const sf::Vector2f& distance);
+    CVISION_API void move(const sf::Vector2f& distance) override;
     inline void move(const float& x, const float& y){
         move(sf::Vector2f(x, y));
     }

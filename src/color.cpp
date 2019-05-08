@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -43,9 +43,9 @@
 
 #include "cvision/color.hpp"
 
-#include <EZC/toolkit/string.hpp>
+#include <hyper/toolkit/string.hpp>
 
-using namespace EZC;
+using namespace hyperC;
 
 namespace cvis
 {
@@ -63,7 +63,7 @@ void setImageColor(sf::Image& img, const sf::Color& newColor){
 sf::Color textToColor(const std::string& input){
     sf::Color output(0,0,0,255);
     StringVector parseBuff;
-    splitString(input, parseBuff, EZC::DELIM_STANDARD);
+    splitString(input, parseBuff, hyperC::DELIM_STANDARD);
     std::vector<unsigned int> values;
 
     if(parseBuff.size() > 1){

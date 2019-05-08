@@ -48,7 +48,7 @@
 
 #include <SFML/Graphics.hpp>
 
-#include <EZC/toolkit/time.hpp>
+#include <hyper/toolkit/time.hpp>
 
 #include "cvision/textbox.hpp"
 
@@ -103,7 +103,7 @@ public:
     bool        bUser;
     bool        bMsg;
 
-    EZC::TimePoint   time;
+    hyperC::TimePoint   time;
 
     size_t      textLogIndex;
 
@@ -319,7 +319,7 @@ protected:
     std::vector<std::string>    textLog;
     std::vector<std::string>    waitingText;
 
-    EZC::TimeLog                times;
+    hyperC::TimeLog                times;
 
     CVTypeBox*                  usrEntryBox;
 

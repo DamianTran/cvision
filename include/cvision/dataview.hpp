@@ -47,12 +47,12 @@
 #define CVIS_DATA
 
 #include "cvision/table.hpp"
-#include "EZC/algorithm.hpp"
+#include "hyper/algorithm.hpp"
 #include "cvision/coordmap.hpp"
 #include "cvision/view.hpp"
 #include "cvision/type.hpp"
 
-namespace EZC
+namespace hyperC
 {
 class _2Dstream;
 }
@@ -64,7 +64,7 @@ template<typename T> size_t nrow(const std::vector<std::vector<T>>& M){
 }
 
 template<typename T> size_t ncol(const std::vector<std::vector<T>>& M){
-    return EZC::maxSize(M);
+    return hyperC::maxSize(M);
 }
 
 template<typename T> size_t rowSize(const std::vector<std::vector<T>>& M, const unsigned int& index){
@@ -74,8 +74,8 @@ template<typename T> size_t rowSize(const std::vector<std::vector<T>>& M, const 
 class CVISION_API CVDataViewerPanel: public CVTablePanel{
 protected:
 
-    EZC::_2Dstream* dataSource; // Requires a double-indexable item with nrow() and ncol() overload
-    EZC::_2Dstream* incomingDataSource;
+    hyperC::_2Dstream* dataSource; // Requires a double-indexable item with nrow() and ncol() overload
+    hyperC::_2Dstream* incomingDataSource;
 
     sf::FloatRect totalBounds,
                 exclusionBounds;
@@ -123,7 +123,7 @@ public:
     inline void set_y(const unsigned int& newY){ view_coords[1] = newY; }
     inline void set_z(const unsigned int& newZ){ view_coords[2] = newZ; }
 
-    inline void changeFocus(EZC::_2Dstream* newFocus){
+    inline void changeFocus(hyperC::_2Dstream* newFocus){
 
         incomingDataSource = newFocus;
 
@@ -131,7 +131,7 @@ public:
 
     CVISION_API void setup();
 
-    const EZC::_2Dstream* getDataSource() const
+    const hyperC::_2Dstream* getDataSource() const
     {
         return dataSource;
     }
@@ -145,7 +145,7 @@ public:
 
     }
 
-    inline void setHighlightColor(const sf::Color& newColor){
+    inline void setHighlightColor(const sf::Color& newColor) override{
 
         CVTablePanel::setHighlightColor(newColor);
         setCellHighlightColor(newColor);
@@ -176,7 +176,7 @@ public:
 
     }
 
-    inline void clear(){
+    inline void clear() override{
 
         CVTablePanel::clear();
         coordOffset.x = 0;
@@ -189,9 +189,9 @@ public:
 
     }
 
-    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
+    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos) override;
 
-    inline bool draw(sf::RenderTarget* target){
+    inline bool draw(sf::RenderTarget* target) override{
         if(!CVTextBox::draw(target)) return false;
 
         CV_DRAW_CLIP_BEGIN
@@ -235,7 +235,7 @@ public:
 
     virtual bool saveToFile(const std::string& file) const;
 
-    CVDataViewerPanel(CVView* parentView, EZC::_2Dstream* dataSource = nullptr, std::string panelTag = "",
+    CVDataViewerPanel(CVView* parentView, hyperC::_2Dstream* dataSource = nullptr, std::string panelTag = "",
                       const sf::Color& backgroundColor = sf::Color::Transparent,
                       const sf::Vector2f& size = sf::Vector2f(NAN, NAN),
                       const bool& bFitWindow = true,

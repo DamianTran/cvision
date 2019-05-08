@@ -847,7 +847,9 @@ bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     if(dropTarget)
     {
+        #if defined WIN32 || defined __WIN32 || defined _WIN32
         dropTarget->getWaitingData(eventTrace.drop_data);
+        #endif
     }
 
     // Handle screenshots in the main update thread

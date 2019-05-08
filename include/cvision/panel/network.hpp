@@ -46,10 +46,12 @@
 #ifndef CVIS_NETWORK_PANEL
 #define CVIS_NETWORK_PANEL
 
+#include <unordered_map>
+
 #include "cvision/panel.hpp"
 
-#include <EZC/toolkit/reference_vector.hpp>
-#include <EZC/toolkit/static_vector.hpp>
+#include <hyper/toolkit/reference_vector.hpp>
+#include <hyper/toolkit/static_vector.hpp>
 
 namespace cvis
 {
@@ -485,7 +487,7 @@ public:
     inline bool anySelected() const noexcept{ return !selected.empty(); }
     inline size_t numSelected() const noexcept{ return selected.size(); }
 
-    inline const EZC::reference_vector<CVNetworkNode>& getSelected() noexcept{ return selected; }
+    inline const hyperC::reference_vector<CVNetworkNode>& getSelected() noexcept{ return selected; }
 
     sf::Vector2f convert_to_local(const sf::Vector2f& screen_coords) const noexcept;
     sf::Vector2f convert_to_screen(const sf::Vector2f& local_coords) const noexcept;
@@ -495,7 +497,7 @@ protected:
 
     CVNetworkLayout layout;
 
-    EZC::static_vector<CVNetworkNode> nodes;
+    hyperC::static_vector<CVNetworkNode> nodes;
 
     sf::Vector2f defaultNodePosition;
     sf::Vector2f defaultNodeSize;
@@ -548,7 +550,7 @@ protected:
     /** Override to change how new nodes are connected to the existing network */
     virtual void updateNodeConnections(CVNetworkNode& node){ }
 
-    EZC::reference_vector<CVNetworkNode> selected;
+    hyperC::reference_vector<CVNetworkNode> selected;
 
     CVISION_API void select(CVNetworkNode& node);
     CVISION_API void deselect(CVNetworkNode& node);
