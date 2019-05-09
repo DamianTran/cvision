@@ -364,11 +364,12 @@ void CVView::init()
     cout << "Antialiasing: " << contextSettings.antialiasingLevel << "x\n";
 
     viewPort = new sf::RenderWindow(sf::VideoMode(width, height), name, style, contextSettings);
+
+    cursor_rep.loadFromSystem(sf::Cursor::Arrow);
+
     viewPort->setVerticalSyncEnabled(true);
     viewPort->setMouseCursor(cursor_rep);
     viewPort->setFramerateLimit(frameRateLimit);
-
-    cursor_rep.loadFromSystem(sf::Cursor::Arrow);
 
     const float frameTime = 0.5f/frameRateLimit;
 
