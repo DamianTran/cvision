@@ -275,6 +275,7 @@ string getClipboardText()
     if(hData == nullptr)
     {
         cout << ">> Unable to find clipboard data\n";
+
         return string();
     }
     char* clipText = (char*)(GlobalLock(hData));
@@ -287,16 +288,25 @@ string getClipboardText()
 
         return string();
     }
+
     string output(clipText);
     GlobalUnlock(hData);
     CloseClipboard();
+
     return output;
 #elif defined __APPLE__
 
     NSPasteboard*  pboard  = [NSPasteboard generalPasteboard];
     NSString* myString = [pboard stringForType:NSPasteboardTypeString];
 
-    return string([myString UTF8String]);
+    if([myString length])
+    {
+        return string([myString UTF8String]);
+    }
+    else
+    {
+        return string();
+    }
 #elif defined __linux__
     return string();
 #else
