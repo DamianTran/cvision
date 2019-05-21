@@ -353,7 +353,6 @@ CVElement* CVViewPanel::getOwnedElementByID(const string& tag)
 
     for(auto& element : viewPanelElements)
     {
-        cout << "Searching tag: " << element->tag() << '\n';
         if(element->tag() == tag)
         {
             return element;

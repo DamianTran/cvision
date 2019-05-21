@@ -300,7 +300,6 @@ public:
                                  const std::string& signal,
                                  const unsigned int& state = UINT_MAX)
     {
-        std::cout << "Adding trigger target: " << ID << "(" << getElementById(ID) << ")\n";
         trigger_targets.emplace_back(getElementById(ID), signal, state);
         trigger_targets.back().tag = ID;
     }

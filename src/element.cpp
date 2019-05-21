@@ -709,7 +709,7 @@ void CVElement::sendTrigger(CVElement* target, const string& signal)
     }
     else
     {
-        throw invalid_argument("CVision: requested ID does not match to elements in app cascade");
+        cout << "Warning (CVision): invalid trigger target" << '\n';
     }
 }
 
