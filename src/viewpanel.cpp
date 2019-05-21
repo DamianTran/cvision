@@ -350,15 +350,18 @@ CVElement* CVViewPanel::getTaggedElement(const string& tag)
 
 CVElement* CVViewPanel::getOwnedElementByID(const string& tag)
 {
-    CVElement* output = nullptr;
+
     for(auto& element : viewPanelElements)
     {
+        cout << "Searching tag: " << element->tag() << '\n';
         if(element->tag() == tag)
         {
             return element;
         }
         else if(dynamic_cast<CVViewPanel*>(element))
         {
+            CVElement* output = nullptr;
+
             if(output = ((CVViewPanel*)element)->getOwnedElementByID(tag))
             {
                 return output;
@@ -366,7 +369,7 @@ CVElement* CVViewPanel::getOwnedElementByID(const string& tag)
         }
     }
 
-    return output;
+    return nullptr;
 
 }
 

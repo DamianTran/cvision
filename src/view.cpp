@@ -447,8 +447,13 @@ CVElement* CVView::getElementById(const string& tag)
 
     CVElement* output = nullptr;
 
+    cout << "Getting element by ID: " << tag << '\n';
+
     for(auto& panel : viewPanels)
     {
+
+        cout << "Searching panel: " << panel->tag() << '\n';
+
         if(panel->tag() == tag)
         {
             return panel;
