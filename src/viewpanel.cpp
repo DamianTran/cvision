@@ -132,7 +132,9 @@ void CVViewPanel::setExpand(const bool& state)
     }
 }
 
-void CVViewPanel::addPanelElement(CVElement* newElement, string newTag, const unsigned int& index)
+void CVViewPanel::addPanelElement(CVElement* newElement,
+                                  const string& newTag,
+                                  const unsigned int& index)
 {
 
     // Transfer flags

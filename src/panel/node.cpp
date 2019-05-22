@@ -493,9 +493,11 @@ void CVNodePanel::setCenter(CVElement& element)
     anchorPoint = element.getPosition() - element.getOrigin();
 }
 
-void CVNodePanel::addPanelElement(CVElement* newElement, string newTag)
+void CVNodePanel::addPanelElement(CVElement* newElement,
+                                  const string& newTag,
+                                  const unsigned int& index)
 {
-    CVViewPanel::addPanelElement(newElement, newTag);
+    CVViewPanel::addPanelElement(newElement, newTag, index);
     nodePaths.emplace_back();
     nodePaths.back().setSize(sf::Vector2f(0.0f, pathThickness));
     nodePaths.back().setOrigin(sf::Vector2f(0.0f, pathThickness/2));

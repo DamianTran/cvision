@@ -80,7 +80,9 @@ public:
     CVISION_API void setCenter(CVElement& element); // Set the element to be centered
     CVISION_API void setCenterAnchor(const sf::Vector2f& position); // Set the anchor point to center the node map
 
-    CVISION_API void addPanelElement(CVElement* newElement, std::string newTag = "");
+    CVISION_API void addPanelElement(CVElement* newElement,
+                                     const std::string& newTag = "",
+                                     const unsigned int& index = UINT_MAX) override;
     CVISION_API void removePanelElement(const unsigned int& index) override;
 
     CVISION_API void setPosition(const sf::Vector2f& newPosition) override;

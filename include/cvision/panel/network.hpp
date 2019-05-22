@@ -271,6 +271,12 @@ enum class CVNetworkLayout
     Organic
 };
 
+template<typename T>
+struct prohibited_function_type : std::false_type
+{
+
+};
+
 /** Mindmap-type physics-enabled panel */
 
 class CVISION_API CVNetworkPanel : public CVBasicViewPanel
@@ -293,9 +299,13 @@ public:
 
     /** This method is deprecated in the network panel to avoid confusion */
 
-    CVISION_API void addPanelElement(CVElement* newElement,
-                                    const std::string& newTag = "",
-                                    const unsigned int& index = UINT_MAX) = delete;
+    template<typename T = bool>
+    void addPanelElement(CVElement* newElement,
+                         const std::string& newTag = "",
+                         const unsigned int& index = UINT_MAX)
+    {
+        static_assert(prohibited_function_type<T>::value, "Default addPanelElement() is prohibited for CVNetworkPanel");
+    }
 
     /** Add a new custom element.  The element will be wrapped in a CVNetworkNode class and
         added to the registry of nodes for this panel. */

@@ -130,7 +130,9 @@ public:
 
     CVISION_API void clearSelection();
 
-    CVISION_API void addPanelElement(CVElement*, std::string newTag = "", const unsigned int& index = UINT_MAX);
+    CVISION_API void addPanelElement(CVElement* element,
+                                     const std::string& newTag = "",
+                                     const unsigned int& index = UINT_MAX) override;
     CVISION_API void removePanelElement(const unsigned int& index);
     CVISION_API void removePanelElement(CVElement * element);
 
@@ -187,7 +189,9 @@ public:
                 const sf::Color& outlineColor,
                 const float& outlineThickness);
 
-    CVISION_API void addPanelElement(CVElement * newElement, std::string newTag = "", const unsigned int& index = UINT_MAX) override;
+    CVISION_API void addPanelElement(CVElement * newElement,
+                                     const std::string& newTag = "",
+                                     const unsigned int& index = UINT_MAX) override;
     CVISION_API void removePanelElement(CVElement * element) override;
     CVISION_API CVElement * getGridElement(const std::string& tag);
 

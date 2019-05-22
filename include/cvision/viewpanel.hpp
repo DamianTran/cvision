@@ -70,7 +70,9 @@ public:
         return viewPanelElements;
     }
 
-    virtual void addPanelElement(CVElement* newElement, std::string newTag = "", const unsigned int& index = UINT_MAX);
+    virtual void addPanelElement(CVElement* newElement,
+                                 const std::string& newTag = "",
+                                 const unsigned int& index = UINT_MAX);
     virtual void removePanelElement(CVElement* element);
     virtual void removePanelElement(const std::string& tag);
     virtual void removePanelElement(const unsigned int& index);

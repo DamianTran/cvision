@@ -48,11 +48,12 @@
 #include <hyper/toolkit/string.hpp>
 
 using namespace hyperC;
+using namespace std;
 
 namespace cvis
 {
 
-CVSwitchPanel::CVSwitchPanel(CVView* parentView, std::string panelTag, sf::Color backgroundColor,
+CVSwitchPanel::CVSwitchPanel(CVView* parentView, string panelTag, sf::Color backgroundColor,
                      const sf::Vector2f& size, bool bFitToWindow,
                      const sf::Vector2f& position):
                          CVBasicViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position),
@@ -70,7 +71,7 @@ CVSwitchPanel::CVSwitchPanel(CVView* parentView, std::string panelTag, sf::Color
     setExpand(false);
 }
 
-std::string CVSwitchPanel::getFocusTag(){
+string CVSwitchPanel::getFocusTag(){
 
     if(numPanels()){
 
@@ -78,7 +79,7 @@ std::string CVSwitchPanel::getFocusTag(){
 
     }
 
-    return std::string();
+    return string();
 
 }
 
@@ -110,7 +111,7 @@ void CVSwitchPanel::setElementPadding(const float& newPadding){
     elementPadding = newPadding;
 }
 
-bool CVSwitchPanel::checkFocus(const std::string& tag){
+bool CVSwitchPanel::checkFocus(const string& tag){
     if(viewIndex >= viewPanelTags.size()) return false;
     return viewPanelTags[viewIndex] == tag;
 }
@@ -120,7 +121,9 @@ CVElement* CVSwitchPanel::getActiveElement(){
     else return viewPanelElements[viewIndex];
 }
 
-void CVSwitchPanel::addPanelElement(CVElement* newElement, std::string tag, const unsigned int& index){
+void CVSwitchPanel::addPanelElement(CVElement* newElement,
+                                    const string& tag,
+                                    const unsigned int& index){
 
     if(numPanels()){
         if(!index)
@@ -274,7 +277,7 @@ bool CVSwitchPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
 
     if(bTimed)
     {
-        if(std::chrono::duration<float>(TIME_NOW - timeLastSwitch).count() > autoSwitchLatency)
+        if(chrono::duration<float>(TIME_NOW - timeLastSwitch).count() > autoSwitchLatency)
         {
             switch_next();
             timeLastSwitch = TIME_NOW;
@@ -283,14 +286,14 @@ bool CVSwitchPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
 
     // Handle events
 
-    std::string triggerInfo = take_trigger("SwitchTo");
+    string triggerInfo = take_trigger("SwitchTo");
     if(!triggerInfo.empty())
     {
         if(isNumeric(triggerInfo))
         {
             try
             {
-                switch_to(std::stoi(triggerInfo));
+                switch_to(stoi(triggerInfo));
             }
             catch(...)
             {
@@ -345,7 +348,7 @@ void CVSwitchPanel::setCenter(const int& index){
     bAutoPan = true;
 }
 
-void CVSwitchPanel::setCenter(const std::string& tag){
+void CVSwitchPanel::setCenter(const string& tag){
     for(size_t i = 0; i < viewPanelTags.size(); ++i){
         if(viewPanelTags[i] == tag) setCenter(i);
     }

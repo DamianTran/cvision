@@ -433,7 +433,9 @@ void CVListPanel::setListHighlightable(const bool& state)
     }
 }
 
-void CVListPanel::addPanelElement(CVElement* newElement, string newTag, const unsigned int& index)
+void CVListPanel::addPanelElement(CVElement* newElement,
+                                  const string& newTag,
+                                  const unsigned int& index)
 {
 
     float outerPaddingActual = outerPadding;
@@ -611,7 +613,9 @@ void CVGridPanel::setGridItemPadding(const float& newPadding)
 
 }
 
-void CVGridPanel::addPanelElement(CVElement * newElement, string newTag, const unsigned int& index)
+void CVGridPanel::addPanelElement(CVElement * newElement,
+                                  const string& newTag,
+                                  const unsigned int& index)
 {
 
     if(!cPos.x)

@@ -77,7 +77,7 @@ public:
 
     CVISION_API void addPanelElement(CVElement* newElement,
                                      const std::string& tag = "",
-                                     const unsigned int& index = UINT_MAX);
+                                     const unsigned int& index = UINT_MAX) override;
 
     inline const size_t& getActiveIndex() const noexcept{ return active_index; }
 
