@@ -146,7 +146,6 @@ public:
 protected:
 
     std::vector<CVElement*>     viewPanelElements;
-    std::vector<std::string>    viewPanelTags;
 
     bool                        bFitWindow;            // Fit to the window upon creation and upon resize
     bool                        bTransduceFade;        // Transduce fade events to panel elements

@@ -283,7 +283,7 @@ bool CVNodePanel::update(CVEvent& event, const sf::Vector2f& mousePos)
                 }
                 else
                 {
-                    logInteraction(viewPanelTags[i]);
+                    logInteraction(viewPanelElements[i]->tag());
                     interactionCaptured = true;
                 }
             }

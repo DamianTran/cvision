@@ -146,15 +146,9 @@ void CVViewPanel::addPanelElement(CVElement* newElement,
         newElement->setTag(newTag);
     }
 
-    if(index < numPanels())
+    if(index <= numPanels())
     {
         viewPanelElements.insert(viewPanelElements.begin() + index, newElement);
-        viewPanelTags.insert(viewPanelTags.begin() + index, newElement->tag());
-    }
-    else
-    {
-        viewPanelTags.push_back(newElement->tag());
-        viewPanelElements.push_back(newElement);
     }
 
     if(bExpand)
@@ -171,7 +165,6 @@ void CVViewPanel::clear()
         delete(item);
     }
     viewPanelElements.clear();
-    viewPanelTags.clear();
 }
 
 bool CVViewPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
@@ -214,7 +207,6 @@ void CVViewPanel::removePanelElement(const unsigned int& index)
     {
         delete(viewPanelElements[index]);
         viewPanelElements.erase(viewPanelElements.begin() + index);
-        viewPanelTags.erase(viewPanelTags.begin() + index);
     }
     else
     {
@@ -243,7 +235,7 @@ void CVViewPanel::removePanelElement(const string& tag)
 {
     for(size_t i = 0; i < viewPanelElements.size(); ++i)
     {
-        if(viewPanelTags[i] == tag)
+        if(viewPanelElements[i]->tag() == tag)
         {
             removePanelElement(i);
             return;
@@ -260,7 +252,6 @@ void CVViewPanel::detachPanelElement(const CVElement* element) noexcept
         if(viewPanelElements[i] == element)
         {
             viewPanelElements.erase(viewPanelElements.begin() + i);
-            viewPanelTags.erase(viewPanelTags.begin() + i);
             return;
         }
 
@@ -341,17 +332,17 @@ void CVViewPanel::fitElements(const bool& fitX,
 
 CVElement* CVViewPanel::getTaggedElement(const string& tag)
 {
-    unsigned int index = 0;
-    for(auto& T : viewPanelTags)
+    for(auto& element : viewPanelElements)
     {
-        if(T == tag) return viewPanelElements[index];
-        else ++index;
+        if(element->tag() == tag) return element;
     }
     return nullptr;
 }
 
 CVElement* CVViewPanel::getOwnedElementByID(const string& tag)
 {
+
+    if(tag.empty()) return nullptr;
 
     for(auto& element : viewPanelElements)
     {
@@ -376,9 +367,9 @@ CVElement* CVViewPanel::getOwnedElementByID(const string& tag)
 
 bool CVViewPanel::elementExists(const string& tag)
 {
-    for(auto& T : viewPanelTags)
+    for(auto& panel : viewPanelElements)
     {
-        if(T == tag) return true;
+        if(panel->tag() == tag) return true;
     }
     return false;
 }

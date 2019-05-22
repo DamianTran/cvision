@@ -455,7 +455,7 @@ CVElement* CVView::getElementById(const string& tag)
             return panel;
         }
 
-        if(output && (output == panel->getOwnedElementByID(tag)))
+        if(output = panel->getOwnedElementByID(tag)))
         {
             return output;
         }

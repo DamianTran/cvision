@@ -75,7 +75,7 @@ string CVSwitchPanel::getFocusTag(){
 
     if(numPanels()){
 
-        return viewPanelTags[viewIndex];
+        return viewPanelElements[viewIndex]->tag();
 
     }
 
@@ -112,8 +112,8 @@ void CVSwitchPanel::setElementPadding(const float& newPadding){
 }
 
 bool CVSwitchPanel::checkFocus(const string& tag){
-    if(viewIndex >= viewPanelTags.size()) return false;
-    return viewPanelTags[viewIndex] == tag;
+    if(viewIndex >= numPanels()) return false;
+    return viewPanelElements[viewIndex]->tag() == tag;
 }
 
 CVElement* CVSwitchPanel::getActiveElement(){
@@ -349,8 +349,8 @@ void CVSwitchPanel::setCenter(const int& index){
 }
 
 void CVSwitchPanel::setCenter(const string& tag){
-    for(size_t i = 0; i < viewPanelTags.size(); ++i){
-        if(viewPanelTags[i] == tag) setCenter(i);
+    for(size_t i = 0; i < numPanels(); ++i){
+        if(viewPanelElements[i]->tag() == tag) setCenter(i);
     }
 }
 
