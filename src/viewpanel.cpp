@@ -146,9 +146,13 @@ void CVViewPanel::addPanelElement(CVElement* newElement,
         newElement->setTag(newTag);
     }
 
-    if(index <= numPanels())
+    if(index < numPanels())
     {
         viewPanelElements.insert(viewPanelElements.begin() + index, newElement);
+    }
+    else
+    {
+        viewPanelElements.emplace_back(newElement);
     }
 
     if(bExpand)
