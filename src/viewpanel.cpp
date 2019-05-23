@@ -58,7 +58,8 @@ CVViewPanel::CVViewPanel(CVView* parentView, string panelTag, sf::Color backgrou
     bDragAndDrop(false),
     bOutOfBoundsDraw(false),
     bOutOfBoundsUpdate(false),
-    bFadeMembersOnly(false)
+    bFadeMembersOnly(false),
+    bReverseDrawOrder(false)
 {
 
     IDtag = panelTag;
@@ -297,6 +298,27 @@ void CVViewPanel::setSize(const sf::Vector2f& newSize)
 //                      item->getSize().y*scaleDist.y);
     }
     CVBox::setSize(newSize);
+}
+
+void CVViewPanel::setPanelSize(const sf::Vector2f& newSize)
+{
+
+    bounds.width = newSize.x;
+    bounds.height = newSize.y;
+
+    panel.front().setSize(newSize);
+
+}
+
+void CVViewPanel::setActiveState(const bool& state)
+{
+
+    CVElement::setActiveState(state);
+    for(auto& element : viewPanelElements)
+    {
+        element->setActiveState(state);
+    }
+
 }
 
 void CVViewPanel::fitElements(const bool& fitX,

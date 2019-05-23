@@ -441,10 +441,12 @@ public:
         bNoInteract = !state;
     }
 
-    inline void setActiveState(bool state)
+    /** Set the active status of the element */
+    virtual inline void setActiveState(const bool& state)
     {
         active = state;
     }
+
     inline void setSpriteOnly(const bool& state = true)
     {
         bSpriteOnly = state;

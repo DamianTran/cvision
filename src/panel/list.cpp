@@ -433,6 +433,48 @@ void CVListPanel::setListHighlightable(const bool& state)
     }
 }
 
+void CVListPanel::fitElements(const bool& fitX, const bool& fitY)
+{
+
+    sf::FloatRect elementBounds;
+
+    if(numPanels())
+    {
+        elementBounds = viewPanelElements.front()->getBounds();
+    }
+    else
+    {
+        setPanelSize(0.0f, 0.0f);
+        return;
+    }
+
+    for(size_t i = 1; i < numPanels(); ++i)
+    {
+
+        expandBounds(elementBounds, viewPanelElements[i]->getBounds());
+
+    }
+
+    sf::Vector2f newSize = getSize();
+
+    if(fitX)
+    {
+
+        newSize.x = elementBounds.width + 2*outerPadding;
+
+    }
+
+    if(fitY)
+    {
+
+        newSize.y = elementBounds.height + 2*outerPadding;
+
+    }
+
+    setPanelSize(newSize);
+
+}
+
 void CVListPanel::addPanelElement(CVElement* newElement,
                                   const string& newTag,
                                   const unsigned int& index)
@@ -468,10 +510,14 @@ void CVListPanel::addPanelElement(CVElement* newElement,
         }
     }
 
-    newElement->setHighlightableStatus(bListItemHighlight);
-    newElement->setHighlightColor(getListHighlightColor());
-
-    newElement->setDragAndDrop(bDragAndDrop);
+    if(bListItemHighlight)
+    {
+        newElement->setHighlightableStatus(true);
+    }
+    if(bDragAndDrop)
+    {
+        newElement->setDragAndDrop(true);
+    }
 
     CVViewPanel::addPanelElement(newElement, newTag, index);
 }

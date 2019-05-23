@@ -52,19 +52,21 @@
 
 using namespace hyperC;
 
-namespace cvis{
+namespace cvis
+{
 
 CVBasicViewPanel::CVBasicViewPanel(CVView* parentView, std::string panelTag, sf::Color backgroundColor,
-                     const sf::Vector2f& size, bool bFitToWindow,
-                     const sf::Vector2f& position):
-        CVViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position)
+                                   const sf::Vector2f& size, bool bFitToWindow,
+                                   const sf::Vector2f& position):
+    CVViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position)
 {
 
 
 
 }
 
-bool CVBasicViewPanel::draw(sf::RenderTarget* target){
+bool CVBasicViewPanel::draw(sf::RenderTarget* target)
+{
 
     if(!CVShape::draw(target)) return false;
 
@@ -90,8 +92,19 @@ bool CVBasicViewPanel::draw(sf::RenderTarget* target){
         target->draw(text);
     }
 
-    for(auto& panel : viewPanelElements){
-        if(bOutOfBoundsDraw || getBounds().intersects(panel->getBounds())) panel->draw(target);
+    if(bReverseDrawOrder)
+    {
+        for(auto& panel : boost::adaptors::reverse(viewPanelElements))
+        {
+            if(bOutOfBoundsDraw || getBounds().intersects(panel->getBounds())) panel->draw(target);
+        }
+    }
+    else
+    {
+        for(auto& panel : viewPanelElements)
+        {
+            if(bOutOfBoundsDraw || getBounds().intersects(panel->getBounds())) panel->draw(target);
+        }
     }
 
     if(is_closable())
@@ -121,13 +134,20 @@ bool CVBasicViewPanel::draw(sf::RenderTarget* target){
     return true;
 }
 
-bool CVBasicViewPanel::update(CVEvent& event, const sf::Vector2f& mousePos){ // Disperse update function
-    if(!CVViewPanel::update(event, mousePos)) return false;
-    updatePanels(event, mousePos);
+bool CVBasicViewPanel::update(CVEvent& event, const sf::Vector2f& mousePos)  // Disperse update function
+{
 
     if(is_closable() && closeButton->getTrigger())
     {
         bDelete = true;
+    }
+    else
+    {
+
+        if(!CVViewPanel::update(event, mousePos) || !active) return false;
+
+        updatePanels(event, mousePos);
+
     }
 
     return true;

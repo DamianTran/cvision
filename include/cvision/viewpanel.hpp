@@ -127,8 +127,14 @@ public:
         setSize(sf::Vector2f(x, y));
     }
 
-    CVISION_API void fitElements(const bool& fitX = true,
-                                 const bool& fitY = true); // Fit the panel boundaries to the attached elements
+    CVISION_API void setPanelSize(const sf::Vector2f& newSize);
+    inline void setPanelSize(const float& x, const float& y)
+    {
+        setSize(sf::Vector2f(x, y));
+    }
+
+    CVISION_API virtual void fitElements(const bool& fitX = true,
+                                         const bool& fitY = true); // Fit the panel boundaries to the attached elements
 
     CVISION_API void setHighlightColor(const sf::Color& color) override;
     inline void setHighlightColor(const int& r, const int& g, const int& b)
@@ -137,6 +143,13 @@ public:
     }
 
     CVISION_API void setExpand(const bool& state) override;
+
+    CVISION_API void setActiveState(const bool& state) override;
+
+    inline void setDrawOrderReversed(const bool& state = true)
+    {
+        bReverseDrawOrder = state;
+    }
 
     virtual bool draw(sf::RenderTarget* target) override = 0;
     virtual bool update(CVEvent& event, const sf::Vector2f& mousePos) override;
@@ -154,6 +167,7 @@ protected:
     bool                        bOutOfBoundsDraw;      // Draw items outside of the panel boundary
     bool                        bOutOfBoundsUpdate;    // Update items outside of the panel boundary
     bool                        bFadeMembersOnly;
+    bool                        bReverseDrawOrder;     // Reverse the panel draw order
 
     sf::Sprite*                 dragShadow;     // If drag-and-drop, a sprite for the item shadow
 

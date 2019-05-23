@@ -98,6 +98,9 @@ public:
     CVISION_API void setDragAndDrop(const bool& state);
     CVISION_API void setListHighlightable(const bool& state = true);
 
+    CVISION_API void fitElements(const bool& fitX,
+                                 const bool& fitY) override;
+
     inline const sf::Color& getListItemColor() const
     {
         return colorTheme[listItemColorIndex];

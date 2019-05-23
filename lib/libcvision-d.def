@@ -63,7 +63,7 @@ EXPORTS
     _ZN4cvis10ColorThemeC2ERKSt6vectorIN2sf5ColorESaIS3_EE @62
     _ZN4cvis10ColorThemeaSERKSt6vectorIN2sf5ColorESaIS3_EE @63
     _ZN4cvis11CVGridPanel14getGridElementERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @64
-    _ZN4cvis11CVGridPanel15addPanelElementEPNS_9CVElementENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @65
+    _ZN4cvis11CVGridPanel15addPanelElementEPNS_9CVElementERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @65
     _ZN4cvis11CVGridPanel15setGridItemSizeERKN2sf7Vector2IfEE @66
     _ZN4cvis11CVGridPanel15setOuterPaddingERKf @67
     _ZN4cvis11CVGridPanel18removePanelElementEPNS_9CVElementE @68
@@ -79,7 +79,7 @@ EXPORTS
     _ZN4cvis11CVListPanel14setDragAndDropERKb @78
     _ZN4cvis11CVListPanel14setListPaddingERKf @79
     _ZN4cvis11CVListPanel14setTextEntriesERKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS7_EE @80
-    _ZN4cvis11CVListPanel15addPanelElementEPNS_9CVElementENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @81
+    _ZN4cvis11CVListPanel15addPanelElementEPNS_9CVElementERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @81
     _ZN4cvis11CVListPanel15removeTextEntryERKj @82
     _ZN4cvis11CVListPanel15setInnerPaddingERKf @83
     _ZN4cvis11CVListPanel15setOuterPaddingERKf @84
@@ -104,7 +104,7 @@ EXPORTS
     _ZN4cvis11CVNodePanel13setNodeRadiusERKf @103
     _ZN4cvis11CVNodePanel13updatePhysicsERNS_7CVEventERKN2sf7Vector2IfEE @104
     _ZN4cvis11CVNodePanel14logInteractionERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @105
-    _ZN4cvis11CVNodePanel15addPanelElementEPNS_9CVElementENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @106
+    _ZN4cvis11CVNodePanel15addPanelElementEPNS_9CVElementERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @106
     _ZN4cvis11CVNodePanel17getConnectedNodesERSt6vectorIPNS_9CVElementESaIS3_EE @107
     _ZN4cvis11CVNodePanel18captureInteractionEPNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @108
     _ZN4cvis11CVNodePanel18removePanelElementERKj @109
@@ -197,7 +197,7 @@ EXPORTS
     _ZN4cvis11CVViewPanel12updateBoundsEv @196
     _ZN4cvis11CVViewPanel12updatePanelsERNS_7CVEventERKN2sf7Vector2IfEE @197
     _ZN4cvis11CVViewPanel13elementExistsERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @198
-    _ZN4cvis11CVViewPanel15addPanelElementEPNS_9CVElementENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @199
+    _ZN4cvis11CVViewPanel15addPanelElementEPNS_9CVElementERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @199
     _ZN4cvis11CVViewPanel16getTaggedElementERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @200
     _ZN4cvis11CVViewPanel17setHighlightColorERKN2sf5ColorE @201
     _ZN4cvis11CVViewPanel18detachPanelElementEPKNS_9CVElementE @202
@@ -370,7 +370,7 @@ EXPORTS
     _ZN4cvis13CVSwitchPanel11switch_nextEv @369
     _ZN4cvis13CVSwitchPanel13enablePanningEv @370
     _ZN4cvis13CVSwitchPanel14disablePanningEv @371
-    _ZN4cvis13CVSwitchPanel15addPanelElementEPNS_9CVElementENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @372
+    _ZN4cvis13CVSwitchPanel15addPanelElementEPNS_9CVElementERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @372
     _ZN4cvis13CVSwitchPanel15switch_previousEv @373
     _ZN4cvis13CVSwitchPanel16getActiveElementEv @374
     _ZN4cvis13CVSwitchPanel17setElementPaddingERKf @375
