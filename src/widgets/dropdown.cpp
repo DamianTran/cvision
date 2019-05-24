@@ -110,6 +110,7 @@ CVDropDownBox::CVDropDownBox(CVView * View,
                                    CV_TEXT_FIT_LATERAL);
 
     dropDownDialog->setRounding(rounding, 12, dialogRoundingStates);
+    dropDownDialog->setClearOnKeyboardEntry(false);
 
     dropDownBtn = new CVButton(View,
                                 sf::Vector2f(position.x + fDialogWidth + outlineThickness,
@@ -208,7 +209,7 @@ string CVDropDownBox::getSelected() const
 void CVDropDownBox::setSelected(const string& value)
 {
 
-    setSelected(getMatchingIndex(value, selection_list));
+    setSelected(getMatchingIndex(value, selection_list, CMP_STR_DEFAULT | CMP_STR_SW, 0.5f));
 
 }
 
@@ -233,6 +234,8 @@ void CVDropDownBox::setSelected(const unsigned int& index)
         }
 
     }
+
+    sendTriggers();
 
 }
 
@@ -315,19 +318,84 @@ bool CVDropDownBox::update(CVEvent& event, const sf::Vector2f& mousePos)
             {
                 if(dropDownMenu->getElements()[i]->getBounds().contains(mousePos))
                 {
-                    setSelected(i);
 
+                    setSelected(i);
                     closeMenu();
 
                     break;
                 }
             }
         }
-        else if(!bounds.contains(mousePos))
+        else if(!bounds.contains(mousePos) ||
+                sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
         {
             closeMenu();
         }
 
+    }
+
+    if(bTypeEntry)
+    {
+        if(dropDownDialog->checkStringEntered())
+        {
+            string entered_string;
+            dropDownDialog->getEnteredString(entered_string);
+
+            setSelected(entered_string);
+
+            closeMenu();
+        }
+
+        if(dropDownDialog->checkTypeStringChanged())
+        {
+
+            if(bAutoFill || bAutoScroll)
+            {
+
+                unsigned int bestMatchIndex = getMatchingIndex(dropDownDialog->getTypeString(),
+                                                               selection_list,
+                                                               CMP_STR_DEFAULT |
+                                                               CMP_STR_SW,
+                                                               0.5f);
+
+                if(bestMatchIndex != UINT_MAX)
+                {
+
+                    if(bAutoFill)
+                    {
+
+                        dropDownDialog->make_suggestion(selection_list[bestMatchIndex]);
+
+                    }
+                    if(bAutoScroll && bDropDownVisible)
+                    {
+
+                        for(size_t i = 0; i < dropDownMenu->numPanels(); ++i)
+                        {
+                            if(i == bestMatchIndex)
+                            {
+                                dropDownMenu->getElements()[i]->highlight(true);
+                            }
+                            else
+                            {
+                                dropDownMenu->getElements()[i]->highlight(false);
+                            }
+                        }
+
+                    }
+
+                }
+                else if(bDropDownVisible)
+                {
+                    for(auto& element : dropDownMenu->getElements())
+                    {
+                        element->highlight(false);
+                    }
+                }
+
+            }
+
+        }
     }
 
     return true;

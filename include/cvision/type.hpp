@@ -493,6 +493,7 @@ public:
         output = enteredString;
         enteredString.clear();
     }
+    inline bool checkStringEntered() const noexcept{ return !enteredString.empty(); }
 
     inline bool checkTypeStringChanged() noexcept
     {

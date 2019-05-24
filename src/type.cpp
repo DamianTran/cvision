@@ -1139,7 +1139,9 @@ bool CVTypeBox::update(CVEvent& event, const sf::Vector2f& mousePos)
 
                     insertKey:;
 
-                    if(bCanEdit)
+                    if(bCanEdit &&
+                       (key != CV_KEY_UP) &&
+                       (key != CV_KEY_DOWN))
                     {
 
                         bAcceptSuggestions = true;
