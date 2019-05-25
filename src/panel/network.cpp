@@ -855,19 +855,35 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     // Handle panning
 
-    if(bCanPan && event.focusFree())
+    if(bCanPan &&
+       event.focusFree() &&
+       event.viewHasFocus)
     {
+
+        sf::FloatRect panBounds = getBounds();
+
+        float expand_x = bounds.width * fPanInstigateOuterThreshold;
+        float expand_y = bounds.height * fPanInstigateOuterThreshold;
+
+        panBounds.left -= expand_x;
+        panBounds.top -= expand_y;
+        panBounds.width += 2*expand_x;
+        panBounds.height += 2*expand_y;
+
+        bool bPanEligible = panBounds.contains(mousePos);
 
         sf::Vector2f panAcceleration(0.0f, 0.0f);
 
-        if((mousePos.x > bounds.left - bounds.width * fPanInstigateOuterThreshold) &&
-           (mousePos.x < bounds.left + bounds.width * fPanInstigateInnerThreshold))
+        if(bPanEligible &&
+           ((mousePos.x > bounds.left - bounds.width * fPanInstigateOuterThreshold) &&
+           (mousePos.x < bounds.left + bounds.width * fPanInstigateInnerThreshold)))
         {
             panAcceleration.x = -1.0f + (mousePos.x - (bounds.left - bounds.width * fPanInstigateOuterThreshold)) /
                                 (bounds.width * (fPanInstigateInnerThreshold + fPanInstigateOuterThreshold));
         }
-        else if((mousePos.x > bounds.left + bounds.width * (1.0f - fPanInstigateInnerThreshold)) &&
-                (mousePos.x < bounds.left + bounds.width * (1.0f + fPanInstigateOuterThreshold)))
+        else if(bPanEligible &&
+                ((mousePos.x > bounds.left + bounds.width * (1.0f - fPanInstigateInnerThreshold)) &&
+                (mousePos.x < bounds.left + bounds.width * (1.0f + fPanInstigateOuterThreshold))))
         {
             panAcceleration.x = 1.0f - (bounds.left + bounds.width * ( 1.0f + fPanInstigateOuterThreshold) - mousePos.x) /
                                 (bounds.width * (fPanInstigateInnerThreshold + fPanInstigateOuterThreshold));
@@ -877,14 +893,16 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
             panVelocity.x *= fPanAttenutationRate;
         }
 
-        if((mousePos.y > bounds.top - bounds.height * fPanInstigateOuterThreshold) &&
-           (mousePos.y < bounds.top + bounds.height * fPanInstigateInnerThreshold))
+        if(bPanEligible &&
+           ((mousePos.y > bounds.top - bounds.height * fPanInstigateOuterThreshold) &&
+           (mousePos.y < bounds.top + bounds.height * fPanInstigateInnerThreshold)))
         {
             panAcceleration.y = -1.0f + (mousePos.y - (bounds.top - bounds.height * fPanInstigateOuterThreshold)) /
                                 (bounds.height * (fPanInstigateInnerThreshold + fPanInstigateOuterThreshold));
         }
-        else if((mousePos.y > bounds.top + bounds.height * (1.0f - fPanInstigateInnerThreshold)) &&
-                (mousePos.y < bounds.top + bounds.height * (1.0f + fPanInstigateOuterThreshold)))
+        else if(bPanEligible &&
+                ((mousePos.y > bounds.top + bounds.height * (1.0f - fPanInstigateInnerThreshold)) &&
+                (mousePos.y < bounds.top + bounds.height * (1.0f + fPanInstigateOuterThreshold))))
         {
             panAcceleration.y = 1.0f - (bounds.top + bounds.height * (1.0f + fPanInstigateOuterThreshold) - mousePos.y) /
                                 (bounds.height * (fPanInstigateInnerThreshold + fPanInstigateOuterThreshold));
@@ -932,11 +950,11 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
         float fZoomAcceleration = 0.0f;
 
-        if(event.mouseWheelDelta.y)
+        if(event.mouseWheelDelta.y &&
+           bounds.contains(mousePos) &&
+           event.viewHasFocus)
         {
-
             zoomAnchor = mousePos;
-
             fZoomAcceleration += event.mouseWheelDelta.y * fZoomRateScale;
         }
 

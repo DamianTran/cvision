@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -51,58 +51,21 @@
 namespace cvis
 {
 
-class CVISION_API CVMapPanel: public CVBasicViewPanel{
-protected:
-
-    sf::Rect<int> coord_bounds; // Virtual coordinate bounds
-    sf::FloatRect outer_bounds,
-                    init_bounds; // Outer boundary where interactions become effective
-
-    sf::Vector2i click_coords,
-                release_coords; // Interactive tracking
-
-    bool select_rows, // Allow selection of rows or columns from boundary
-        row_selected,
-        select_cols,
-        col_selected,
-        displayInfo,    // Show extra info at bottom
-        coords_captured;    // Check if coords have been read since last update
-
-    float outerSelectDist, // Distance from outer border where row-wise selection is instigated
-            zoomLevel,
-            zoomMax, zoomMin;
-    unsigned int TextEntryIndex,
-                    extraInfoIndex;
-
-    sf::RectangleShape highlight,
-                        selection;
-    rounded_rectangle base;
-
-    class zone : public sf::RectangleShape{
-    public:
-
-        CVMapPanel* parent;
-
-        sf::Rect<int> bounds;
-        std::string name;
-
-        void updateCoords(const sf::Rect<int>& newCoords);
-        void updateCoords(const sf::Vector2i& newCoords);
-        void updateCoords();
-
-        zone(CVMapPanel* parent);
-        zone(CVMapPanel* parent, const std::string& name,
-             const sf::Rect<int>& bounds, const sf::Color& color);
-    };
-
-    std::vector<zone> zones; // Zones making up this map
-
-    sf::Text& extraInfoText();
-    sf::Text& titleText();
-
+class CVISION_API CVMapPanel: public CVBasicViewPanel
+{
 public:
 
-    inline const sf::Rect<int>& getCoordBounds() const{ return coord_bounds; }
+    CVMapPanel(CVView* parentView,
+               const std::string& panelTag = "",
+               const sf::Color& backgroundColor = sf::Color::Transparent,
+               const sf::Vector2f& size = sf::Vector2f(NAN, NAN),
+               const bool& bFitToWindow = true,
+               const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
+
+    inline const sf::Rect<int>& getCoordBounds() const
+    {
+        return coord_bounds;
+    }
 
     void setZoneColor(const std::string& tag, const sf::Color& newColor);
     void setZoneColor(const unsigned int& index, const sf::Color& newColor);
@@ -133,8 +96,14 @@ public:
     void setZoom(float newZoom, sf::Vector2f mousePos = sf::Vector2f(NAN, NAN));
 
     sf::Rect<int> selected_bounds() const;
-    inline const sf::Vector2i select_begin() const{ return click_coords; }
-    inline const sf::Vector2i select_end() const{ return release_coords; }
+    inline const sf::Vector2i select_begin() const
+    {
+        return click_coords;
+    }
+    inline const sf::Vector2i select_end() const
+    {
+        return release_coords;
+    }
     bool sectionSelected() const;
     bool pointSelected() const;
 
@@ -167,9 +136,59 @@ public:
     sf::Vector2i globalToCoords(const sf::Vector2f& position) const;
     sf::Vector2f coordsToGlobal(const sf::Vector2i& coords) const;
 
-    CVMapPanel(CVView* parentView, std::string panelTag = "", sf::Color backgroundColor = sf::Color::Transparent,
-                     const sf::Vector2f& size = sf::Vector2f(NAN, NAN), bool bFitToWindow = true,
-                     const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
+protected:
+
+    sf::Rect<int>       coord_bounds;     // Virtual coordinate bounds
+
+    sf::FloatRect       outer_bounds;
+    sf::FloatRect       init_bounds;      // Outer boundary where interactions become effective
+
+    sf::Vector2i        click_coords;
+    sf::Vector2i        release_coords;   // Interactive tracking
+
+    bool                select_rows;      // Allow selection of rows or columns from boundary
+    bool                row_selected;
+    bool                select_cols;
+    bool                col_selected;
+    bool                displayInfo;      // Show extra info at bottom
+    bool                coords_captured;  // Check if coords have been read since last update
+
+    float               outerSelectDist;  // Distance from outer border where row-wise selection is instigated
+    float               zoomLevel;
+    float               zoomMax;
+    float               zoomMin;
+
+    unsigned int        TextEntryIndex;
+    unsigned int        extraInfoIndex;
+
+    sf::RectangleShape  highlight;
+    sf::RectangleShape  selection;
+
+    rounded_rectangle   base;
+
+    class zone : public sf::RectangleShape
+    {
+    public:
+
+        CVMapPanel* parent;
+
+        sf::Rect<int> bounds;
+        std::string name;
+
+        void updateCoords(const sf::Rect<int>& newCoords);
+        void updateCoords(const sf::Vector2i& newCoords);
+        void updateCoords();
+
+        zone(CVMapPanel* parent);
+        zone(CVMapPanel* parent, const std::string& name,
+             const sf::Rect<int>& bounds, const sf::Color& color);
+    };
+
+    std::vector<zone> zones; // Zones making up this map
+
+    sf::Text& extraInfoText();
+    sf::Text& titleText();
+
 };
 
 }
