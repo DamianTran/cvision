@@ -118,13 +118,14 @@ CVMapPanel::CVMapPanel(CVView* parentView,
     init_bounds(bounds),
     click_coords(INT_MAX, INT_MAX),
     release_coords(INT_MAX, INT_MAX),
+    map_shift(0.0f, 0.0f),
     select_rows(false),
     row_selected(false),
     select_cols(false),
     col_selected(false),
     displayInfo(false),
     coords_captured(true),
-    outerSelectDist(24.0f),
+    outerSelectDist(18.0f),
     zoomLevel(1.0f),
     zoomMax(100.0f),
     zoomMin(0.1f),
@@ -455,6 +456,11 @@ void CVMapPanel::setZoom(float newZoom, sf::Vector2f mousePos)
 
 }
 
+void CVMapPanel::resetZoom()
+{
+    setZoom(1.0f);
+}
+
 sf::Rect<int> CVMapPanel::selected_bounds() const
 {
     return sf::Rect<int>(click_coords.x, click_coords.y,
@@ -481,6 +487,13 @@ void CVMapPanel::shiftMap(const sf::Vector2f& distance)
     {
         zone.move(distance);
     }
+
+    map_shift += distance * zoomLevel;
+}
+
+void CVMapPanel::resetShift()
+{
+    shiftMap(-map_shift/zoomLevel);
 }
 
 void CVMapPanel::setCenter(const sf::Vector2i& center)
@@ -507,9 +520,12 @@ bool CVMapPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
     if(event.focusFree())
     {
 
-        if(bounds.contains(mousePos) && event.mouseWheelDelta.y && event.captureFocus())
+        if(bounds.contains(mousePos) &&
+           event.mouseWheelDelta.y &&
+           event.captureFocus() &&
+           event.viewHasFocus)
         {
-            setZoom(zoomLevel + event.mouseWheelDelta.y*0.3f, mousePos);
+            setZoom(zoomLevel + event.mouseWheelDelta.y*0.05f, mousePos);
         }
 
         if(select_rows)
@@ -633,11 +649,20 @@ bool CVMapPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
             extraInfoText().setString("");
         }
 
-        if(event.RMBhold && bounds.contains(event.RMBpressPosition))
+        if(event.RMBhold &&
+           bounds.contains(event.RMBpressPosition))
         {
 
             shiftMap(mousePos - event.lastFrameMousePosition);
 
+        }
+
+        if(bounds.contains(mousePos) &&
+           event.viewHasFocus &&
+           sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+        {
+            resetZoom();
+            resetShift();
         }
     }
 

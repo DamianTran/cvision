@@ -55,7 +55,7 @@ class CVISION_API CVMapPanel: public CVBasicViewPanel
 {
 public:
 
-    CVMapPanel(CVView* parentView,
+    CVISION_API CVMapPanel(CVView* parentView,
                const std::string& panelTag = "",
                const sf::Color& backgroundColor = sf::Color::Transparent,
                const sf::Vector2f& size = sf::Vector2f(NAN, NAN),
@@ -67,35 +67,36 @@ public:
         return coord_bounds;
     }
 
-    void setZoneColor(const std::string& tag, const sf::Color& newColor);
-    void setZoneColor(const unsigned int& index, const sf::Color& newColor);
+    CVISION_API void setZoneColor(const std::string& tag, const sf::Color& newColor);
+    CVISION_API void setZoneColor(const unsigned int& index, const sf::Color& newColor);
 
-    unsigned int numZones() const;
-    bool zoneExists(const std::string& tag) const;
+    CVISION_API unsigned int numZones() const;
+    CVISION_API bool zoneExists(const std::string& tag) const;
 
-    void addZone(const std::string& name, const sf::Color& newColor,
+    CVISION_API void addZone(const std::string& name, const sf::Color& newColor,
                  const sf::Rect<int>& bounds);
-    void removeZone(const std::string& name);
-    void removeZone(const unsigned int& index);
+    CVISION_API void removeZone(const std::string& name);
+    CVISION_API void removeZone(const unsigned int& index);
 
-    void updateZone(const std::string& name, const sf::Vector2i& newCoords);
-    void updateZone(const std::string& name, const sf::Rect<int>& newCoords);
-    void updateZone(const unsigned int& index, const sf::Vector2i& newCoords);
-    void updateZone(const unsigned int& index, const sf::Rect<int>& newCoords);
+    CVISION_API void updateZone(const std::string& name, const sf::Vector2i& newCoords);
+    CVISION_API void updateZone(const std::string& name, const sf::Rect<int>& newCoords);
+    CVISION_API void updateZone(const unsigned int& index, const sf::Vector2i& newCoords);
+    CVISION_API void updateZone(const unsigned int& index, const sf::Rect<int>& newCoords);
 
-    void setZoneImage(const std::string& name, const sf::Texture& image);
-    void setZoneImage(const unsigned int& index, const sf::Texture& image);
+    CVISION_API void setZoneImage(const std::string& name, const sf::Texture& image);
+    CVISION_API void setZoneImage(const unsigned int& index, const sf::Texture& image);
 
-    void setRowSelect(const bool& status = true);
-    void setColumnSelect(const bool& status = true);
-    void showExtraInfo(const bool& status = true);
+    CVISION_API void setRowSelect(const bool& status = true);
+    CVISION_API void setColumnSelect(const bool& status = true);
+    CVISION_API void showExtraInfo(const bool& status = true);
 
-    void setCoords(const sf::Rect<int>& coords,
+    CVISION_API void setCoords(const sf::Rect<int>& coords,
                    const bool& morph = true);
-    void setOuterPadding(const float& padding);
-    void setZoom(float newZoom, sf::Vector2f mousePos = sf::Vector2f(NAN, NAN));
+    CVISION_API void setOuterPadding(const float& padding);
+    CVISION_API void setZoom(float newZoom, sf::Vector2f mousePos = sf::Vector2f(NAN, NAN));
+    CVISION_API void resetZoom();
 
-    sf::Rect<int> selected_bounds() const;
+    CVISION_API sf::Rect<int> selected_bounds() const;
     inline const sf::Vector2i select_begin() const
     {
         return click_coords;
@@ -104,37 +105,38 @@ public:
     {
         return release_coords;
     }
-    bool sectionSelected() const;
-    bool pointSelected() const;
+    CVISION_API bool sectionSelected() const;
+    CVISION_API bool pointSelected() const;
 
-    std::string getTitle() const;
-    void setTitle(const std::string& newTitle);
+    CVISION_API std::string getTitle() const;
+    CVISION_API void setTitle(const std::string& newTitle);
 
-    std::string getInfo() const;
+    CVISION_API std::string getInfo() const;
 
-    bool captureCoords(sf::Rect<int>& output); // Attempt to read new coords
+    CVISION_API bool captureCoords(sf::Rect<int>& output); // Attempt to read new coords
 
-    void move(const sf::Vector2f& distance);
-    void move(const float& x, const float& y);
+    CVISION_API void move(const sf::Vector2f& distance);
+    CVISION_API void move(const float& x, const float& y);
 
-    void shiftMap(const sf::Vector2f& distance);
-    void setCenter(const sf::Vector2i& coords);
+    CVISION_API void shiftMap(const sf::Vector2f& distance);
+    CVISION_API void resetShift();
+    CVISION_API void setCenter(const sf::Vector2i& coords);
 
-    void setPosition(const sf::Vector2f& position);
-    void setPosition(const float& x, const float& y);
+    CVISION_API void setPosition(const sf::Vector2f& position);
+    CVISION_API void setPosition(const float& x, const float& y);
 
-    void setBaseColor(const sf::Color& color);
-    sf::Color baseColor() const;
+    CVISION_API void setBaseColor(const sf::Color& color);
+    CVISION_API sf::Color baseColor() const;
 
-    sf::FloatRect basePanelBounds() const;
+    CVISION_API sf::FloatRect basePanelBounds() const;
 
-    void clear();
+    CVISION_API void clear();
 
-    bool draw(sf::RenderTarget* target);
-    bool update(CVEvent& event, const sf::Vector2f& mousePos);
+    CVISION_API bool draw(sf::RenderTarget* target);
+    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
 
-    sf::Vector2i globalToCoords(const sf::Vector2f& position) const;
-    sf::Vector2f coordsToGlobal(const sf::Vector2i& coords) const;
+    CVISION_API sf::Vector2i globalToCoords(const sf::Vector2f& position) const;
+    CVISION_API sf::Vector2f coordsToGlobal(const sf::Vector2i& coords) const;
 
 protected:
 
@@ -145,6 +147,8 @@ protected:
 
     sf::Vector2i        click_coords;
     sf::Vector2i        release_coords;   // Interactive tracking
+
+    sf::Vector2f        map_shift;        // Current offset of the map
 
     bool                select_rows;      // Allow selection of rows or columns from boundary
     bool                row_selected;
