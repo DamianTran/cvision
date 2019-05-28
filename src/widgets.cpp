@@ -299,7 +299,14 @@ bool CVTitleBar::update(CVEvent& event, const sf::Vector2f& mousePos)
         resizeButton->update(event, mousePos);
         if(resizeButton->getTrigger())
         {
-            View->maximize();
+            if(View->isMaximized())
+            {
+                View->restore();
+            }
+            else
+            {
+                View->maximize();
+            }
         }
     }
 

@@ -323,6 +323,8 @@ CVView::CVView(unsigned int x, unsigned int y, string winName,
     bWindowCreateWaiting(false),
     bDropable(false),
     bCursorOverride(false),
+    bMaximized(false),
+    bMinimized(false),
     defaultViewScale(1920.0f*1080.0f),
     backgroundColor(backgroundColor),
     OS_cursor_type(sf::Cursor::Arrow),
@@ -406,8 +408,7 @@ void CVView::init()
         }
 
         intPos = sf::Mouse::getPosition(*viewPort);
-        mousePos.x = intPos.x;
-        mousePos.y = intPos.y;
+        mousePos = viewPort->mapPixelToCoords(intPos);
 
         if(mainApp->setContextActive()) // Activate the background context for texture updates
         {
@@ -757,6 +758,9 @@ void CVView::minimize()
     const id sender = viewWindow;
     [viewWindow miniaturize:sender];
 #endif
+
+    bMinimized = true;
+
 }
 
 void CVView::maximize()
@@ -771,6 +775,9 @@ void CVView::maximize()
 
     [viewWindow toggleFullScreen:sender];
 #endif
+
+    bMaximized = true;
+
 }
 
 void CVView::restore()
@@ -780,6 +787,10 @@ void CVView::restore()
 #elif defined __APPLE
 
 #endif
+
+    bMinimized = false;
+    bMaximized = false;
+
 }
 
 void CVView::setVisiblePanel(const unsigned int i)

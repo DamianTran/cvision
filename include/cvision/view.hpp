@@ -195,6 +195,8 @@ protected:
     bool                        bDropable;                 // Signal to the OS that this window can accept drop input
     bool                        bCursorOverride;           // Hide the native cursor and draw the cursor sprite instead
     bool                        bShadow;                   // Draw the shadow texture (usually bound to the cursor)
+    bool                        bMaximized;                // Is the window currently in a maximized state?
+    bool                        bMinimized;                // Is the window currently in a minimized state?
 
     float defaultViewScale;                         // Allow scaling based on view dimensions
 
@@ -297,46 +299,22 @@ public:
     CVISION_API void setTopMargin(const float& margin);
     CVISION_API void setDropable(const bool& status = true);
 
-    inline void requestFocus()
-    {
-        viewPort->requestFocus();
-    }
-    inline void setBackgroundColor(const sf::Color& newColor)
-    {
-        backgroundColor = newColor;
-    }
+    inline void requestFocus(){ viewPort->requestFocus(); }
+    inline void setBackgroundColor(const sf::Color& newColor){ backgroundColor = newColor; }
 
-    inline const std::thread* mainAppThreadID() const noexcept
-    {
-        return appThread;
-    }
-    inline const CVEvent& getEventTrace() const noexcept
-    {
-        return eventTrace;
-    }
-    inline const float& getFrameRate() const noexcept
-    {
-        return frameRate;
-    }
+    inline const std::thread* mainAppThreadID() const noexcept{ return appThread; }
+    inline const CVEvent& getEventTrace() const noexcept{ return eventTrace; }
+    inline const float& getFrameRate() const noexcept{ return frameRate; }
 
-    inline const bool& closed() const noexcept
-    {
-        return bClosed;
-    }
+    inline const bool& closed() const noexcept { return bClosed; }
 
-    inline bool window_open() const
-    {
-        return viewPort && viewPort->isOpen();
-    }
+    inline const bool& isMaximized() const noexcept{ return bMaximized; }
+    inline const bool& isMinimized() const noexcept{ return bMinimized; }
 
-    inline void setElasticSelectState(bool newState) noexcept
-    {
-        bElasticSelect = newState;
-    }
-    inline bool canElasticSelect() const noexcept
-    {
-        return bElasticSelect;
-    }
+    inline bool window_open() const{ return viewPort && viewPort->isOpen(); }
+
+    inline void setElasticSelectState(bool newState) noexcept{ bElasticSelect = newState; }
+    inline bool canElasticSelect() const noexcept{ return bElasticSelect; }
 
     CVISION_API void setState(uint8_t newState);
     inline uint8_t getState()
