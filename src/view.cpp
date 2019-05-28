@@ -785,7 +785,12 @@ void CVView::restore()
 #if defined WIN32 || defined _WIN32 || defined __WIN32
     ShowWindow(viewPort->getSystemHandle(), SW_RESTORE);
 #elif defined __APPLE
+    const NSWindow* viewWindow = (NSWindow*)viewPort->getSystemHandle();
+    const id sender = viewWindow;
 
+    viewWindow.collectionBehavior &= ~NSWindowCollectionBehaviorFullScreenPrimary;
+
+    [viewWindow toggleFullScreen:sender];
 #endif
 
     bMinimized = false;
