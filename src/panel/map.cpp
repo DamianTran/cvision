@@ -142,7 +142,7 @@ CVMapPanel::CVMapPanel(CVView* parentView,
     expandBounds(outer_bounds, outerSelectDist);
 
     TextEntryIndex = displayText.size();
-    addTextEntry(textInfo, sf::Vector2f(bounds.left, bounds.top - outerSelectDist - 6.0f));
+    addTextEntry(textInfo, sf::Vector2f(bounds.left + 8.0f, bounds.top + 8.0f));
     extraInfoIndex = displayText.size();
     addTextEntry(textInfo, sf::Vector2f(bounds.left, bounds.top + bounds.height + outerSelectDist));
 
@@ -151,6 +151,7 @@ CVMapPanel::CVMapPanel(CVView* parentView,
 void CVMapPanel::setTitle(const string& newTitle)
 {
     displayText[TextEntryIndex].setString(newTitle);
+    displayText[TextEntryIndex].setPosition(sf::Vector2f(bounds.left + 8.0f, bounds.top + 8.0f));
 }
 
 string CVMapPanel::getTitle() const

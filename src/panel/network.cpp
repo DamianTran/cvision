@@ -272,6 +272,11 @@ void CVNetworkNode::setScale(const float& newScale)
 
 }
 
+void CVNetworkNode::setSprite(const sf::Texture* newTexture)
+{
+    element->getSprite(0).setTexture(*newTexture, true);
+}
+
 void CVNetworkNode::setTag(const std::string& newTag) noexcept
 {
 
@@ -358,13 +363,25 @@ void CVNetworkNode::drawInterface(sf::RenderTarget* target)
     }
 }
 
-void CVNetworkNode::drawEdges(sf::RenderTarget* target)
+void CVNetworkNode::drawEdges(sf::RenderTarget* target,
+                              const unsigned int& LOD)
 {
-    if(target && isVisible())
+    if(target)
     {
-        for(auto& edge : connected_to)
+        size_t interval;
+
+        if(LOD >= 3)
         {
-            edge.draw(target);
+            interval = 1u;
+        }
+        else
+        {
+            interval = 4u - LOD;
+        }
+
+        for(size_t i = 0, L = connected_to.size(); i < L; ++i)
+        {
+            connected_to[i].draw(target);
         }
     }
 }
@@ -392,11 +409,12 @@ void CVNetworkNode::remove_UI(const bool& fadeout)
 
 void CVNetworkNode::apply_tethers(const float& distance,
                                   const float& elastic_coefficient,
-                                  const float& range_threshold) noexcept
+                                  const float& range_threshold,
+                                  const float& friction) noexcept
 {
     for(auto& edge : connected_to)
     {
-        edge.apply_tether(distance, elastic_coefficient, range_threshold);
+        edge.apply_tether(distance, elastic_coefficient, range_threshold, friction);
     }
 }
 
@@ -562,6 +580,24 @@ CVNetworkEdge& CVNetworkNode::getConnection(const string& tag)
     throw invalid_argument("CVNetworkNode: requested tag connection \"" + tag + "\" does not exist");
 }
 
+CVNetworkEdge& CVNetworkNode::getOutConnection(const size_t& index)
+{
+    if(index >= connected_to.size())
+    {
+        throw std::out_of_range("CVNetworkNode: requested index out of range of outbound connections");
+    }
+    return connected_to[index];
+}
+
+CVNetworkEdge& CVNetworkNode::getInConnection(const size_t& index)
+{
+    if(index >= connected_from.size())
+    {
+        throw std::out_of_range("CVNetworkNode: requested index out of range of inbound connections");
+    }
+    return connected_from[index];
+}
+
 bool CVNetworkNode::hasConnectionTo(const CVNetworkNode& other)
 {
     for(auto& edge : connected_to)
@@ -607,7 +643,8 @@ void CVNetworkEdge::setLineWidth(const float& newWidth) noexcept
 
 void CVNetworkEdge::apply_tether(const float& distance,
                                  const float& elastic_coefficient,
-                                 const float& range_threshold)
+                                 const float& range_threshold,
+                                 const float& friction)
 {
 
     float cDist = getDistance(getOrigin().getPosition(), getNode().getPosition());
@@ -631,14 +668,16 @@ void CVNetworkEdge::apply_tether(const float& distance,
 
     float totalWeight = getOrigin().getWeight() + getNode().getWeight();
 
-    if(!getOrigin().bStatic) getOrigin().move(components(adjust * getNode().getWeight() / totalWeight, theta1));
-    if(!getNode().bStatic) getNode().move(components(adjust * getOrigin().getWeight() / totalWeight, theta2));
+    if(!getOrigin().bStatic) getOrigin().push(theta1, adjust * getNode().getWeight() * 5 / totalWeight, friction);
+    if(!getNode().bStatic) getNode().push(theta2, adjust * getOrigin().getWeight() * 5 / totalWeight, friction);
 
 }
 
 void CVNetworkEdge::draw(sf::RenderTarget* target)
 {
-    if(target && origin->isVisible() && node->isVisible())
+    if(target &&
+       ((origin->isSelected() || node->isSelected()) ||
+        (origin->isVisible()) || (node->isVisible())))
     {
         target->draw(line);
     }
@@ -678,7 +717,8 @@ CVNetworkPanel::CVNetworkPanel(CVView* View,
                                  fontWeightScale(1.0f),
                                  defaultNodeOutlineThickness(2.0f),
                                  defaultNodeRounding(NAN),
-                                 fNodePushStrength(0.5f),
+                                 fNodePushStrength(0.25f),
+                                 fNodeFriction(200.0f),
                                  fNodeEdgeWeightScale(0.3f),
                                  fTetherElasticCoefficient(0.045f),
                                  fTetherEdgeDistanceModifier(0.0009f),
@@ -699,6 +739,8 @@ CVNetworkPanel::CVNetworkPanel(CVView* View,
                                  fCurrentZoomRate(0.0f),
                                  selectionColor(sf::Color::Yellow),
                                  defaultNodeTextAlignment(ALIGN_CENTER_MIDLINE),
+                                 uFramesLastPhysicsUpdate(0),
+                                 uLOD(3),
                                  bUniqueNodesOnly(false),
                                  bSelection(false),
                                  bCanPan(true),
@@ -967,6 +1009,7 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
         {
 
             float zoomInc = fCurrentZoomRate/event.avgFrameRate() * fZoomLevel;
+            float fLastZoomLevel = fZoomLevel;
 
             if(fZoomLevel + zoomInc > fMaxZoomLevel)
             {
@@ -983,6 +1026,7 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
             double dAngle = 0.0;
             float fMouseDistance = 0.0;
+            float fZoomScale = fZoomLevel/fLastZoomLevel;
 
             for(auto& node : nodes)
             {
@@ -991,6 +1035,7 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
                 node.setPosition(radial_position(zoomAnchor,
                                                  fMouseDistance * fZoomLevel/fLastZoomLevel,
                                                  dAngle));
+                node.getElement()->scale_velocity(fZoomScale);
                 node.setScale(fZoomLevel);
             }
 
@@ -1053,16 +1098,78 @@ bool CVNetworkPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     // Handle drop data
 
+    // Update LOD
+
+    updateLOD(event);
+
     // Handle physics
 
     if(fNodePushStrength || fTetherElasticCoefficient)
     {
-        updatePhysics(event, mousePos);
+
+        switch(getLOD())
+        {
+        case 2: // Every other frame
+            {
+                if(uFramesLastPhysicsUpdate >= 1)
+                {
+                    updatePhysics(event, mousePos);
+                }
+                else
+                {
+                    ++uFramesLastPhysicsUpdate;
+                }
+
+                break;
+            }
+        case 1: // Every 4th frame
+            {
+                if(uFramesLastPhysicsUpdate >= 3)
+                {
+                    updatePhysics(event, mousePos);
+                }
+                else
+                {
+                    ++uFramesLastPhysicsUpdate;
+                }
+
+                break;
+            }
+        case 0:
+            {
+
+                if(uFramesLastPhysicsUpdate >= 6)
+                {
+                    updatePhysics(event, mousePos);
+                }
+                else
+                {
+                    ++uFramesLastPhysicsUpdate;
+                }
+
+                break;
+            }
+        default: // Every frame
+            {
+
+                updatePhysics(event, mousePos);
+
+                break;
+            }
+        }
+
     }
 
     // Handle layout requests
 
     return true;
+
+}
+
+void CVNetworkPanel::updateLOD(CVEvent& event)
+{
+
+    uLOD = (unsigned int)(event.avgFrameRate()/48 * 3);
 
 }
 
@@ -1162,6 +1269,11 @@ void CVNetworkPanel::updatePhysics(CVEvent& event, const sf::Vector2f& mousePos)
 
         for(j = i + 1; j < L; ++j){
 
+            if(!nodes[i].isVisible() && !nodes[j].isVisible())
+            {
+                continue;
+            }
+
             shape1Bounds = nodes[i].getBounds();
             shape2Bounds = nodes[j].getBounds();
 
@@ -1183,8 +1295,7 @@ void CVNetworkPanel::updatePhysics(CVEvent& event, const sf::Vector2f& mousePos)
 
                 if(lin_dist < 1e-6f)
                 {
-                    lin_dist = max_dist / 100;
-                    angle = rand(0.0f, 360.0f)/180*PI;
+                    angle = rand((long double)(0.0), 2.0*PI);
                 }
                 else
                 {
@@ -1198,14 +1309,12 @@ void CVNetworkPanel::updatePhysics(CVEvent& event, const sf::Vector2f& mousePos)
 
                 if(nodes[i].isVisible() && !nodes[j].bStatic)
                 {
-                    moveDist = sf::Vector2f(components(pushDist * sizeRatio, angle));
-                    nodes[j].move(moveDist);
+                    nodes[j].getElement()->push(angle, pushDist, fNodeFriction);
                 }
 
                 if(nodes[j].isVisible() && !nodes[i].bStatic)
                 {
-                    moveDist = sf::Vector2f(components(pushDist * (1.0f - sizeRatio), angle));
-                    nodes[i].move(-moveDist);
+                    nodes[i].getElement()->push(angle-PI, pushDist, fNodeFriction);
                 }
 
             }
@@ -1217,10 +1326,16 @@ void CVNetworkPanel::updatePhysics(CVEvent& event, const sf::Vector2f& mousePos)
 
     for(auto& node : nodes)
     {
+
         node.apply_tethers(fTetherBaseDistance * fZoomLevel * pow(1.0f + fTetherEdgeDistanceModifier, node.numEdges()),
                            fTetherElasticCoefficient * pow(1.0f + fTetherEdgeElasticModifier, node.numEdges()),
-                           fTetherRangeThreshold * pow(1.0f + fTetherEdgeDistanceModifier, node.numEdges()*2));
+                           fTetherRangeThreshold * pow(1.0f + fTetherEdgeDistanceModifier, node.numEdges()*2),
+                           fNodeFriction);
+
     }
+
+    uFramesLastPhysicsUpdate = 0;
+
 }
 
 bool CVNetworkPanel::draw(sf::RenderTarget* target)
@@ -1241,7 +1356,7 @@ bool CVNetworkPanel::draw(sf::RenderTarget* target)
     // Draw edges before nodes
     for(auto& node : nodes)
     {
-        node.drawEdges(target);
+        node.drawEdges(target, getLOD());
     }
 
     // Second pass for nodes

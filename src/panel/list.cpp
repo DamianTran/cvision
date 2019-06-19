@@ -760,14 +760,26 @@ void CVGridPanel::removePanelElement(CVElement * newElement)
         }
     }
 
-    if(rowPanels.back()->numPanels() == 0)
+    if(!rowPanels.empty())
     {
-        CVBasicViewPanel::removePanelElement(rowPanels.back());
-        rowPanels.pop_back();
-
-        if(cPos.y)
+        if(rowPanels.back()->numPanels() == 0)
         {
-            --cPos.y;
+            CVBasicViewPanel::removePanelElement(rowPanels.back());
+            rowPanels.pop_back();
+
+            if(!rowPanels.empty())
+            {
+                cRowPanel = rowPanels.back();
+            }
+            else
+            {
+                cRowPanel = nullptr;
+            }
+
+            if(cPos.y)
+            {
+                --cPos.y;
+            }
         }
     }
 }

@@ -131,36 +131,36 @@ protected:
 
     // ===================================================================== **/
 
-    bool visible;            // Is this item drawn to the renderer?
+    bool visible;            /// Is this item drawn to the renderer?
 
-    bool canHighlight;       // Can the item be illuminated?
-    bool canClick;           // Is the item clickable?
-    bool canDrag;            // Can the item be dragged?
-    bool active;             // Is the item active?
+    bool canHighlight;       /// Can the item be illuminated?
+    bool canClick;           /// Is the item clickable?
+    bool canDrag;            /// Can the item be dragged?
+    bool active;             /// Is the item active?
 
-    bool mouseHovering;      // Is the mouse hovering over this element?
-    bool clickHeld;          // Is the mouse button being held?
-    bool highlighted;        // Is the current highlight state active?
+    bool mouseHovering;      /// Is the mouse hovering over this element?
+    bool clickHeld;          /// Is the mouse button being held?
+    bool highlighted;        /// Is the current highlight state active?
 
-    bool bHasFocus;          // Has the item successfully captured the event cascade?
-    bool bFollowMouseX;      // Set the X position to the mouse position while flag is TRUE
-    bool bFollowMouseY;      // Set the Y position to the mouse position while flag is TRUE
-    bool bFade;              // If true, update the object alpha
-    bool bMove;              // If true, update the object position
-    bool bSpriteOnly;        // If true, do not render primitives
-    bool bExpand;            // If true, expand bounds to encompass member elements
-    bool bStop;              // When velocity reaches zero, stop instead of turning
-    bool bBounce;            // Bounce off the view boundaries instead of flying off
-    bool bForceOnScreen;     // Keep this item on screen
-    bool bHasShadow;         // Has stationary texture copy
-    bool bDragAndDrop;       // Allow drag-and-drop mechanics
-    bool bClipBounds;        // Clip draw region to bounds
-    bool bDelete;            // A close call has been ordered on this element
-    bool bTriggered;         // Has a generic trigger event been initiated on this element?
-    bool bDropShadow;        // Does this item have a drop shadow?
+    bool bHasFocus;          /// Has the item successfully captured the event cascade?
+    bool bFollowMouseX;      /// Set the X position to the mouse position while flag is TRUE
+    bool bFollowMouseY;      /// Set the Y position to the mouse position while flag is TRUE
+    bool bFade;              /// If true, update the object alpha
+    bool bMove;              /// If true, update the object position
+    bool bSpriteOnly;        /// If true, do not render primitives
+    bool bExpand;            /// If true, expand bounds to encompass member elements
+    bool bStop;              /// When velocity reaches zero, stop instead of turning
+    bool bBounce;            /// Bounce off the view boundaries instead of flying off
+    bool bForceOnScreen;     /// Keep this item on screen
+    bool bHasShadow;         /// Has stationary texture copy
+    bool bDragAndDrop;       /// Allow drag-and-drop mechanics
+    bool bClipBounds;        /// Clip draw region to bounds
+    bool bDelete;            /// A close call has been ordered on this element
+    bool bTriggered;         /// Has a generic trigger event been initiated on this element?
+    bool bDropShadow;        /// Does this item have a drop shadow?
 
-    bool bStatic;            // Cannot be moved
-    bool bNoInteract;        // Skip update cycles (enhance performance with many elements)
+    bool bStatic;            /// Cannot be moved
+    bool bNoInteract;        /// Skip update cycles (enhance performance with many elements)
 
     /** ========================================================================
 
@@ -586,9 +586,24 @@ public:
     CVISION_API void anim_move(const sf::Vector2f& distance,
                  const float& velocity,
                  const float& drag = 0.0f);    // Animated move by a certain distance
+
+    /** @brief Push the element in the direction of [angle] (in radians) and impart
+      * components of scalar [velocity] instantaneously.
+      *
+      * Optionally, add
+      * a drag coefficient to the motion that will eventually slow down the
+      * moving element.
+      *
+      * @param angle    angle, in radians, of the push
+      * @param velocity velocity, in pixels per second, to be imparted
+      * @param drag     drag, in -pixels/second, to be imparted
+      */
     CVISION_API void push(const float& angle,
               const float& velocity,
               const float& drag = 0.0f);        // Push in a direction
+
+    /** @brief Amplify/dampen velocity by a scaling factor */
+    CVISION_API void scale_velocity(const float& proportion);
 
     /** ========================================================================
 

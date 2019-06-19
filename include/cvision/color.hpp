@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -64,7 +64,8 @@
 namespace cvis
 {
 
-class CVISION_API ColorTheme: public std::vector<sf::Color>{
+class CVISION_API ColorTheme: public std::vector<sf::Color>
+{
 protected:
     std::vector<sf::Color> initStates;
 
@@ -74,7 +75,8 @@ public:
     CVISION_API const sf::Color& getInitial(const sf::Color& color) const;
 
     template<class... Args>
-    void emplace_back(Args&&... args){
+    void emplace_back(Args&&... args)
+    {
         std::vector<sf::Color>::emplace_back(std::forward<Args>(args)...);
         initStates.emplace_back(std::forward<Args>(args)...);
     }
@@ -87,7 +89,7 @@ public:
 
     CVISION_API void pop_back();
 
-    ColorTheme(){ }
+    ColorTheme() { }
     CVISION_API ColorTheme(const std::vector<sf::Color>& colors);
 
 };
@@ -98,7 +100,8 @@ inline std::ostream& operator<<(std::ostream& output, const sf::Color& input)
 }
 
 template<typename T>
-sf::Color operator-(const sf::Color& color, const T& other){
+sf::Color operator-(const sf::Color& color, const T& other)
+{
 
     return sf::Color(color.r - other,
                      color.g - other,
@@ -108,7 +111,8 @@ sf::Color operator-(const sf::Color& color, const T& other){
 }
 
 template<typename T>
-sf::Color operator+(const sf::Color& color, const T& other){
+sf::Color operator+(const sf::Color& color, const T& other)
+{
 
     return sf::Color(color.r + other,
                      color.g + other,
@@ -118,31 +122,36 @@ sf::Color operator+(const sf::Color& color, const T& other){
 }
 
 template<typename T>
-void operator-=(sf::Color& color, const T& other){
+void operator-=(sf::Color& color, const T& other)
+{
     color.r -= other;
     color.g -= other;
     color.b -= other;
 }
 
 template<typename T>
-void operator+=(sf::Color& color, const T& other){
+void operator+=(sf::Color& color, const T& other)
+{
     color.r += other;
     color.g += other;
     color.b += other;
 }
 
-inline sf::Color setAlpha(const sf::Color& color, const uint8_t& newAlpha){
+inline sf::Color setAlpha(const sf::Color& color, const uint8_t& newAlpha)
+{
     return sf::Color(color.r, color.g, color.b, newAlpha);
 }
 
-inline void brighten(sf::Shape* shape, uint8_t degree, bool border = true){
+inline void brighten(sf::Shape* shape, uint8_t degree, bool border = true)
+{
     sf::Color color(shape->getFillColor());
     color.r = (uint16_t)color.r + (uint16_t)degree <= (uint16_t)255 ? color.r + degree : (uint16_t)255;
     color.g = (uint16_t)color.g + (uint16_t)degree <= (uint16_t)255 ? color.g + degree : (uint16_t)255;
     color.b = (uint16_t)color.b + (uint16_t)degree <= (uint16_t)255 ? color.b + degree : (uint16_t)255;
     shape->setFillColor(color);
 
-    if(border){
+    if(border)
+    {
         color = shape->getOutlineColor();
         color.r = (uint16_t)color.r + (uint16_t)degree <= (uint16_t)255 ? color.r + degree : (uint16_t)255;
         color.g = (uint16_t)color.g + (uint16_t)degree <= (uint16_t)255 ? color.g + degree : (uint16_t)255;
@@ -151,19 +160,22 @@ inline void brighten(sf::Shape* shape, uint8_t degree, bool border = true){
     }
 };
 
-inline void brighten(sf::Color& color, uint8_t degree){
+inline void brighten(sf::Color& color, uint8_t degree)
+{
     color.r = (uint16_t)color.r + (uint16_t)degree <= (uint16_t)255 ? color.r + degree : (uint16_t)255;
     color.g = (uint16_t)color.g + (uint16_t)degree <= (uint16_t)255 ? color.g + degree : (uint16_t)255;
     color.b = (uint16_t)color.b + (uint16_t)degree <= (uint16_t)255 ? color.b + degree : (uint16_t)255;
 }
 
-inline void darken(sf::Shape* shape, uint8_t degree, bool border = true){
+inline void darken(sf::Shape* shape, uint8_t degree, bool border = true)
+{
     sf::Color color(shape->getFillColor());
     color.r = (int16_t)color.r >= (int16_t)degree ? color.r - degree : (uint16_t)0;
     color.g = (int16_t)color.g >= (int16_t)degree ? color.g - degree : (uint16_t)0;
     color.b = (int16_t)color.b >= (int16_t)degree ? color.b - degree : (uint16_t)0;
     shape->setFillColor(color);
-    if(border){
+    if(border)
+    {
         color = shape->getOutlineColor();
         color.r = (int16_t)color.r >= (int16_t)degree ? color.r - degree : (uint16_t)0;
         color.g = (int16_t)color.g >= (int16_t)degree ? color.g - degree : (uint16_t)0;
@@ -172,99 +184,84 @@ inline void darken(sf::Shape* shape, uint8_t degree, bool border = true){
     }
 };
 
-inline void darken(sf::Color& color, uint8_t degree){
+inline void darken(sf::Color& color, uint8_t degree)
+{
     color.r = (int16_t)color.r >= (int16_t)degree ? color.r - degree : (uint16_t)0;
     color.g = (int16_t)color.g >= (int16_t)degree ? color.g - degree : (uint16_t)0;
     color.b = (int16_t)color.b >= (int16_t)degree ? color.b - degree : (uint16_t)0;
 }
 
-inline void contrast(sf::Color& color, const sf::Color& refColor, uint8_t degree){
+void contrast(sf::Color& color,
+              const sf::Color& refColor,
+              uint8_t degree);
 
-    if(color.r >= refColor.r){
-        if((uint16_t)color.r + degree <= 255) color.r += degree;
-        else if(color.r >= degree) color.r = refColor.r - degree;
-        else color.r = 255;
-    }
-    else{
-        if(color.r >= degree) color.r -= degree;
-        else if((uint16_t)color.r + degree <= 255) color.r = refColor.r + degree;
-        else color.r = 0;
-    }
+void contrast_brightness(sf::Color& color,
+                         const sf::Color& other_color,
+                         const uint8_t& degree);
 
-    if(color.g >= refColor.g){
-        if((uint16_t)color.g + degree <= 255) color.g += degree;
-        else if(color.g >= degree) color.g = refColor.g - degree;
-        else color.g = 255;
-    }
-    else{
-        if(color.g >= degree) color.g -= degree;
-        else if((uint16_t)color.g + degree <= 255) color.g = refColor.g + degree;
-        else color.g = 0;
-    }
-
-    if(color.b >= refColor.b){
-        if((uint16_t)color.b + degree <= 255) color.b += degree;
-        else if(color.b >= degree) color.b = refColor.b - degree;
-        else color.b = 255;
-    }
-    else{
-        if(color.b >= degree) color.b -= degree;
-        else if((uint16_t)color.b + degree <= 255) color.b = refColor.b + degree;
-        else color.b = 0;
-    }
-}
-
-inline void red_hue(sf::Shape* shape, uint8_t degree, uint8_t descrimination = 0, bool border = true){
+inline void red_hue(sf::Shape* shape, uint8_t degree, uint8_t descrimination = 0, bool border = true)
+{
     sf::Color color(shape->getFillColor());
     color.r = (uint16_t)color.r + (uint16_t)degree <= (uint16_t)255 ? color.r + degree : (uint16_t)255;
-    if(descrimination > 0){
+    if(descrimination > 0)
+    {
         color.g = (int16_t)color.g >= (int16_t)descrimination ? color.g - descrimination : 0;
         color.b = (int16_t)color.b >= (int16_t)descrimination ? color.b - descrimination : 0;
     }
     shape->setFillColor(color);
 
-    if(border){
+    if(border)
+    {
         color = shape->getOutlineColor();
         color.r = (uint16_t)color.r + (uint16_t)degree <= (uint16_t)255 ? color.r + degree : (uint16_t)255;
-        if(descrimination > 0){
+        if(descrimination > 0)
+        {
             color.g = (int16_t)color.g >= (int16_t)descrimination ? color.g - descrimination : 0;
             color.b = (int16_t)color.b >= (int16_t)descrimination ? color.b - descrimination : 0;
         }
         shape->setOutlineColor(color);
     }
 };
-inline void blue_hue(sf::Shape* shape, uint8_t degree, uint8_t descrimination = 0, bool border = true){
+inline void blue_hue(sf::Shape* shape, uint8_t degree, uint8_t descrimination = 0, bool border = true)
+{
     sf::Color color(shape->getFillColor());
     color.b = (uint16_t)color.b + (uint16_t)degree <= (uint16_t)255 ? color.b + degree : (uint16_t)255;
-    if(descrimination > 0){
+    if(descrimination > 0)
+    {
         color.g = (int16_t)color.g >= (int16_t)descrimination ? color.g - descrimination : 0;
         color.r = (int16_t)color.r >= (int16_t)descrimination ? color.r - descrimination : 0;
     }
     shape->setFillColor(color);
 
-    if(border){
+    if(border)
+    {
         color = shape->getOutlineColor();
         color.b = (uint16_t)color.b + (uint16_t)degree <= (uint16_t)255 ? color.b + degree : (uint16_t)255;
-        if(descrimination > 0){
+        if(descrimination > 0)
+        {
             color.g = (int16_t)color.g >= (int16_t)descrimination ? color.g - descrimination : 0;
             color.r = (int16_t)color.r >= (int16_t)descrimination ? color.r - descrimination : 0;
         }
         shape->setOutlineColor(color);
     }
 };
-inline void green_hue(sf::Shape* shape, uint8_t degree, uint8_t descrimination = 0, bool border = true){
+inline void green_hue(sf::Shape* shape, uint8_t degree, uint8_t descrimination = 0, bool border = true)
+{
     sf::Color color(shape->getFillColor());
     color.g = (uint16_t)color.g + (uint16_t)degree <= (uint16_t)255 ? color.g + degree : (uint16_t)255;
-    if(descrimination > 0){
+    if(descrimination > 0)
+    {
         color.r = (int16_t)color.r >= (int16_t)descrimination ? color.r - descrimination : 0;
         color.b = (int16_t)color.b >= (int16_t)descrimination ? color.b - descrimination : 0;
     }
     shape->setFillColor(color);
 
-    if(border){
+    if(border)
+    {
         color = shape->getOutlineColor();
         color.g = (uint16_t)color.g + (uint16_t)degree <= 255 ? color.g + degree : 255;
-        if(descrimination > 0){
+        if(descrimination > 0)
+        {
             color.r = (int16_t)color.r >= (int16_t)descrimination ? color.r - descrimination : 0;
             color.b = (int16_t)color.b >= (int16_t)descrimination ? color.b - descrimination : 0;
         }
@@ -272,17 +269,20 @@ inline void green_hue(sf::Shape* shape, uint8_t degree, uint8_t descrimination =
     }
 };
 
-inline void colorSwatch(ColorTheme& colors, size_t numColors){
+inline void colorSwatch(ColorTheme& colors, size_t numColors)
+{
     colors.reserve(colors.size() + numColors);
     size_t L = numColors/2;
     uint8_t colGradient = numColors > uint8_t(8) ? uint8_t(255)/numColors : uint8_t(255)/uint8_t(8);
-    for(size_t i = 0; i < L; ++i){
+    for(size_t i = 0; i < L; ++i)
+    {
         colors.push_back(colors.front());
         brighten(colors.back(), colGradient);
     }
 
     L = numColors - L;
-    for(size_t i = 0; i < L; ++i){
+    for(size_t i = 0; i < L; ++i)
+    {
         colors.push_back(colors.front());
         darken(colors.back(), colGradient);
     }

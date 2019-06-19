@@ -159,7 +159,113 @@ void CVElement::setClosable(const bool& status,
 
 bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
-    if(bNoInteract || !View->viewPort || !View->viewPort->isOpen() || !visible) return false;
+
+    if(!View->viewPort || !View->viewPort->isOpen())
+    {
+        return false;
+    }
+
+    if(bMove && !bStatic)
+    {
+        if(!isnan(destination.x) && !isnan(destination.y))
+        {
+            if(getPosition() == destination)
+            {
+                velocity.x = 0.0f;
+                velocity.y = 0.0f;
+                acceleration.x = 0.0f;
+                acceleration.y = 0.0f;
+            }
+            else if(getDistance(getPosition(), destination) - scalar(velocity)*View->getEventTrace().lastFrameTime < 0.0f)
+            {
+                velocity.x = 0.0f;
+                velocity.y = 0.0f;
+                acceleration.x = 0.0f;
+                acceleration.y = 0.0f;
+                setPosition(destination);
+                destination.x = NAN;
+                destination.y = NAN;
+            }
+            else push(get_angle(getPosition(), destination), scalar(velocity), fFriction);
+        }
+
+        if(bStop)
+        {
+            if(acceleration.x != 0.0f)
+            {
+                if((velocity.x != 0.0f) && ((abs(velocity.x) - abs(acceleration.x*View->getEventTrace().lastFrameTime)) < 0.0f))
+                {
+                    velocity.x = 0.0f;
+                    acceleration.x = 0.0f;
+                }
+            }
+            if(acceleration.y != 0.0f)
+            {
+                if((velocity.y != 0.0f) && ((abs(velocity.y) - abs(acceleration.y*View->getEventTrace().lastFrameTime)) < 0.0f))
+                {
+                    velocity.y = 0.0f;
+                    acceleration.y = 0.0f;
+                }
+            }
+        }
+
+        if(bBounce)  // Bounce inward
+        {
+            if((bounds.left <= View->getBounds().left) && (velocity.x < 0.0f))
+            {
+                velocity.x = -velocity.x*fElasticity; // Horizontal bounce
+                velocity.y *= fElasticity;
+            }
+            else if((bounds.left + bounds.width >= View->getBounds().left + View->getWidth()) && (velocity.x > 0.0f))
+            {
+                velocity.x = -velocity.x*fElasticity;
+                velocity.y *= fElasticity;
+            }
+
+
+            if((bounds.top <= View->getBounds().top) && (velocity.y < 0.0f))
+            {
+                velocity.y = -velocity.y*fElasticity; // Vertical bounce
+                velocity.x *= fElasticity;
+            }
+            else if((bounds.top + bounds.height >= View->getBounds().top + View->getBounds().height) && (velocity.y > 0.0f))
+            {
+                velocity.y = -velocity.y*fElasticity;
+                velocity.x *= fElasticity;
+            }
+        }
+
+        if(fFriction != 0.0f)  // Apply frictional force
+        {
+            if(velocity.x > 0.0f)
+            {
+                velocity.x -= abs(fFriction*cos(fMoveAngle)*View->getEventTrace().lastFrameTime);
+                if(velocity.x < 0.0f) velocity.x = 0.0f;
+            }
+            else
+            {
+                velocity.x += abs(fFriction*cos(fMoveAngle)*View->getEventTrace().lastFrameTime);
+                if(velocity.x > 0.0f) velocity.x = 0.0f;
+            }
+
+            if(velocity.y > 0.0f)
+            {
+                velocity.y -= abs(fFriction*sin(fMoveAngle)*View->getEventTrace().lastFrameTime);
+                if(velocity.y < 0.0f) velocity.y = 0.0f;
+            }
+            else
+            {
+                velocity.y += abs(fFriction*sin(fMoveAngle)*View->getEventTrace().lastFrameTime);
+                if(velocity.y > 0.0f) velocity.y = 0.0f;
+            }
+        }
+
+        velocity += acceleration*View->getEventTrace().lastFrameTime;
+        if((velocity.x == 0.0f) && (velocity.y == 0.0f)) bMove = false;
+        else move(velocity*View->getEventTrace().lastFrameTime);
+    }
+
+    if(bNoInteract || !visible) return false;
 
     if(bFollowMouseX)
     {
@@ -328,106 +434,6 @@ bool CVElement::update(CVEvent& event, const sf::Vector2f& mousePos)
                 else spriteColor.a = targetAlpha;
             }
         }
-    }
-
-    if(bMove && !bStatic)
-    {
-        if(!isnan(destination.x) && !isnan(destination.y))
-        {
-            if(getPosition() == destination)
-            {
-                velocity.x = 0.0f;
-                velocity.y = 0.0f;
-                acceleration.x = 0.0f;
-                acceleration.y = 0.0f;
-            }
-            else if(getDistance(getPosition(), destination) - scalar(velocity)*View->getEventTrace().lastFrameTime < 0.0f)
-            {
-                velocity.x = 0.0f;
-                velocity.y = 0.0f;
-                acceleration.x = 0.0f;
-                acceleration.y = 0.0f;
-                setPosition(destination);
-                destination.x = NAN;
-                destination.y = NAN;
-            }
-            else push(get_angle(getPosition(), destination), scalar(velocity), fFriction);
-        }
-
-        if(bStop)
-        {
-            if(acceleration.x != 0.0f)
-            {
-                if((velocity.x != 0.0f) && ((abs(velocity.x) - abs(acceleration.x*View->getEventTrace().lastFrameTime)) < 0.0f))
-                {
-                    velocity.x = 0.0f;
-                    acceleration.x = 0.0f;
-                }
-            }
-            if(acceleration.y != 0.0f)
-            {
-                if((velocity.y != 0.0f) && ((abs(velocity.y) - abs(acceleration.y*View->getEventTrace().lastFrameTime)) < 0.0f))
-                {
-                    velocity.y = 0.0f;
-                    acceleration.y = 0.0f;
-                }
-            }
-        }
-
-        if(bBounce)  // Bounce inward
-        {
-            if((bounds.left <= View->getBounds().left) && (velocity.x < 0.0f))
-            {
-                velocity.x = -velocity.x*fElasticity; // Horizontal bounce
-                velocity.y *= fElasticity;
-            }
-            else if((bounds.left + bounds.width >= View->getBounds().left + View->getWidth()) && (velocity.x > 0.0f))
-            {
-                velocity.x = -velocity.x*fElasticity;
-                velocity.y *= fElasticity;
-            }
-
-
-            if((bounds.top <= View->getBounds().top) && (velocity.y < 0.0f))
-            {
-                velocity.y = -velocity.y*fElasticity; // Vertical bounce
-                velocity.x *= fElasticity;
-            }
-            else if((bounds.top + bounds.height >= View->getBounds().top + View->getBounds().height) && (velocity.y > 0.0f))
-            {
-                velocity.y = -velocity.y*fElasticity;
-                velocity.x *= fElasticity;
-            }
-        }
-
-        if(fFriction != 0.0f)  // Apply frictional force
-        {
-            if(velocity.x > 0.0f)
-            {
-                velocity.x -= abs(fFriction*cos(fMoveAngle)*View->getEventTrace().lastFrameTime);
-                if(velocity.x < 0.0f) velocity.x = 0.0f;
-            }
-            else
-            {
-                velocity.x += abs(fFriction*cos(fMoveAngle)*View->getEventTrace().lastFrameTime);
-                if(velocity.x > 0.0f) velocity.x = 0.0f;
-            }
-
-            if(velocity.y > 0.0f)
-            {
-                velocity.y -= abs(fFriction*sin(fMoveAngle)*View->getEventTrace().lastFrameTime);
-                if(velocity.y < 0.0f) velocity.y = 0.0f;
-            }
-            else
-            {
-                velocity.y += abs(fFriction*sin(fMoveAngle)*View->getEventTrace().lastFrameTime);
-                if(velocity.y > 0.0f) velocity.y = 0.0f;
-            }
-        }
-
-        velocity += acceleration*View->getEventTrace().lastFrameTime;
-        if((velocity.x == 0.0f) && (velocity.y == 0.0f)) bMove = false;
-        else move(velocity*View->getEventTrace().lastFrameTime);
     }
 
     if(bForceOnScreen)
@@ -877,7 +883,7 @@ void CVElement::move_to(const sf::Vector2f& position,
     bNoInteract = false;
     bMove = true;
     destination = position;
-    fMoveAngle = get_angle(position, getPosition());
+    fMoveAngle = get_angle(getPosition(), position);
     this->velocity = components(velocity, fMoveAngle);
     fFriction = abs(drag);
 }
@@ -919,9 +925,15 @@ void CVElement::push(const float& angle,
 
     bNoInteract = false;
     bMove = true;
-    fMoveAngle = angle;
-    this->velocity = components(velocity, fMoveAngle);
+    this->velocity += components(velocity, angle);
+    fMoveAngle = atan2(this->velocity.y, this->velocity.x);
     fFriction = abs(drag);
+}
+
+void CVElement::scale_velocity(const float& proportion)
+{
+    velocity = components(scalar(velocity) * proportion, fMoveAngle);
+    fFriction *= proportion;
 }
 
 const CVApp* CVElement::mainApp() const

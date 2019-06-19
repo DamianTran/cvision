@@ -72,7 +72,7 @@ CVDropDownBox::CVDropDownBox(CVView * View,
                              const float& maxDropDownHeight,
                              const string& dropDownIcon):
                                  CVBasicViewPanel(View, tag,
-                                                  fillColor,
+                                                  sf::Color::Transparent,
                                                   size, false,
                                                   position),
                                  bDropDownVisible(false),
@@ -117,7 +117,9 @@ CVDropDownBox::CVDropDownBox(CVView * View,
                                              position.y),
                                 fButtonWidth,
                                 fDialogHeight,
-                                textInfo,
+                                TextEntry("", textInfo.font, textInfo.fontSize,
+                                          textInfo.alignment, textInfo.textColor,
+                                          textInfo.textStyle),
                                 dropDownIcon,
                                 buttonFillColor,
                                 outlineColor,
@@ -127,7 +129,7 @@ CVDropDownBox::CVDropDownBox(CVView * View,
     dropDownBtn->setHighlightColor(buttonFillColor + sf::Color(50, 50, 50, 0));
 
     sf::Color buttonSpriteColor = buttonFillColor;
-    contrast(buttonSpriteColor, buttonFillColor, 100);
+    contrast_brightness(buttonSpriteColor, buttonFillColor, 80);
 
     dropDownBtn->setSpriteColor(buttonSpriteColor);
     dropDownBtn->setRounding(rounding, 12, buttonRoundingStates);
@@ -180,7 +182,7 @@ void CVDropDownBox::addMenuItem(const std::string& newEntry)
     newMenuItem->setTextPadding(12.0f);
 
     sf::Color highlightColor = dropDownMenu->getOutlineColor() + sf::Color(40, 40, 40, 0);
-    contrast(highlightColor, textInfo.textColor, 80);
+    contrast_brightness(highlightColor, textInfo.textColor, 80);
 
     newMenuItem->setHighlightColor(highlightColor);
 

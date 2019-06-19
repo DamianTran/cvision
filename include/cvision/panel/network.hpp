@@ -100,6 +100,9 @@ public:
     CVISION_API CVNetworkEdge& getConnection(CVNetworkNode& other);
     CVISION_API CVNetworkEdge& getConnection(const std::string& tag);
 
+    CVISION_API CVNetworkEdge& getOutConnection(const size_t& index);
+    CVISION_API CVNetworkEdge& getInConnection(const size_t& index);
+
     CVISION_API bool hasConnectionTo(const CVNetworkNode& node);
 
     inline size_t numOutEdges() const noexcept{ return connected_to.size(); }
@@ -123,14 +126,20 @@ public:
     inline void setDisplayTextOnHover(const bool& state = true) noexcept{ bDisplayTextOnHover = state; }
 
     CVISION_API void move(const sf::Vector2f& distance);
+    inline void push(const float& angle, const float& velocity, const float& drag)
+    {
+        getElement()->push(angle, velocity, drag);
+    }
     CVISION_API void setPosition(const sf::Vector2f& newPosition);
 
     inline const sf::FloatRect& getBounds() const noexcept{ return getElement()->getBounds(); }
     inline sf::Vector2f getSize() noexcept{ return element->getSize(); }
     inline sf::Vector2f getPosition() const noexcept{ return getElement()->getPosition(); }
     inline const bool& isVisible() const{ return getElement()->isVisible(); }
+    inline void setVisible(const bool& state){ getElement()->setVisible(state); }
 
     CVISION_API void setScale(const float& newScale);
+    CVISION_API void setSprite(const sf::Texture* newTexture);
 
     inline void setTextPadding(const float& padding) noexcept{ textPadding = padding; }
     inline void setTextFadeRate(const uint8_t& rate) noexcept{ textFadeRate = rate; }
@@ -144,7 +153,8 @@ public:
     CVISION_API void updateInterface(CVEvent& event, const sf::Vector2f& mousePos);
 
     CVISION_API void draw(sf::RenderTarget* target);
-    CVISION_API void drawEdges(sf::RenderTarget* target);
+    CVISION_API void drawEdges(sf::RenderTarget* target,
+                               const unsigned int& LOD);
     CVISION_API void drawInterface(sf::RenderTarget* target);
 
     CVISION_API void attach_UI(CVElement* newUI,
@@ -158,7 +168,8 @@ public:
 
     CVISION_API void apply_tethers(const float& distance,
                                    const float& elastic_coefficient,
-                                   const float& range_threshold) noexcept;
+                                   const float& range_threshold,
+                                   const float& friction) noexcept;
 
 protected:
 
@@ -242,7 +253,8 @@ public:
     /** Apply one frame of tether push/pull to distance (0 = no push) */
     CVISION_API void apply_tether(const float& distance,
                                   const float& elastic_coefficient,
-                                  const float& range_threshold);
+                                  const float& range_threshold,
+                                  const float& friction);
 
     CVISION_API void draw(sf::RenderTarget* target);
     CVISION_API void update();
@@ -428,6 +440,9 @@ public:
     // Physics
 
     inline void setNodePushStrength(const float& newCoef) noexcept{ fNodePushStrength = newCoef; }
+    inline void setNodeFriction(const float& newFriction) noexcept{ fNodeFriction = newFriction; }
+
+    inline const float& getNodeFriction() const noexcept{ return fNodeFriction; }
 
     inline void setTetherCoefficient(const float& newCoef) noexcept{ fTetherElasticCoefficient = newCoef; }
     inline void setTetherDistance(const float& newDistance) noexcept{ fTetherBaseDistance = newDistance; }
@@ -460,6 +475,9 @@ public:
                                    const sf::Color& newColor) noexcept{ textColorLegend[type] = newColor; }
 
     inline void setUniqueNodesOnly(const bool& status = true) noexcept{ bUniqueNodesOnly = status; }
+
+    inline const unsigned int& getLOD() const noexcept{ return uLOD; }
+    inline void setLOD(const unsigned int& newValue) noexcept{ uLOD = newValue; }
 
     // Access
 
@@ -519,6 +537,7 @@ protected:
     float defaultNodeOutlineThickness;
     float defaultNodeRounding;
     float fNodePushStrength;
+    float fNodeFriction;
     float fNodeEdgeWeightScale;
     float fTetherElasticCoefficient;
     float fTetherEdgeElasticModifier;
@@ -548,6 +567,8 @@ protected:
     sf::RectangleShape selectionCordon;
 
     unsigned int defaultNodeTextAlignment;
+    unsigned int uFramesLastPhysicsUpdate;
+    unsigned int uLOD;
 
     bool bUniqueNodesOnly;
     bool bSelection;
@@ -555,9 +576,26 @@ protected:
     bool bCanPan;
     bool bCanCordonSelect;
 
-    void updatePhysics(CVEvent& event, const sf::Vector2f& mousePos);
+    /** @brief Main network panel physics update function
 
-    /** Override to change how new nodes are connected to the existing network */
+      * Update frequency is based on LOD.
+
+      * >=3.0 = every frame
+      * 2.0 = every other frame
+      * 1.0 = every 2nd frame
+      * 0.0 = every 3rd frame
+
+      * Can be overridden for custom inherited classes */
+
+    CVISION_API virtual void updatePhysics(CVEvent& event, const sf::Vector2f& mousePos);
+
+    /** @brief Update the level of detail to maintain a nominal frame rate
+        By default, adjusts the LOD according to the average frame rate
+        Maximum LOD (3.0) at >48 fps */
+
+    CVISION_API virtual void updateLOD(CVEvent& event);
+
+    /** @brief Override to change how new nodes are connected to the existing network */
     virtual void updateNodeConnections(CVNetworkNode& node){ }
 
     hyperC::reference_vector<CVNetworkNode> selected;
