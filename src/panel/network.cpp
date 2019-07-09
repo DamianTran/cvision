@@ -296,7 +296,7 @@ void CVNetworkNode::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     for(auto& edge : connected_to)
     {
-        edge.update();
+        edge.update(event, mousePos);
     }
 
     if(bDisplayTextOnHover)
@@ -624,6 +624,7 @@ CVNetworkEdge::CVNetworkEdge(CVNetworkNode& origin,
                              const string& type,
                              const float& weight,
                              const sf::Color& edgeColor):
+                                  bTextVisible(false),
                                   origin(&origin),
                                   node(&outNode),
                                   type(type),
@@ -633,6 +634,11 @@ CVNetworkEdge::CVNetworkEdge(CVNetworkNode& origin,
 {
 
     line.setFillColor(edgeColor);
+    displayText.setString(type);
+
+    displayText.setFont(*origin.getElement()->appFont("network_nodes"));
+    displayText.setCharacterSize(14);
+    displayText.setFillColor(edgeColor);
 
 }
 
@@ -681,9 +687,14 @@ void CVNetworkEdge::draw(sf::RenderTarget* target)
     {
         target->draw(line);
     }
+
+    if(bTextVisible)
+    {
+        target->draw(displayText);
+    }
 }
 
-void CVNetworkEdge::update()
+void CVNetworkEdge::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
 
     sf::Vector2f originPos = getBoundCenter(origin->getBounds());
@@ -694,6 +705,15 @@ void CVNetworkEdge::update()
     line.setOrigin(sf::Vector2f(0.0f, lineWidth * lineWeightScale/2));
     line.setPosition(originPos);
     line.setRotation(get_angle(originPos, destinationPos)*180/PI);
+
+    displayBounds.width = displayBounds.height = line.getSize().x / 4;
+    displayBounds.left = line.getGlobalBounds().left + line.getGlobalBounds().width/2 - line.getSize().x / 8;
+    displayBounds.top = line.getGlobalBounds().top + line.getGlobalBounds().height/2 - line.getSize().x / 8;
+
+    displayText.setPosition(sf::Vector2f(line.getGlobalBounds().left + line.getGlobalBounds().width/2 - displayText.getGlobalBounds().width / 2,
+                                         line.getGlobalBounds().top + line.getGlobalBounds().height/2 - displayText.getGlobalBounds().height / 2));
+
+    bTextVisible = displayBounds.contains(mousePos);
 
 }
 

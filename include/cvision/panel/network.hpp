@@ -229,7 +229,7 @@ public:
 
     CVISION_API CVNetworkEdge(CVNetworkNode& origin,
                               CVNetworkNode& outNode,
-                              const std::string& type = "none",
+                              const std::string& type = "",
                               const float& weight = 1.0f,
                               const sf::Color& edgeColor = sf::Color::Black);
 
@@ -257,7 +257,7 @@ public:
                                   const float& friction);
 
     CVISION_API void draw(sf::RenderTarget* target);
-    CVISION_API void update();
+    CVISION_API void update(CVEvent& event, const sf::Vector2f& mousePos);
 
 protected:
 
@@ -273,6 +273,11 @@ protected:
 private:
 
     sf::RectangleShape line;
+
+    sf::Text displayText;
+    sf::FloatRect displayBounds;
+
+    bool bTextVisible;
 
 };
 

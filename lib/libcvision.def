@@ -312,7 +312,7 @@ EXPORTS
     _ZN4cvis13CVNetworkEdge12apply_tetherERKfS2_S2_S2_ @311
     _ZN4cvis13CVNetworkEdge12setLineWidthERKf @312
     _ZN4cvis13CVNetworkEdge4drawEPN2sf12RenderTargetE @313
-    _ZN4cvis13CVNetworkEdge6updateEv @314
+    _ZN4cvis13CVNetworkEdge6updateERNS_7CVEventERKN2sf7Vector2IfEE @314
     _ZN4cvis13CVNetworkEdgeC1ERNS_13CVNetworkNodeES2_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKfRKN2sf5ColorE @315
     _ZN4cvis13CVNetworkEdgeC2ERNS_13CVNetworkNodeES2_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKfRKN2sf5ColorE @316
     _ZN4cvis13CVNetworkNode10align_textERKj @317
