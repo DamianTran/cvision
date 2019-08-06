@@ -1292,7 +1292,13 @@ bool CVView::handleViewEvents(CVEvent& event)
 
                 event.timeLastKey = 0.0f;
                 event.keyPressed = true;
-                if(!ctrlPressed())
+
+                if(ctrlPressed())
+                {
+                    event.keyLog.emplace_back(SFevent.text.unicode + 96);
+                    break;
+                }
+                else
                 {
 
                     switch(SFevent.text.unicode)
@@ -1315,16 +1321,6 @@ bool CVView::handleViewEvents(CVEvent& event)
             {
                 event.keyPressed = true;
                 event.timeLastKey = 0.0f;
-
-                if(ctrlPressed())
-                {
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)) event.keyLog.emplace_back(uint32_t('a'));
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)) event.keyLog.emplace_back(uint32_t('d'));
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::V)) event.keyLog.emplace_back(uint32_t('v'));
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::C)) event.keyLog.emplace_back(uint32_t('c'));
-                    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) event.keyLog.emplace_back(uint32_t('z'));
-                    break;
-                }
 
                 switch(SFevent.key.code)
                 {

@@ -495,8 +495,6 @@ bool CVDataViewerPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
 
     }
 
-    std::cout << "Check...\n";
-
     // Capture keys
 
     if(hasFocus() && event.keyPressed)
@@ -630,8 +628,6 @@ bool CVDataViewerPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
         scrollBarY.setScrollable(false);
         scrollBarX.setScrollable(false);
     }
-
-    std::cout << "Check...\n";
 
     if(bounds.contains(mousePos)) event.captureFocus();
 

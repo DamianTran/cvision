@@ -47,11 +47,13 @@
 #define CVIS_NETWORK_PANEL
 
 #include <unordered_map>
+#include <unordered_set>
 
 #include "cvision/panel.hpp"
 
 #include <hyper/toolkit/reference_vector.hpp>
 #include <hyper/toolkit/static_vector.hpp>
+#include <hyper/toolkit/thread.hpp>
 
 namespace cvis
 {
@@ -59,6 +61,8 @@ namespace cvis
 class CVNetworkEdge;
 class CVNetworkPanel;
 class CVButton;
+class CVTypeBox;
+class CVNetworkGroup;
 
 /** Wrapper class for element embedded within network panel.
     All items added to CVNetworkPanel are implicitly wrapped
@@ -96,6 +100,10 @@ public:
     CVISION_API void remove_connections(CVNetworkNode& other);
     CVISION_API void disconnect();
 
+    inline void pin() noexcept{ bPinned = true; }
+    inline void unpin() noexcept{ bPinned = false; }
+    inline const bool& isPinned() const noexcept{ return bPinned; }
+
     CVISION_API CVNetworkEdge& getConnection(CVElement* other);
     CVISION_API CVNetworkEdge& getConnection(CVNetworkNode& other);
     CVISION_API CVNetworkEdge& getConnection(const std::string& tag);
@@ -117,7 +125,8 @@ public:
     inline const std::string& getType() const noexcept{ return type; }
     inline const float& getWeight() const noexcept{ return weight; }
 
-    inline void setWeight(const float& newWeight) noexcept{ weight = newWeight; }
+    CVISION_API void setWeight(const float& newWeight,
+                               const bool& rescale = true) noexcept;
     inline void setType(const std::string& newType) noexcept{ type = newType; }
     CVISION_API void setTag(const std::string& newTag) noexcept;
 
@@ -139,6 +148,7 @@ public:
     inline void setVisible(const bool& state){ getElement()->setVisible(state); }
 
     CVISION_API void setScale(const float& newScale);
+    CVISION_API void setViewScale(const float& newScale);
     CVISION_API void setSprite(const sf::Texture* newTexture);
 
     inline void setTextPadding(const float& padding) noexcept{ textPadding = padding; }
@@ -171,6 +181,16 @@ public:
                                    const float& range_threshold,
                                    const float& friction) noexcept;
 
+    CVISION_API void addGroup(CVNetworkGroup& group) noexcept;
+    CVISION_API void removeGroup(CVNetworkGroup& group) noexcept;
+
+    inline size_t numGroups() const noexcept{ return groups.size(); }
+
+    CVISION_API bool checkGroup(CVNetworkGroup& group) const noexcept;
+    inline bool isGrouped() const noexcept{ return !groups.empty(); }
+
+    CVISION_API bool checkGroups(const CVNetworkNode& other) const noexcept;
+
 protected:
 
     friend class CVNetworkPanel;
@@ -188,10 +208,14 @@ protected:
     bool            bUIremove;
     bool            bUIremoveOnDeselect;
     bool            bStatic;        // Ignore physics
+    bool            bPinned;
 
     float           fUISizePaddingScale;
 
     unsigned char   fadeLayers;
+
+    /** @brief Groups that this node is a member of. */
+    std::vector<CVNetworkGroup*> groups;
 
 private:
 
@@ -207,6 +231,8 @@ private:
     float weight;
     float textPadding;
     float fScale;
+    float fViewScale;
+    float fScaleTransform;
 
     sf::Vector2f lastElementPosition;
     sf::Vector2f textDisplayOffset;
@@ -244,6 +270,8 @@ public:
     inline const float& getWeight() const noexcept{ return weight; }
 
     CVISION_API void setLineWidth(const float& newWidth) noexcept;
+    inline const float& getLineWidth() const noexcept{ return lineWidth; }
+    inline void setViewScale(const float& newViewScale) noexcept{ fViewScale = newViewScale; }
     inline void setLineColor(const sf::Color& newColor) noexcept
     {
         line.setFillColor(newColor);
@@ -269,6 +297,7 @@ protected:
     float weight;
     float lineWeightScale;
     float lineWidth;
+    float fViewScale;
 
 private:
 
@@ -278,6 +307,87 @@ private:
     sf::FloatRect displayBounds;
 
     bool bTextVisible;
+
+};
+
+class CVISION_API CVNetworkGroup : public CVBasicViewPanel
+{
+public:
+
+    enum class Mode
+    {
+        Boxed,
+        Centered
+    };
+
+    CVNetworkGroup(CVView * View,
+                   const hyperC::reference_vector<CVNetworkNode>& nodes,
+                   const Mode& mode,
+                   const TextEntry& textInfo,
+                   const sf::Color& fillColor = sf::Color::Transparent,
+                   const sf::Color& outlineColor = sf::Color::Black,
+                   const float& outlineThickness = 2.0f,
+                   const float& rounding = 0.0f);
+
+    ~CVNetworkGroup();
+
+    CV_UPDATE_OVERRIDE;
+
+    CVISION_API void setSize(const sf::Vector2f& newSize) override;
+
+    CVISION_API void addNode(CVNetworkNode& node);
+    CVISION_API void removeNode(CVNetworkNode& node);
+    CVISION_API bool checkNode(CVNetworkNode& node) const noexcept;
+
+    inline bool empty() const noexcept{ return nodes.empty(); }
+    inline void clear() noexcept{ nodes.clear(); }
+    inline size_t size() const noexcept{ return nodes.size(); }
+
+    enum class AnnotationDirection
+    {
+        TopLeft = 0,
+        TopCenter,
+        TopRight,
+        Right,
+        BottomRight,
+        BottomCenter,
+        BottomLeft,
+        Left,
+        Center
+    };
+
+    CVISION_API void setGroupMode(const CVNetworkGroup::Mode& newMode) noexcept;
+
+    inline const std::vector<std::string>& getKeyWords() const noexcept{ return key_words; }
+
+    /** @brief Obtain the letter-wise alignment score between all key words of this and
+      * another group.
+      *
+      * Assesses the maximum soft match of each key word in this group to the other,
+      * and returns the average.
+      */
+    CVISION_API float checkKeyWords(const CVNetworkGroup& other) const noexcept;
+    CVISION_API float checkKeyWords(const std::vector<std::string>& key_words) const noexcept;
+
+    friend void merge(hyperC::reference_vector<CVNetworkGroup>& groups,
+                      CVNetworkGroup& output);
+
+protected:
+
+    friend class CVNetworkPanel;
+
+    Mode groupMode;
+
+    CVTypeBox * annotation;
+
+    AnnotationDirection annotation_dir;
+
+    hyperC::reference_vector<CVNetworkNode> nodes;
+
+    std::vector<std::string> sub_groups;
+    std::vector<std::string> key_words;
+
+    CVISION_API void updateAnnotationDir(const sf::Vector2f& relative_center) noexcept;
 
 };
 
@@ -309,8 +419,13 @@ public:
                    const TextEntry& textInfo = TextEntry("", ""),
                    const float& outlineThickness = 0.0f);
 
+    ~CVNetworkPanel();
+
     CVISION_API CV_UPDATE_OVERRIDE;
     CVISION_API CV_DRAW_OVERRIDE;
+
+    CVISION_API void getTexture(sf::Texture& output,
+                                const sf::Color& canvas_color = sf::Color::Transparent) override;
 
     // Manual addition/addition of special elements to network
 
@@ -430,6 +545,64 @@ public:
 
     CVISION_API void setCordonState(const bool& state) noexcept;
 
+    CVISION_API void selectGroup(CVNetworkGroup& group) noexcept;
+    CVISION_API void selectGroup(const std::string& group_name) noexcept;
+
+    // Selection Manipulation
+
+    CVISION_API void pinSelected() noexcept;
+    CVISION_API void unpinSelected() noexcept;
+    CVISION_API void pinAll() noexcept;
+    CVISION_API void unpinAll() noexcept;
+
+    // Grouping
+
+    /** @brief The method for visualizing groups
+      *
+      * Boxed: surround groups by a bounding box and title
+      * them at the corners
+      * Centered: Invisible bounding box, titled at the center */
+
+    CVISION_API void setGroupMode(const CVNetworkGroup::Mode& newGroupMode) noexcept;
+    inline const CVNetworkGroup::Mode& getGroupMode() const noexcept{ return groupMode; }
+
+    /** @brief Adds nodes with tags to a new or existing group.
+      *
+      * Groups are visualized as annotated box overlays that partition
+      * the network into separate regions.  Groups add another layer of
+      * physics on top of the edge attraction and node repulsion in order
+      * to help separate the network in meaningful ways.
+      */
+    CVISION_API void addToGroup(const std::vector<std::string>& tags,
+                                const std::string& group_tag);
+    CVISION_API void addToGroup(const std::string& tag,
+                                const std::string& group_tag);
+    CVISION_API void addSelectedToGroup(const std::string& group_tag);
+
+    CVISION_API CVNetworkGroup * createGroup(const std::string& group_tag);
+
+    CVISION_API void removeSelectedFromGroups();
+    CVISION_API void removeGroup(const std::string& group_tag);
+
+    CVISION_API void clearGroups();
+    CVISION_API void trimGroupSizes(const int& lower_limit = 0,
+                                    const int& upper_limit = INT_MAX);
+
+    CVISION_API void mergeGroups(hyperC::reference_vector<CVNetworkGroup>& groups,
+                                 const std::string& newGroupName = "");
+
+    /** @brief Performs a keyword-based merge on all present groups.
+      *
+      * The Smith-Waterman algorithm, as well as direct string matching,
+      * are performed to attempt to consolidate groups with similar key words.
+      *
+      * @param threshold    The sum of key word scores that must be acheived
+      * to perform a match.
+      */
+    CVISION_API void mergeGroupsByKeywords(const float& threshold = 0.6f) noexcept;
+
+    inline bool groupExists(const std::string& name) const noexcept{ return groups.find(name) != groups.end(); }
+
     // Layouts
 
     CVISION_API void setLayout(const CVNetworkLayout& newLayout);
@@ -497,10 +670,13 @@ public:
     CVISION_API const sf::Color& getOutlineLegendColor(const std::string& type) const;
     CVISION_API const sf::Color& getTextLegendColor(const std::string& type) const;
 
+    CVISION_API std::vector<std::string> getNodeTags() const noexcept;
+
     // Options
 
     inline void setPan(const bool& state) noexcept{ bCanPan = state; }
     inline void setZoomable(const bool& state) noexcept{ bCanZoom = state; }
+    inline void setNodesScaleWithWeights(const bool& state){ bScaleNodesWithWeight = state; }
 
     // Misc
 
@@ -528,15 +704,20 @@ public:
 
 protected:
 
+    hyperC::TransferrableMutex  modLock;
+
     CVNetworkLayout layout;
+    CVNetworkGroup::Mode groupMode;
 
     hyperC::static_vector<CVNetworkNode> nodes;
+    std::unordered_map<std::string, CVNetworkGroup*> groups;
 
     sf::Vector2f defaultNodePosition;
     sf::Vector2f defaultNodeSize;
     sf::Vector2f panOffset;
     sf::Vector2f panVelocity;
     sf::Vector2f zoomAnchor;
+    sf::Vector2f networkCenter;
 
     float fontWeightScale;
     float defaultNodeOutlineThickness;
@@ -561,6 +742,11 @@ protected:
     float fZoomRateScale;
     float fZoomAttenutationRate;
     float fCurrentZoomRate;
+    float fGroupPushDistance;
+    float fGroupPushStrength;
+    float fGroupCenterGravity;
+    float fGroupDisplayRatio;
+    float fNetworkCenterGravity;
 
     sf::Color selectionColor;
 
@@ -574,12 +760,14 @@ protected:
     unsigned int defaultNodeTextAlignment;
     unsigned int uFramesLastPhysicsUpdate;
     unsigned int uLOD;
+    unsigned int uMinGroupDisplaySize;
 
     bool bUniqueNodesOnly;
     bool bSelection;
     bool bCanZoom;
     bool bCanPan;
     bool bCanCordonSelect;
+    bool bScaleNodesWithWeight;
 
     /** @brief Main network panel physics update function
 

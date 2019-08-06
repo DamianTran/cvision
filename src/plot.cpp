@@ -2711,6 +2711,7 @@ bool CVLinePlot::update(CVEvent& event, const sf::Vector2f& mousePos)
                     {
                     case CV_LINE_CONN_STEP:
                     {
+
                         sf::Vector2f cornerPos(set.points[orderedI[i-1]].sprite.getPosition().x,
                                                set.points[orderedI[i]].sprite.getPosition().y);
 
@@ -2766,6 +2767,7 @@ bool CVLinePlot::update(CVEvent& event, const sf::Vector2f& mousePos)
                     }
                     }
                 }
+
             }
         }
     }

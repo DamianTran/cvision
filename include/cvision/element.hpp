@@ -669,7 +669,10 @@ public:
     CVISION_API virtual bool update(CVEvent& event, const sf::Vector2f& mousePos); // Core update function for time-dependent activities (ie. Animations)
     CVISION_API virtual bool draw(sf::RenderTarget* target);
 
-    CVISION_API void getTexture(sf::Texture& output); // Get an image of the current draw state
+    CVISION_API virtual void getTexture(sf::Texture& output,
+                                        const sf::Color& canvas_color = sf::Color::Transparent); // Get an image of the current draw state
+    CVISION_API bool saveImage(const std::string& save_file);
+
     CVISION_API void createShadow(const uint8_t& alpha, const float& drawScale = 1.0f); // Create a shadow using a draw texture
     CVISION_API void removeShadow();    // Disable shadow rendering
 

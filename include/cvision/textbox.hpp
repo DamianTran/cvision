@@ -216,6 +216,8 @@ public:
     CVISION_API std::string getText() const;
     CVISION_API const sf::Color& getTextColor() const;
 
+    inline const unsigned int& getTextSize() const noexcept{ return textInfo.fontSize; }
+
     inline void removeTextEntry(const unsigned int textIndex)
     {
         displayText.erase(displayText.begin() + textIndex);

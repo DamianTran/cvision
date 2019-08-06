@@ -780,7 +780,8 @@ bool CVElement::draw(sf::RenderTarget* target)
     return true;
 }
 
-void CVElement::getTexture(sf::Texture& outTex)
+void CVElement::getTexture(sf::Texture& outTex,
+                           const sf::Color& canvas_color)
 {
 
     View->captureLock.lock();
@@ -789,7 +790,7 @@ void CVElement::getTexture(sf::Texture& outTex)
 
     View->textureBuffer.create(bounds.width, bounds.height);
     View->textureBuffer.setView(sf::View(bounds));
-    View->textureBuffer.clear(sf::Color::Transparent);
+    View->textureBuffer.clear(canvas_color);
 
     draw(&View->textureBuffer);
 
@@ -799,6 +800,34 @@ void CVElement::getTexture(sf::Texture& outTex)
     View->mainApp->setContextActive();
 
     View->captureLock.unlock();
+
+}
+
+bool CVElement::saveImage(const string& save_file)
+{
+
+    sf::Color canvas_color = sf::Color::White;
+    if(save_file.find(".png") == save_file.size() - 4)
+    {
+        canvas_color = sf::Color::Transparent;
+    }
+
+    sf::Context context;
+    sf::Texture newTexture;
+
+    getTexture(newTexture, canvas_color);
+
+    View->captureLock.lock();
+
+    context.setActive(true);
+
+    bool bStatus = newTexture.copyToImage().saveToFile(save_file);
+
+    context.setActive(false);
+
+    View->captureLock.unlock();
+
+    return bStatus;
 
 }
 
