@@ -52,7 +52,7 @@
 namespace cvis
 {
 
-/** Scrollable list panel
+/** @brief Scrollable list panel
 
     New list items are automatically positioned below the last one,
     but not resized */
@@ -171,7 +171,7 @@ protected:
 
 };
 
-/** Scrollable grid panel
+/** @brief Scrollable grid panel
 
     Adaptation of list panel where, similarly to the parent class,
     new items are automatically positioned after the last.  Here,

@@ -114,121 +114,37 @@
 namespace cvis
 {
 
-typedef std::map<std::string, int> KeyMapping; // General function-key mapping by index
+typedef std::map<std::string, int> KeyMapping; /**< @brief General function-key mapping by index */
 
 class CVView;
 class CVViewPanel;
 class CVApp;
 class CVEvent;
 
+/** @brief Common CVElement virtual base class.
+  *
+  * All CVision elements inherit from this class.
+  * Contains methods for drawing, updating, physics,
+  * sprite addition, animation, and many others.
+  *
+  * Create custom classes by inheriting from this class
+  * and then defining the pure virtual draw() and update()
+  * methods.
+  */
+
 class CVISION_API CVElement
 {
-protected:
-
-    /** ========================================================================
-
-        Flags
-
-    // ===================================================================== **/
-
-    bool visible;            /// Is this item drawn to the renderer?
-
-    bool canHighlight;       /// Can the item be illuminated?
-    bool canClick;           /// Is the item clickable?
-    bool canDrag;            /// Can the item be dragged?
-    bool active;             /// Is the item active?
-
-    bool mouseHovering;      /// Is the mouse hovering over this element?
-    bool clickHeld;          /// Is the mouse button being held?
-    bool highlighted;        /// Is the current highlight state active?
-
-    bool bHasFocus;          /// Has the item successfully captured the event cascade?
-    bool bFollowMouseX;      /// Set the X position to the mouse position while flag is TRUE
-    bool bFollowMouseY;      /// Set the Y position to the mouse position while flag is TRUE
-    bool bFade;              /// If true, update the object alpha
-    bool bMove;              /// If true, update the object position
-    bool bSpriteOnly;        /// If true, do not render primitives
-    bool bExpand;            /// If true, expand bounds to encompass member elements
-    bool bStop;              /// When velocity reaches zero, stop instead of turning
-    bool bBounce;            /// Bounce off the view boundaries instead of flying off
-    bool bForceOnScreen;     /// Keep this item on screen
-    bool bHasShadow;         /// Has stationary texture copy
-    bool bDragAndDrop;       /// Allow drag-and-drop mechanics
-    bool bClipBounds;        /// Clip draw region to bounds
-    bool bDelete;            /// A close call has been ordered on this element
-    bool bTriggered;         /// Has a generic trigger event been initiated on this element?
-    bool bDropShadow;        /// Does this item have a drop shadow?
-
-    bool bStatic;            /// Cannot be moved
-    bool bNoInteract;        /// Skip update cycles (enhance performance with many elements)
-
-    /** ========================================================================
-
-        Trigger elements
-
-    // ===================================================================== **/
-
-    std::string                     IDtag;              // ID identifying this element's class
-    std::string                     triggerID;          // Specific ID tag for trigger targets
-
-    std::vector<std::string>        incoming_triggers;  // Trigger signals waiting to be processed
-    std::vector<CVTriggerTarget>    trigger_targets;    // Trigger targets to send information to
-
-    CVElement* closeButton;                             // An element that can act as a close trigger signal
-
-    /** ========================================================================
-
-        Info
-
-    // ===================================================================== **/
-
-    std::vector<sf::Sprite>         spriteList;         // Sprites under the control of this element, add to this list (ie. pawns)
-    sf::Texture                     clipTexture;        // Texture draw target for clipping
-    sf::Texture                     dropShadowTexture;  // Texture for drop shadow if applicable
-
-    sf::Sprite                      shadow;             // Shadow of this item: use for drag and drop, etc.
-    sf::Sprite                      drawMask;           // Clipping mask if region outside of bounds is to be excluded from the render
-    sf::Sprite                      dropShadow;         // Rastered drop shadow based on draw texture
-
-    ColorTheme                      colorTheme;         // Main element colors
-    sf::Color                       highlightColor;     // Highlight color if applicable
-    sf::Color                       spriteColor;        // Base color of main sprites
-
-    sf::Vector2f                    pinnedOffset;
-    sf::Vector2f                    origin;
-    sf::Vector2f                    createdOrigin;
-
-    /** ========================================================================
-
-        Physics
-
-    // ===================================================================== **/
-
-    sf::Vector2f                    destination;
-    sf::Vector2f                    velocity;
-    sf::Vector2f                    acceleration;   // Absolute acceleration (ie. gravity, buoyancy)
-
-    float                           fMoveAngle;
-    float                           fElasticity;    // 0 - 1; how much momentum is conserved during bounce interactions
-    float                           fFriction;      // coefficient of friction translating to -pixels/s^2
-    float                           fSpriteScale;
-
-    uint8_t                         state;
-    uint8_t                         targetAlpha;
-
-    unsigned char                   fadeLayers;     // Layers to apply fade to
-
-    unsigned int                    stateNum;
-    unsigned int                    numStates;
-
-    int                             fadeRate;
-
-    sf::FloatRect                   bounds;
-    CVISION_API virtual void updateBounds();
-
-    KeyMapping                      controls;
-
 public:
+
+    CVISION_API CVElement();
+    CVISION_API CVElement(CVView* View,
+              bool canHighlight = false,
+              bool canClick = false,
+              bool canDrag = false,
+              bool active = true);
+
+
+    virtual ~CVElement();
 
     /** ========================================================================
 
@@ -329,12 +245,9 @@ public:
 
     // ===================================================================== **/
 
-    inline const bool& shouldDelete() const
-    {
-        return bDelete;
-    }
+    inline const bool& shouldDelete() const{ return bDelete; }
 
-    inline const unsigned int& getCurrentState() const
+    inline virtual const unsigned int& getCurrentState() const noexcept
     {
         return stateNum;
     }
@@ -352,7 +265,7 @@ public:
         return state;
     };
 
-    CVISION_API void setState(const uint8_t& newState); // Toggle to a new state
+    CVISION_API virtual void setState(const uint8_t& newState); // Toggle to a new state
     CVISION_API void setFade(const uint8_t& alpha, const int& rate, const unsigned char& flags = CV_LAYER_ALL);
     CVISION_API virtual bool fadeComplete() const noexcept;
     inline bool isFading() const noexcept{ return !fadeComplete(); }
@@ -478,14 +391,8 @@ public:
 
     // ===================================================================== **/
 
-    inline const std::string& tag() const noexcept
-    {
-        return IDtag;
-    }
-    inline void setTag(const std::string& newTag) noexcept
-    {
-        IDtag = newTag;
-    }
+    inline const std::string& tag() const noexcept{ return IDtag; } /**< @brief Get the unique ID assigned to this element. */
+    inline void setTag(const std::string& newTag) noexcept{ IDtag = newTag; } /**< @brief Set a unique ID for this element. */
 
     /** ========================================================================
 
@@ -494,49 +401,22 @@ public:
     // ===================================================================== **/
 
     CVISION_API virtual void move(const sf::Vector2f& offset);
-    inline void move(const float& x, const float& y)
-    {
-        move(sf::Vector2f(x,y));
-    }
+    inline void move(const float& x, const float& y){ move(sf::Vector2f(x,y)); }
 
-    virtual void setPosition(const sf::Vector2f& position)
-    {
-        move(position - getPosition());
-    }
-    inline void setPosition(const float& posX, const float& posY)
-    {
-        setPosition(sf::Vector2f(posX, posY));
-    }
+    inline virtual void setPosition(const sf::Vector2f& position){ move(position - getPosition()); }
+    inline void setPosition(const float& posX, const float& posY) noexcept{ setPosition(sf::Vector2f(posX, posY)); }
 
     CVISION_API virtual void setExpand(const bool& state);
-    inline const sf::FloatRect& getBounds() const
-    {
-        return bounds;
-    }
-    inline const sf::FloatRect& getGlobalBounds() const
-    {
-        return getBounds();    // Interface with templated SFML functions
-    }
+    inline const sf::FloatRect& getBounds() const noexcept{ return bounds; }
+    inline const sf::FloatRect& getGlobalBounds() const { return getBounds(); } /**< @brief Interface with templated SFML functions. */
 
-    virtual inline sf::Vector2f getPosition() const
-    {
-        return sf::Vector2f(bounds.left, bounds.top) + origin;
-    }
-    inline const sf::Vector2f& getOrigin() const
-    {
-        return origin;
-    }
-    inline void setOrigin(const sf::Vector2f& newOrigin)
-    {
-        origin = newOrigin;
-    }
+    CVISION_API virtual sf::Vector2f getPosition() const;
+    inline const sf::Vector2f& getOrigin() const noexcept{ return origin; }
+    inline void setOrigin(const sf::Vector2f& newOrigin){ origin = newOrigin; }
 
-    inline virtual sf::Vector2f getSize(){ return sf::Vector2f(bounds.width, bounds.height); }
-    virtual void setSize(const sf::Vector2f& newSize) = 0;
-    inline void setSize(const float& x, const float& y)
-    {
-        setSize(sf::Vector2f(x, y));
-    }
+    inline virtual sf::Vector2f getSize(){ return fTrueSize; }
+    CVISION_API virtual void setSize(const sf::Vector2f& newSize);
+    inline void setSize(const float& x, const float& y) noexcept{ setSize(sf::Vector2f(x, y)); }
 
     virtual float getOutlineThickness() const = 0;
 
@@ -554,38 +434,23 @@ public:
 
     // ===================================================================== **/
 
-    inline void setBounce(const bool& state)
-    {
-        bBounce = state;
-    }
-    inline void forceOnScreen(const bool& state = true)
-    {
-        bForceOnScreen = state;
-    }
+    inline void setBounce(const bool& state){ bBounce = state; }
+    inline void forceOnScreen(const bool& state = true){ bForceOnScreen = state; }
 
     CVISION_API void setElasticity(const float& newElasticity);
-    inline void setFriction(const float& newCoefficient)
-    {
-        fFriction = newCoefficient;
-    }
-    inline void setVelocity(const sf::Vector2f& newVelocity)
-    {
-        velocity = newVelocity;
-    }
-    inline void setAcceleration(const sf::Vector2f& newAcceleration)
-    {
-        acceleration = newAcceleration;
-    }
+    inline void setFriction(const float& newCoefficient) noexcept{ fFriction = newCoefficient; }
+    inline void setVelocity(const sf::Vector2f& newVelocity) noexcept{ velocity = newVelocity; }
+    inline void setAcceleration(const sf::Vector2f& newAcceleration) noexcept{ acceleration = newAcceleration; }
 
     CVISION_API float speed();
 
-    CVISION_API void stop();                                    // Stop all motion
+    CVISION_API void stop();    /**< @brief Stop all motion for this element. */
     CVISION_API void move_to(const sf::Vector2f& position,
                  const float& velocity,
-                 const float& drag = 0.0f);    // Push toward destination
+                 const float& drag = 0.0f);    /**< @brief Push toward destination. */
     CVISION_API void anim_move(const sf::Vector2f& distance,
                  const float& velocity,
-                 const float& drag = 0.0f);    // Animated move by a certain distance
+                 const float& drag = 0.0f);    /**< @brief Animated move by a certain distance. */
 
     /** @brief Push the element in the direction of [angle] (in radians) and impart
       * components of scalar [velocity] instantaneously.
@@ -730,15 +595,123 @@ public:
         }
     }
 
-    CVISION_API CVElement();
-    CVISION_API CVElement(CVView* View,
-              bool canHighlight = false,
-              bool canClick = false,
-              bool canDrag = false,
-              bool active = true);
+protected:
 
+    /** ========================================================================
 
-    virtual ~CVElement();
+        Flags
+
+    // ===================================================================== **/
+
+    bool visible;            /**< Is this item drawn to the renderer? */
+
+    bool canHighlight;       /**< Can the item be illuminated? */
+    bool canClick;           /**< Is the item clickable? */
+    bool canDrag;            /**< Can the item be dragged? */
+    bool active;             /**< Is the item active? */
+
+    bool mouseHovering;      /**< Is the mouse hovering over this element? */
+    bool clickHeld;          /**< Is the mouse button being held? */
+    bool highlighted;        /**< Is the current highlight state active? */
+
+    bool bHasFocus;          /**< Has the item successfully captured the event cascade? */
+    bool bFollowMouseX;      /**< Set the X position to the mouse position while flag is TRUE */
+    bool bFollowMouseY;      /**< Set the Y position to the mouse position while flag is TRUE */
+    bool bFade;              /**< If true, update the object alpha */
+    bool bMove;              /**< If true, update the object position */
+    bool bSpriteOnly;        /**< If true, do not render primitives */
+    bool bExpand;            /**< If true, expand bounds to encompass member elements */
+    bool bStop;              /**< When velocity reaches zero, stop instead of turning */
+    bool bBounce;            /**< Bounce off the view boundaries instead of flying off */
+    bool bForceOnScreen;     /**< Keep this item on screen */
+    bool bHasShadow;         /**< Has stationary texture copy */
+    bool bDragAndDrop;       /**< Allow drag-and-drop mechanics */
+    bool bClipBounds;        /**< Clip draw region to bounds */
+    bool bDelete;            /**< A close call has been ordered on this element */
+    bool bTriggered;         /**< Has a generic trigger event been initiated on this element? */
+    bool bDropShadow;        /**< Does this item have a drop shadow? */
+
+    bool bStatic;            /**< Cannot be moved */
+    bool bNoInteract;        /**< Skip update cycles (enhance overall performance if this element is not being used/drawn) */
+
+    /** ========================================================================
+
+        Trigger elements
+
+    // ===================================================================== **/
+
+    std::string                     IDtag;              /**< ID identifying this element's class */
+    std::string                     triggerID;          /**< Specific ID tag for trigger targets */
+
+    std::vector<std::string>        incoming_triggers;  /**< Trigger signals waiting to be processed */
+    std::vector<CVTriggerTarget>    trigger_targets;    /**< Trigger targets to send information to */
+
+    CVElement* closeButton;                             /**< An element that can act as a close trigger signal */
+
+    /** ========================================================================
+
+        Info
+
+    // ===================================================================== **/
+
+    std::vector<sf::Sprite>         spriteList;         /**< Sprites under the control of this element, add to this list (ie. pawns) */
+    sf::Texture                     clipTexture;        /**< Texture draw target for clipping */
+    sf::Texture                     dropShadowTexture;  /**< Texture for drop shadow if applicable */
+
+    sf::Sprite                      shadow;             /**< Shadow of this item: use for drag and drop, etc. */
+    sf::Sprite                      drawMask;           /**< Clipping mask if region outside of bounds is to be excluded from the render */
+    sf::Sprite                      dropShadow;         /**< Rastered drop shadow based on draw texture */
+
+    ColorTheme                      colorTheme;         /**< Main element colors */
+    sf::Color                       highlightColor;     /**< Highlight color if applicable */
+    sf::Color                       spriteColor;        /**< Base color of main sprites */
+
+    sf::Vector2f                    pinnedOffset;
+    sf::Vector2f                    origin;
+    sf::Vector2f                    createdOrigin;
+
+    /** ========================================================================
+
+        Physics
+
+    // ===================================================================== **/
+
+    sf::Vector2f                    destination;
+    sf::Vector2f                    velocity;
+    sf::Vector2f                    acceleration;   /**< Absolute acceleration (ie. gravity, buoyancy) */
+
+    float                           fMoveAngle;
+    float                           fElasticity;    /**< 0 - 1; how much momentum is conserved during bounce interactions */
+    float                           fFriction;      /**< coefficient of friction translating to -pixels/s^2 */
+    float                           fSpriteScale;
+
+    uint8_t                         state;
+    uint8_t                         targetAlpha;
+
+    unsigned char                   fadeLayers;     /**< Layers to apply fade to */
+
+    unsigned int                    stateNum;
+    unsigned int                    numStates;
+
+    int                             fadeRate;
+
+    sf::FloatRect                   bounds;
+    CVISION_API virtual void updateBounds();
+
+    KeyMapping                      controls;
+
+    /** ========================================================================
+
+        Position/size/scale
+
+    // ===================================================================== **/
+
+    sf::Vector2f                    fTruePos;   /**< @brief True position of the element. */
+    sf::Vector2i                    iDrawPos;   /**< @brief Rounded position of the element (for clear draw). */
+
+    sf::Vector2f                    fTrueSize;  /**< @brief True size of the element. */
+    sf::Vector2i                    iDrawSize;  /**< @brief Rounded size of the element (for clear draw). */
+
 };
 
 }

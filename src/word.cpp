@@ -456,6 +456,19 @@ void CVTypePanel::setText(const unsigned int& index, const std::string& newText)
     typeElements[index]->setTypeString(newText);
 }
 
+void CVTypePanel::clearText()
+{
+    if(!typeElements.empty())
+    {
+        while(typeElements.size() > 1)
+        {
+            delete(typeElements.back());
+            typeElements.pop_back();
+        }
+        typeElements.front()->clearTypeString();
+    }
+}
+
 void CVTypePanel::setTextSize(const unsigned int& newSize)
 {
     for(auto& text : typeElements)

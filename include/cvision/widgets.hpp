@@ -66,12 +66,18 @@ namespace cvis{
 
 class CVButton;
 
+/** @brief Title-bar widget.
+  *
+  * Simple top-bar with configurable close, minimize, and restore buttons.
+  * Optionally, include a follow glow effect on mouse proximity.
+  */
+
 class CVTitleBar: public CVTextBox{
 public:
 
     CVISION_API CVTitleBar(CVView* View, const uint8_t& alignment, const float& height, const float& width,
-               const TextEntry& textInfo, const std::string& logo = "", const sf::Color& fillColor = sf::Color(128,128,128),
-               const sf::Color& outlineColor = sf::Color(60,60,60), const float& outlineWidth = 1.0f);
+                           const TextEntry& textInfo, const std::string& logo = "", const sf::Color& fillColor = sf::Color(128,128,128),
+                           const sf::Color& outlineColor = sf::Color(60,60,60), const float& outlineWidth = 1.0f);
 
     CVISION_API ~CVTitleBar();
 
@@ -110,15 +116,26 @@ protected:
 
 };
 
-class CVISION_API CVScrollBar: public CVBox{
+/** @brief An attachable scrollbar widget.
+  *
+  * Keeps track of total scroll progress for a defined panel
+  * length.  Control the scrollbar from another panel's update
+  * loop in order to track total scroll distance and visualize
+  * the progress. */
+
+class CVISION_API CVScrollBar : public CVBox{
 public:
 
-    CVISION_API CVScrollBar(CVView* parentView, const sf::Vector2f& anchorBegin,
-                const sf::Vector2f& anchorEnd, const float& panelLength,
-                const float& width, const sf::Color& fillColor,
-                const sf::Color& borderColor, const float& borderWidth,
-                const float& scrollSpeed = 1000.0f,
-                const uint8_t& animType = CV_OBJ_ANIM_FADE_IN);
+    CVISION_API CVScrollBar(CVView* parentView,
+                            const sf::Vector2f& anchorBegin,
+                            const sf::Vector2f& anchorEnd,
+                            const float& panelLength,
+                            const float& width,
+                            const sf::Color& fillColor,
+                            const sf::Color& borderColor,
+                            const float& borderWidth,
+                            const float& scrollSpeed = 1000.0f,
+                            const uint8_t& animType = CV_OBJ_ANIM_FADE_IN);
 
     CVISION_API ~CVScrollBar();
 
@@ -190,19 +207,14 @@ protected:
 
 };
 
+/** @brief A progress bar widget.
+  *
+  * Use this widget to keep track of progress in a loading
+  * bar format.  Useful for loading screens, health bars,
+  * and other linear dichromatic-type indicators.
+  */
+
 class CVISION_API CVProgressBar: public CVTextBox{
-protected:
-
-    float progress,
-            animSpeed;
-
-    inline rounded_rectangle& progressBar(){ return panel[1]; }
-    inline sf::Text& progressText(){ return displayText.front(); }
-
-    std::reference_wrapper<sf::Color> progressColor;
-
-    CVISION_API void alignText();
-
 public:
 
     inline const sf::Color& getProgressColor() const{ return progressColor.get(); }
@@ -215,11 +227,27 @@ public:
 
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
 
-    CVISION_API CVProgressBar(CVView* View, sf::Vector2f position, float width, float height,
-                TextEntry textInfo = TextEntry(), sf::Color fillColor = sf::Color(128,128,128),
-                  sf::Color progressColor = sf::Color(60,60,60),
-                  sf::Color borderColor = sf::Color::Black,
-                float borderWidth = 1.0f);
+    CVISION_API CVProgressBar(CVView* View,
+                              const sf::Vector2f& position,
+                              const float& width,
+                              const float& height,
+                              const TextEntry& textInfo = TextEntry(),
+                              const sf::Color& fillColor = sf::Color(128,128,128),
+                              const sf::Color& progressColor = sf::Color(60,60,60),
+                              const sf::Color& borderColor = sf::Color::Black,
+                              const float& borderWidth = 1.0f);
+
+protected:
+
+    float progress;
+    float animSpeed;
+
+    inline rounded_rectangle& progressBar(){ return panel[1]; }
+    inline sf::Text& progressText(){ return displayText.front(); }
+
+    std::reference_wrapper<sf::Color> progressColor;
+
+    CVISION_API void alignText();
 };
 
 }

@@ -68,57 +68,70 @@
 #define CV_OBJ_ANIM_ROTATE              6
 #endif
 
-namespace cvis{
+namespace cvis
+{
 
 class CVView;
 
-struct CVISION_API CVAnimCheckpoint{
+struct CVISION_API CVAnimCheckpoint
+{
 
     sf::Vector2f destination;
     float velocity;
     uint8_t animType;
 
-    CVAnimCheckpoint(const sf::Vector2f& destination, const float& speed, const uint8_t animType):
-        destination(destination),
+    CVAnimCheckpoint(const sf::Vector2f& destination,
+                     const float& speed,
+                     const uint8_t animType):
+        destination(std::round(destination.x),
+                    std::round(destination.y)),
         velocity(abs(speed)),
-        animType(animType){ }
+        animType(animType) { }
+
     CVISION_API ~CVAnimCheckpoint() = default;
 
 };
 
-class CVISION_API CVAnim{ // Runtime movement animator
-protected:
+/** @brief Runtime movement animation.
+  *
+  * Manages animation checkpoints and ensures that
+  * an animation target interpolates through valid
+  * movement checkpoints on a timed clock.
+  */
 
-    friend class CVView;
-
-    sf::Transformable* animObject;
-    sf::Vector2f checkpointStart;
-    float timeLastCheckpointBegin,
-        velocity,
-        moveAngle,
-        moveDist,
-        passiveAnimRate;
-    std::vector<CVAnimCheckpoint> checkpoints;
-    unsigned int currentAnimCheckpoint;
-    uint8_t passiveAnimType;
-
+class CVISION_API CVAnim
+{
 public:
 
-    inline CVAnimCheckpoint& currentCheckpoint() { return checkpoints[currentAnimCheckpoint]; }
-    inline CVAnimCheckpoint& operator[](const unsigned int& index){ return checkpoints[index]; }
+    CVISION_API CVAnim(sf::Transformable* animObject,
+                       const std::vector<CVAnimCheckpoint>& checkpoints);
+    CVISION_API ~CVAnim() = default;
+
+    inline CVAnimCheckpoint& currentCheckpoint()
+    {
+        return checkpoints[currentAnimCheckpoint];
+    }
+    inline CVAnimCheckpoint& operator[](const unsigned int& index)
+    {
+        return checkpoints[index];
+    }
 
     CVISION_API void nextCheckpoint();
-    inline void setPassiveAnim(const uint8_t& newPassiveType, const float& rate){
+    inline void setPassiveAnim(const uint8_t& newPassiveType, const float& rate)
+    {
         passiveAnimType = newPassiveType;
         passiveAnimRate = rate;
     }
 
-    inline bool checkpointTimeValid() const{
+    inline bool checkpointTimeValid() const
+    {
         float dist;
-        if(sin(moveAngle) == 0){
+        if(sin(moveAngle) == 0)
+        {
             dist = checkpoints[currentAnimCheckpoint].destination.x - checkpointStart.x;
         }
-        else{
+        else
+        {
             dist = (checkpoints[currentAnimCheckpoint].destination.y - checkpointStart.y)/sin(moveAngle);
         }
         return timeLastCheckpointBegin < dist/velocity;
@@ -129,14 +142,40 @@ public:
     CVISION_API void resetPassiveAnim();
 
     CVISION_API bool animFrame(const float& frameTime);
-    inline bool finished(){ return !checkPassiveAnim() && (currentAnimCheckpoint >= checkpoints.size()); }
-    inline const sf::Transformable* object() const{ return animObject; }
+
+    inline bool finished()
+    {
+        return !checkPassiveAnim() && (currentAnimCheckpoint >= checkpoints.size());
+    }
+
+    inline const sf::Transformable* object() const
+    {
+        return animObject;
+    }
 
     CVISION_API void changePath(const std::vector<CVAnimCheckpoint>& newPath);
-    CVISION_API void addCheckpoints(const std::vector<CVAnimCheckpoint>& newCheckpoints, bool cumulative = false);
+    CVISION_API void addCheckpoints(const std::vector<CVAnimCheckpoint>& newCheckpoints,
+                                    const bool& cumulative = false);
 
-    CVISION_API CVAnim(sf::Transformable* animObject, const std::vector<CVAnimCheckpoint>& checkpoints);
-    CVISION_API ~CVAnim() = default;
+protected:
+
+    friend class CVView;
+
+    sf::Transformable* animObject;
+
+    sf::Vector2f checkpointStart;
+
+    float timeLastCheckpointBegin;
+    float velocity;
+    float moveAngle;
+    float moveDist;
+    float passiveAnimRate;
+
+    std::vector<CVAnimCheckpoint> checkpoints;
+
+    unsigned int currentAnimCheckpoint;
+
+    uint8_t passiveAnimType;
 };
 
 }

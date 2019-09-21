@@ -55,8 +55,11 @@ using namespace hyperC;
 namespace cvis
 {
 
-CVBasicViewPanel::CVBasicViewPanel(CVView* parentView, std::string panelTag, sf::Color backgroundColor,
-                                   const sf::Vector2f& size, bool bFitToWindow,
+CVBasicViewPanel::CVBasicViewPanel(CVView* parentView,
+                                   const std::string& panelTag,
+                                   const sf::Color& backgroundColor,
+                                   const sf::Vector2f& size,
+                                   const bool& bFitToWindow,
                                    const sf::Vector2f& position):
     CVViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position)
 {

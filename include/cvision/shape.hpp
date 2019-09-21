@@ -59,16 +59,10 @@ class CVView;
 
 class CVISION_API CVShape: public CVElement
 {
-protected:
-
-    rounded_rectangle shapeMask;
-    rounded_rectangle inactiveMask;
-
-    bool bMasked;
-
-    uint8_t maskAlpha;
-
 public:
+
+    CVISION_API CVShape(CVView* View);
+    virtual ~CVShape() { }
 
     CVISION_API void move(const sf::Vector2f& offset);
     inline void move(const float& x, const float& y)
@@ -114,8 +108,14 @@ public:
 
     virtual void sendData(CVEvent& event) const { }
 
-    CVISION_API CVShape(CVView* View);
-    virtual ~CVShape() { }
+protected:
+
+    rounded_rectangle shapeMask;
+    rounded_rectangle inactiveMask;
+
+    bool bMasked;
+
+    uint8_t maskAlpha;
 
 };
 

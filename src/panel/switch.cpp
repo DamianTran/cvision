@@ -54,26 +54,29 @@ namespace cvis
 {
 
 CVSwitchPanel::CVSwitchPanel(CVView* parentView, string panelTag, sf::Color backgroundColor,
-                     const sf::Vector2f& size, bool bFitToWindow,
-                     const sf::Vector2f& position):
-                         CVBasicViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position),
-                         viewIndex(0),
-                         bCanPan(false),
-                         bAutoPan(false),
-                         bCenterOnNew(true),
-                         bClosablePanels(true),
-                         bLoop(true),
-                         bTimed(false),
-                         panRate(60.0f),
-                         elementPadding(3.0f),
-                         autoSwitchLatency(10.0f),
-                         timeLastSwitch(TIME_NOW){
+                             const sf::Vector2f& size, bool bFitToWindow,
+                             const sf::Vector2f& position):
+    CVBasicViewPanel(parentView, panelTag, backgroundColor, size, bFitToWindow, position),
+    viewIndex(0),
+    bCanPan(false),
+    bAutoPan(false),
+    bCenterOnNew(true),
+    bClosablePanels(true),
+    bLoop(true),
+    bTimed(false),
+    panRate(60.0f),
+    elementPadding(3.0f),
+    autoSwitchLatency(10.0f),
+    timeLastSwitch(TIME_NOW)
+{
     setExpand(false);
 }
 
-string CVSwitchPanel::getFocusTag(){
+string CVSwitchPanel::getFocusTag()
+{
 
-    if(numPanels()){
+    if(numPanels())
+    {
 
         return viewPanelElements[viewIndex]->tag();
 
@@ -107,43 +110,52 @@ void CVSwitchPanel::switch_previous()
     }
 }
 
-void CVSwitchPanel::setElementPadding(const float& newPadding){
+void CVSwitchPanel::setElementPadding(const float& newPadding)
+{
     elementPadding = newPadding;
 }
 
-bool CVSwitchPanel::checkFocus(const string& tag){
+bool CVSwitchPanel::checkFocus(const string& tag)
+{
     if(viewIndex >= numPanels()) return false;
     return viewPanelElements[viewIndex]->tag() == tag;
 }
 
-CVElement* CVSwitchPanel::getActiveElement(){
+CVElement* CVSwitchPanel::getActiveElement()
+{
     if(numPanels() < 1) return nullptr;
     else return viewPanelElements[viewIndex];
 }
 
 void CVSwitchPanel::addPanelElement(CVElement* newElement,
                                     const string& tag,
-                                    const unsigned int& index){
+                                    const unsigned int& index)
+{
 
-    if(numPanels()){
+    if(numPanels())
+    {
         if(!index)
         {
             newElement->setPosition(viewPanelElements.front()->getPosition().x - newElement->getBounds().width - elementPadding,
-                          viewPanelElements.front()->getPosition().y + viewPanelElements.front()->getSize().y/2 - newElement->getSize().y/2);
+                                    viewPanelElements.front()->getPosition().y + viewPanelElements.front()->getSize().y/2 - newElement->getSize().y/2);
         }
-        else if(index < numPanels()){
+        else if(index < numPanels())
+        {
             newElement->setPosition(viewPanelElements[index]->getPosition().x,
-                          viewPanelElements[index]->getPosition().y + viewPanelElements[index]->getSize().y/2 - newElement->getSize().y/2);
-            for(size_t i = index; i < numPanels(); ++i){
+                                    viewPanelElements[index]->getPosition().y + viewPanelElements[index]->getSize().y/2 - newElement->getSize().y/2);
+            for(size_t i = index; i < numPanels(); ++i)
+            {
                 viewPanelElements[i]->move(newElement->getBounds().width + elementPadding, 0.0f);
             }
         }
-        else{
+        else
+        {
             newElement->setPosition(viewPanelElements.back()->getPosition().x + viewPanelElements.back()->getSize().x + elementPadding,
                                     getPosition().y + getSize().y/2 - newElement->getSize().y/2);
         }
     }
-    else{
+    else
+    {
         newElement->setPosition(getPosition().x + getSize().x/2 - newElement->getBounds().width/2,
                                 getPosition().y + getSize().y/2 - newElement->getBounds().height/2);
     }
@@ -169,15 +181,18 @@ void CVSwitchPanel::addPanelElement(CVElement* newElement,
 
 }
 
-void CVSwitchPanel::removePanelElement(const unsigned int& index){
+void CVSwitchPanel::removePanelElement(const unsigned int& index)
+{
     sf::FloatRect panelBounds = viewPanelElements[index]->getBounds();
     CVViewPanel::removePanelElement(index);
 
-    for(size_t i = index; i < viewPanelElements.size(); ++i){
+    for(size_t i = index; i < viewPanelElements.size(); ++i)
+    {
         viewPanelElements[i]->move(sf::Vector2f(-panelBounds.width, 0.0f));
     }
 
-    if(bExpand){
+    if(bExpand)
+    {
         updateBounds();
     }
 
@@ -186,61 +201,81 @@ void CVSwitchPanel::removePanelElement(const unsigned int& index){
 
 }
 
-void CVSwitchPanel::enablePanning(){
+void CVSwitchPanel::enablePanning()
+{
     bCanPan = true;
 }
 
-void CVSwitchPanel::disablePanning(){
+void CVSwitchPanel::disablePanning()
+{
     bCanPan = false;
 }
 
-void CVSwitchPanel::setPanRate(const float& newRate){
+void CVSwitchPanel::setPanRate(const float& newRate)
+{
     panRate = newRate;
 }
 
-void CVSwitchPanel::move(const sf::Vector2f& distance){
+void CVSwitchPanel::move(const sf::Vector2f& distance)
+{
     CVBasicViewPanel::move(distance);
 }
 
-void CVSwitchPanel::setPosition(const sf::Vector2f& position){
+void CVSwitchPanel::setPosition(const sf::Vector2f& position)
+{
     move(position - getPosition());
 }
 
-bool CVSwitchPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
+bool CVSwitchPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
+{
 
     if(!CVViewPanel::update(event, mousePos)) return false;
 
-    for(int i = viewPanelElements.size() - 1; (i >= 0) && !viewPanelElements.empty(); --i){
+    for(int i = viewPanelElements.size() - 1; (i >= 0) && !viewPanelElements.empty(); --i)
+    {
         if(viewPanelElements[i]->shouldDelete())
         {
             removePanelElement(i);
         }
-        else{
-            if(bOutOfBoundsUpdate || View->contains(*viewPanelElements[i])){
-                viewPanelElements[i]->update(event, mousePos);
+        else
+        {
+            if(bOutOfBoundsUpdate || View->contains(*viewPanelElements[i]))
+            {
+                if(!bClipBounds || panel.front().getGlobalBounds().intersects(viewPanelElements[i]->getBounds()))
+                {
+                    viewPanelElements[i]->update(event, mousePos);
+                }
             }
         }
     }
 
-    if(bCanPan){
+    if(bCanPan)
+    {
 
         if(event.viewHasFocus &&
-           (event.keyLog.size() > 0) && shiftPressed()){
-            for(auto& key : event.keyLog){
-                if(key == getKey(CV_CTRL_FWD)){
+                (event.keyLog.size() > 0) && shiftPressed())
+        {
+            for(auto& key : event.keyLog)
+            {
+                if(key == getKey(CV_CTRL_FWD))
+                {
                     setCenter(viewIndex + 1);
                 }
-                else if(key == getKey(CV_CTRL_REV)){
+                else if(key == getKey(CV_CTRL_REV))
+                {
                     setCenter(viewIndex - 1);
                 }
             }
         }
 
         if(bounds.contains(mousePos) &&
-           (event.mouseWheelDelta.x != 0.0f)){ // Horizontal pan
+                (event.mouseWheelDelta.x != 0.0f))  // Horizontal pan
+        {
             float moveDist = panRate*event.mouseWheelDelta.x;
-            if(getPosition().x + moveDist < View->getWidth()/2){
-                if(getPosition().x + getSize().x + moveDist > View->getWidth()/2){
+            if(getPosition().x + moveDist < View->getWidth()/2)
+            {
+                if(getPosition().x + getSize().x + moveDist > View->getWidth()/2)
+                {
                     for(auto& element : viewPanelElements)
                     {
                         element->move(sf::Vector2f(moveDist, 0.0f));
@@ -250,8 +285,10 @@ bool CVSwitchPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
             }
             else setPosition(View->getWidth()/2, getPosition().y);
 
-            for(size_t i = 0; i < viewPanelElements.size(); ++i){
-                if(viewPanelElements[i]->getBounds().contains(View->getSize()/2)){
+            for(size_t i = 0; i < viewPanelElements.size(); ++i)
+            {
+                if(viewPanelElements[i]->getBounds().contains(View->getSize()/2))
+                {
                     viewIndex = i;
                     break;
                 }
@@ -261,12 +298,13 @@ bool CVSwitchPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
         }
     }
 
-    if(bAutoPan && (viewIndex != UINT_MAX) && numPanels()){
+    if(bAutoPan && (viewIndex != UINT_MAX) && numPanels())
+    {
 
         sf::Vector2f moveDist = panRate/500*(sf::Vector2f(getBounds().left + getSize().x/2,
-                                       getBounds().top + getSize().y/2) -
-             sf::Vector2f(viewPanelElements[viewIndex]->getPosition().x + viewPanelElements[viewIndex]->getBounds().width/2,
-                          viewPanelElements[viewIndex]->getPosition().y + viewPanelElements[viewIndex]->getBounds().height/2));
+                                             getBounds().top + getSize().y/2) -
+                                             sf::Vector2f(viewPanelElements[viewIndex]->getPosition().x + viewPanelElements[viewIndex]->getBounds().width/2,
+                                                     viewPanelElements[viewIndex]->getPosition().y + viewPanelElements[viewIndex]->getBounds().height/2));
 
         for(auto& element : viewPanelElements)
         {
@@ -329,14 +367,18 @@ bool CVSwitchPanel::update(CVEvent& event, const sf::Vector2f& mousePos){
     return true;
 }
 
-void CVSwitchPanel::setCenter(const int& index){
-    if(index >= (int)numPanels()){
+void CVSwitchPanel::setCenter(const int& index)
+{
+    if(index >= (int)numPanels())
+    {
         viewIndex = 0;
     }
-    else if(index < 0){
+    else if(index < 0)
+    {
         viewIndex = numPanels() - 1;
     }
-    else{
+    else
+    {
         viewIndex = index;
     }
 
@@ -348,8 +390,10 @@ void CVSwitchPanel::setCenter(const int& index){
     bAutoPan = true;
 }
 
-void CVSwitchPanel::setCenter(const string& tag){
-    for(size_t i = 0; i < numPanels(); ++i){
+void CVSwitchPanel::setCenter(const string& tag)
+{
+    for(size_t i = 0; i < numPanels(); ++i)
+    {
         if(viewPanelElements[i]->tag() == tag) setCenter(i);
     }
 }

@@ -435,10 +435,20 @@ void CVNodePanel::updateBounds()
 
     for(auto& element : viewPanelElements)
     {
+        if(element == center)
+        {
+            continue;
+        }
         expandBounds(bounds, element->getBounds());
     }
 
     expandBounds(bounds, 24.0f);
+
+    fTruePos.x = bounds.left;
+    fTruePos.y = bounds.top;
+    fTrueSize.x = bounds.width;
+    fTrueSize.y = bounds.height;
+
     panel.front().setSize(sf::Vector2f(bounds.width,
                                        bounds.height));
     panel.front().setPosition(sf::Vector2f(bounds.left,
@@ -490,20 +500,28 @@ bool CVNodePanel::draw(sf::RenderTarget* target)
 void CVNodePanel::setCenter(CVElement& element)
 {
     center = &element;
-    anchorPoint = element.getPosition() - element.getOrigin();
+    anchorPoint = element.getPosition();
 }
 
 void CVNodePanel::addPanelElement(CVElement* newElement,
                                   const string& newTag,
                                   const unsigned int& index)
 {
+
     CVViewPanel::addPanelElement(newElement, newTag, index);
+
     nodePaths.emplace_back();
     nodePaths.back().setSize(sf::Vector2f(0.0f, pathThickness));
     nodePaths.back().setOrigin(sf::Vector2f(0.0f, pathThickness/2));
+
     if(center != nullptr)
+    {
         nodePaths.back().setFillColor(center->baseFillColor());
-    else nodePaths.back().setFillColor(sf::Color::Transparent);
+    }
+    else
+    {
+        nodePaths.back().setFillColor(sf::Color::Transparent);
+    }
 
     if(bShowTagOnHover)
     {
@@ -522,8 +540,14 @@ void CVNodePanel::removePanelElement(const unsigned int& index)
 {
     CVViewPanel::removePanelElement(index);
     nodePaths.erase(nodePaths.begin() + index);
-    if(nodeIndex > (int)index) setNode(index-1);
-    else setNode(index);
+
+    if(nodeIndex > (int)index)
+    {
+        setNode(index-1);
+    }
+    else{
+        setNode(index);
+    }
 
     pathSelected.erase(pathSelected.begin() + index);
 }

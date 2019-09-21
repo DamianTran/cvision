@@ -92,7 +92,11 @@ namespace cvis
         state(0b0),\
         targetAlpha(255),\
         fadeLayers(CV_LAYER_ALL),\
-        fadeRate(0),
+        fadeRate(0),\
+        fTruePos(0.0f,0.0f),\
+        iDrawPos(0,0),\
+        fTrueSize(0.0f,0.0f),\
+        iDrawSize(0,0),
 
 CVElement::CVElement():
     visible(false),
@@ -872,12 +876,34 @@ void CVElement::move(const sf::Vector2f& distance)
 
     if(bStatic) return;
 
+    fTruePos += distance;
+    iDrawPos.x = std::round(fTruePos.x);
+    iDrawPos.y = std::round(fTruePos.y);
+
+    bounds.left = fTruePos.x;
+    bounds.top = fTruePos.y;
+
 }
 
 void CVElement::setExpand(const bool& state)
 {
     bExpand = state;
     updateBounds();
+}
+
+sf::Vector2f CVElement::getPosition() const
+{
+    return fTruePos + origin;
+}
+
+void CVElement::setSize(const sf::Vector2f& newSize)
+{
+    fTrueSize = newSize;
+    iDrawSize.x = std::round(newSize.x);
+    iDrawSize.y = std::round(newSize.y);
+
+    bounds.width = newSize.x;
+    bounds.height = newSize.y;
 }
 
 void CVElement::setElasticity(const float& newElasticity)
@@ -1000,15 +1026,15 @@ void CVElement::addSprite(const sf::Texture* texture,
     if(subRect.width && subRect.height)
     {
         spriteList.back().setTextureRect(subRect);
-        spriteList.back().setOrigin(subRect.width/2, subRect.height/2);
+        spriteList.back().setOrigin(std::round(subRect.width/2), std::round(subRect.height/2));
     }
     else
     {
-        spriteList.back().setOrigin(texSize.x/2, texSize.y/2);
+        spriteList.back().setOrigin(std::round(texSize.x/2), std::round(texSize.y/2));
     }
 
-    spriteList.back().setPosition(bounds.left + position.x,
-                                  bounds.top + position.y);
+    spriteList.back().setPosition(std::round(bounds.left + position.x),
+                                  std::round(bounds.top + position.y));
     spriteList.back().setColor(fillColor);
 }
 

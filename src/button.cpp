@@ -47,14 +47,28 @@
 #include "cvision/app.hpp"
 
 using namespace hyperC;
+using namespace std;
 
 namespace cvis
 {
 
-CVButton::CVButton(CVView* View, const sf::Vector2f& position, float width, float height,
-                   const TextEntry& textInfo, const std::string& icon, sf::Color fillColor, sf::Color borderColor,
-                   float borderWidth):
-    CVTextBox(View, position, width, height, textInfo, fillColor, borderColor, borderWidth),
+CVButton::CVButton(CVView* View,
+                   const sf::Vector2f& position,
+                   const float& width,
+                   const float& height,
+                   const TextEntry& textInfo,
+                   const string& icon,
+                   const sf::Color& fillColor,
+                   const sf::Color& borderColor,
+                   const float& borderWidth):
+    CVTextBox(View,
+              position,
+              width,
+              height,
+              textInfo,
+              fillColor,
+              borderColor,
+              borderWidth),
     bFadeInHover(false),
     bFadeInToggle(false),
     bToggleFlipX(false),
@@ -88,11 +102,22 @@ CVButton::CVButton(CVView* View, const sf::Vector2f& position, float width, floa
 
 }
 
-CVButton::CVButton(CVView* View, const sf::Vector2f& position, const float& width,
-                   const float& height, const std::string& icon, const unsigned int& numStates,
-                   const unsigned int& initialState, const bool& bHighlight,
+CVButton::CVButton(CVView* View,
+                   const sf::Vector2f& position,
+                   const float& width,
+                   const float& height,
+                   const string& icon,
+                   const unsigned int& numStates,
+                   const unsigned int& initialState,
+                   const bool& bHighlight,
                    void (*activateFunc)(const unsigned int&, CVView*)):
-    CVTextBox(View, position, width, height, sf::Color::Transparent, sf::Color::Transparent, 0.0f),
+    CVTextBox(View,
+              position - sf::Vector2f(width/2, height/2),
+              width,
+              height,
+              sf::Color::Transparent,
+              sf::Color::Transparent,
+              0.0f),
     bFadeInHover(false),
     bFadeInToggle(false),
     bToggleFlipX(false),
@@ -116,7 +141,7 @@ CVButton::CVButton(CVView* View, const sf::Vector2f& position, const float& widt
     setHighlightableStatus(bHighlight);
 
     const sf::Texture* iconTex = View->mainApp->bitmaps.taggedTexture(icon);
-    addSprite(iconTex, sf::Vector2f(0.0f,0.0f), sf::Vector2f(width, height));
+    addSprite(iconTex, sf::Vector2f(width/2, height/2), sf::Vector2f(width, height));
     origin.x = width/2;
     origin.y = height/2;
 
@@ -188,6 +213,36 @@ void CVButton::setFadeOnClick(const bool& state, const uint8_t& targetAlpha,
     bFadeInToggle = state;
 }
 
+void CVButton::setStateTexture(const unsigned int& state,
+                               const string& texture)
+{
+    if(stateTextures.size() <= state)
+    {
+        if(!spriteList.empty())
+        {
+            stateTextures.resize(state + 1, getSprite(0).getTexture());
+        }
+        else
+        {
+            stateTextures.resize(state + 1, nullptr);
+        }
+    }
+
+    if(texture.empty())
+    {
+        stateTextures[state] = nullptr;
+    }
+    else
+    {
+        stateTextures[state] = appTexture(texture);
+    }
+
+    if(!spriteList.empty() && (state == stateNum))
+    {
+        getSprite(0).setTexture(*stateTextures[state]);
+    }
+}
+
 void CVButton::setSize(const sf::Vector2f& newSize)
 {
 
@@ -200,7 +255,7 @@ void CVButton::setSize(const sf::Vector2f& newSize)
     {
         dist = sprite.getPosition() - sf::Vector2f(bounds.left, bounds.top);
         dist *= newScale;
-        sprite.setPosition(sf::Vector2f(bounds.left, bounds.top) + dist);
+        sprite.setPosition(round(sf::Vector2f(bounds.left, bounds.top) + dist));
     }
 
 }
@@ -208,7 +263,10 @@ void CVButton::setSize(const sf::Vector2f& newSize)
 bool CVButton::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
 
-    if(!CVTextBox::update(event, mousePos)) return false;
+    if(!CVTextBox::update(event, mousePos))
+    {
+        return false;
+    }
 
     if(active && !View->cursor_overriden() && event.focusFree() && bounds.contains(mousePos))
     {
@@ -221,13 +279,13 @@ bool CVButton::update(CVEvent& event, const sf::Vector2f& mousePos)
     }
 
     if(bounds.contains(mousePos) &&
-            event.captureMouse())
+       event.captureMouse())
     {
 
         setFocus(true);
 
         if((responseEvent & CV_EVENT_LMB) &&
-                bounds.contains(event.LMBreleasePosition))
+            bounds.contains(event.LMBreleasePosition))
         {
             if((event.LMBreleaseFrames == 1) &&
                     (event.LMBholdTime < 0.5f) &&
@@ -238,11 +296,11 @@ bool CVButton::update(CVEvent& event, const sf::Vector2f& mousePos)
         }
 
         if((responseEvent & CV_EVENT_RMB) &&
-                bounds.contains(event.RMBreleasePosition))
+            bounds.contains(event.RMBreleasePosition))
         {
             if((event.RMBreleaseFrames == 1) &&
-                    (event.RMBholdTime < 0.5f) &&
-                    (hasFocus() || event.captureFocus()))
+               (event.RMBholdTime < 0.5f) &&
+               (hasFocus() || event.captureFocus()))
             {
                 toggle();
             }
@@ -276,12 +334,21 @@ void CVButton::toggle()
     if(stateNum + 1 < numStates)
     {
         ++stateNum;
-        if(this->activateFunc != nullptr) activateFunc(stateNum, View);
     }
     else
     {
         stateNum = 0;
-        if(this->activateFunc != nullptr) activateFunc(stateNum, View);
+    }
+
+    if(this->activateFunc)
+    {
+        activateFunc(stateNum, View);
+    }
+
+    if(!spriteList.empty() &&
+       (stateNum < stateTextures.size()))
+    {
+        getSprite(0).setTexture(*stateTextures[stateNum]);
     }
 
     if(!isnan(rotateAngle))
@@ -314,9 +381,19 @@ void CVButton::toggle()
 
 void CVButton::setState(const unsigned int& state)
 {
-    while(stateNum != state)
+    if(state >= numStates)
     {
-        toggle();
+        while(stateNum + 1 != numStates)
+        {
+            toggle();
+        }
+    }
+    else
+    {
+        while(stateNum != state)
+        {
+            toggle();
+        }
     }
 }
 

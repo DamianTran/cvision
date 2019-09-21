@@ -131,7 +131,7 @@ void CVSliderBar::setMinValue(const float& newValue) noexcept
 {
     if(bRound)
     {
-        fMinValue = round(newValue);
+        fMinValue = std::round(newValue);
     }
     else
     {
@@ -146,7 +146,7 @@ void CVSliderBar::setMaxValue(const float& newValue) noexcept
 {
     if(bRound)
     {
-        fMaxValue = round(newValue);
+        fMaxValue = std::round(newValue);
     }
     else
     {
@@ -167,7 +167,7 @@ void CVSliderBar::setCurrentValue(const float& newValue) noexcept
 {
     if(bRound)
     {
-        fCurrentValue = round(newValue);
+        fCurrentValue = std::round(newValue);
     }
     else
     {

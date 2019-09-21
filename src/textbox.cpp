@@ -61,9 +61,13 @@ CVTextBox::CVTextBox(CVView* View,
                      const sf::Color& fillColor,
                      const sf::Color& borderColor,
                      const float& borderWidth):
-    CVBox(View, position, width, height,
-          fillColor, borderColor, borderWidth),
-
+    CVBox(View,
+          position,
+          width,
+          height,
+          fillColor,
+          borderColor,
+          borderWidth),
     textInfo("", getDefaultFont(), 12),
     textPadding(0.0f),
     textFont(nullptr),
@@ -79,8 +83,13 @@ CVTextBox::CVTextBox(CVView* View,
                      const sf::Color& fillColor,
                      const sf::Color& borderColor,
                      const float& borderWidth):
-    CVBox(View, position, width, height,
-          fillColor, borderColor, borderWidth),
+    CVBox(View,
+          position,
+          width,
+          height,
+          fillColor,
+          borderColor,
+          borderWidth),
     textInfo(textInfo),
     textPadding((width+height)/50),
     textFont(appFont(textInfo.font)),
@@ -114,7 +123,7 @@ bool CVTextBox::fadeComplete() const noexcept
 void CVTextBox::alignText()
 {
     sf::FloatRect textBounds;
-    sf::Vector2f textPos = getPosition();
+    sf::Vector2i textPos(getPosition());
     unsigned int numText = displayText.size() + 1,
                  i = 1;
 
@@ -280,7 +289,7 @@ void CVTextBox::alignText()
         }
         }
 
-        text.setPosition(textPos);
+        text.setPosition(textPos.x, textPos.y);
         ++i;
     }
 }
@@ -489,7 +498,9 @@ const sf::Color& CVTextBox::getTextColor() const
     return textInfo.textColor;
 }
 
-void CVTextBox::addTextEntry(const TextEntry& newText, float padding, bool regular)
+void CVTextBox::addTextEntry(const TextEntry& newText,
+                             const float& padding,
+                             const bool& regular)
 {
 
     sf::Vector2f newTextPosition;
@@ -528,7 +539,7 @@ void CVTextBox::addTextEntry(const TextEntry& newText, float padding, bool regul
 
     displayText.back().setFillColor(newText.textColor);
     colorTheme.emplace_back(newText.textColor);
-    displayText.back().setPosition(newTextPosition);
+    displayText.back().setPosition(round(newTextPosition));
 
     sf::Rect<float> newTextBounds = displayText.back().getLocalBounds();
     newTextPosition = getTextHorizontalAlignment(displayText.back(), bounds, newText.alignment);
@@ -537,14 +548,14 @@ void CVTextBox::addTextEntry(const TextEntry& newText, float padding, bool regul
     {
     case TEXT_ALIGN_VERTICAL:
     {
-        displayText.back().setPosition(newTextPosition.x,
-                                       newTextPosition.y + lastTextBounds.height + padding);
+        displayText.back().setPosition(std::round(newTextPosition.x),
+                                       std::round(newTextPosition.y + lastTextBounds.height + padding));
         break;
     }
     case TEXT_ALIGN_HORIZONTAL:
     {
-        displayText.back().setPosition(newTextPosition.x + lastTextBounds.width + padding,
-                                       newTextPosition.y);
+        displayText.back().setPosition(std::round(newTextPosition.x + lastTextBounds.width + padding),
+                                       std::round(newTextPosition.y));
         break;
     }
     default:
@@ -593,50 +604,57 @@ void CVTextBox::addTextEntry(const TextEntry& newText, const sf::Vector2f& posit
     case ALIGN_LEFT_MIDLINE:
     {
         sf::FloatRect textBounds = displayText.back().getLocalBounds();
-        displayText.back().setPosition(position.x, position.y - textBounds.height/2 - getTextCenterOffsetY(displayText.back())/2);
+        displayText.back().setPosition(std::round(position.x),
+                                       std::round(position.y - textBounds.height/2 - getTextCenterOffsetY(displayText.back())/2));
         break;
     }
     case ALIGN_LEFT_BOTTOM:
     {
         sf::FloatRect textBounds = displayText.back().getLocalBounds();
-        displayText.back().setPosition(position.x, position.y - textBounds.height);
+        displayText.back().setPosition(std::round(position.x),
+                                       std::round(position.y - textBounds.height));
         break;
     }
     case ALIGN_CENTER_MIDLINE:
     {
         sf::FloatRect textBounds = displayText.back().getLocalBounds();
-        displayText.back().setPosition(position.x - textBounds.width/2, position.y - textBounds.height/2);
+        displayText.back().setPosition(std::round(position.x - textBounds.width/2),
+                                       std::round(position.y - textBounds.height/2));
         break;
     }
     case ALIGN_CENTER_BOTTOM:
     {
         sf::FloatRect textBounds = displayText.back().getLocalBounds();
-        displayText.back().setPosition(position.x - textBounds.width/2, position.y - textBounds.height);
+        displayText.back().setPosition(std::round(position.x - textBounds.width/2),
+                                       std::round(position.y - textBounds.height));
         break;
     }
     case ALIGN_CENTER:
     {
         sf::FloatRect textBounds = displayText.back().getLocalBounds();
-        displayText.back().setPosition(position.x - textBounds.width/2,
-                                       position.y);
+        displayText.back().setPosition(std::round(position.x - textBounds.width/2),
+                                       std::round(position.y));
         break;
     }
     case ALIGN_RIGHT:
     {
         sf::FloatRect textBounds = displayText.back().getLocalBounds();
-        displayText.back().setPosition(position.x - textBounds.width, position.y);
+        displayText.back().setPosition(std::round(position.x - textBounds.width),
+                                       std::round(position.y));
         break;
     }
     case ALIGN_VERTICAL:
     {
         displayText.back().setRotation(-90);
         sf::FloatRect textBounds = displayText.back().getGlobalBounds();
-        displayText.back().setPosition(position.x + textBounds.width, position.y + textBounds.height);
+        displayText.back().setPosition(std::round(position.x + textBounds.width),
+                                       std::round(position.y + textBounds.height));
         break;
     }
     default:
     {
-        displayText.back().setPosition(position.x, position.y);
+        displayText.back().setPosition(std::round(position.x),
+                                       std::round(position.y));
         break;
     }
     }
@@ -717,10 +735,16 @@ void CVTextBox::setPosition(const sf::Vector2f& position)
 void CVTextBox::move(const sf::Vector2f& offset)
 {
     if(bStatic) return;
+
+    sf::Vector2i initPos = iDrawPos;
+
     CVBox::move(offset);
+
+    sf::Vector2f roundedOffset(iDrawPos - initPos);
+
     for(auto& text : displayText)
     {
-        text.move(offset);
+        text.move(roundedOffset);
     }
 }
 
@@ -894,8 +918,13 @@ CVText::CVText(CVView* View,
                const sf::Vector2f& position,
                const sf::Vector2f& size,
                const bool& bWrap):
-                   CVTextBox(View, position, size.x, size.y, textInfo,
-                             sf::Color::Transparent, sf::Color::Transparent,
+                   CVTextBox(View,
+                             position,
+                             size.x,
+                             size.y,
+                             textInfo,
+                             sf::Color::Transparent,
+                             sf::Color::Transparent,
                              0.0f)
 {
     if(bWrap) setTextWrap(true);

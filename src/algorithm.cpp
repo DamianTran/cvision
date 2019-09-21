@@ -734,6 +734,7 @@ void gaussianBlur(sf::Image& image, const int& radius)
                 }
             }
 
+            using std::round;
             image.setPixel(x, y, sf::Color(round(r/wsum), round(g/wsum), round(b/wsum), round(a/wsum)));
         }
     }

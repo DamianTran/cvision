@@ -476,6 +476,8 @@ public:
     std::string tag;
     unsigned int appThreadID;
 
+    CVISION_API void sendTrigger(CVElement * target, const std::string& signal);
+
     inline bool ready()
     {
         return viewPort != nullptr;

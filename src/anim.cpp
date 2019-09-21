@@ -48,7 +48,8 @@ using namespace hyperC;
 namespace cvis
 {
 
-CVAnim::CVAnim(sf::Transformable* animObject, const std::vector<CVAnimCheckpoint>& checkpoints):
+CVAnim::CVAnim(sf::Transformable* animObject,
+               const std::vector<CVAnimCheckpoint>& checkpoints):
     animObject(animObject),
     checkpointStart(animObject->getPosition()),
     timeLastCheckpointBegin(0.0f),
@@ -92,7 +93,8 @@ void CVAnim::changePath(const std::vector<CVAnimCheckpoint>& newPath)
     timeLastCheckpointBegin = 0.0f;
 }
 
-void CVAnim::addCheckpoints(const std::vector<CVAnimCheckpoint>& newCheckpoints, bool cumulative)
+void CVAnim::addCheckpoints(const std::vector<CVAnimCheckpoint>& newCheckpoints,
+                            const bool& cumulative)
 {
     if(!cumulative)
     {

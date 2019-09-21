@@ -49,21 +49,85 @@
 #include "cvision/lib.hpp"
 #include "cvision/textbox.hpp"
 
-namespace cvis{
+namespace cvis
+{
 
 class CVEvent;
 
-class CVISION_API CVButton:public CVTextBox{
+class CVISION_API CVButton : public CVTextBox
+{
+public:
+
+    CVISION_API CVButton(CVView* View,
+                         const sf::Vector2f& position,
+                         const float& width,
+                         const float& height,
+                         const TextEntry& textInfo,
+                         const std::string& icon = "",
+                         const sf::Color& fillColor = sf::Color(168, 168, 168),
+                         const sf::Color& borderColor = sf::Color(102,102,102),
+                         const float& borderWidth = 2.0f); // Standard box button
+    CVISION_API CVButton(CVView* View,
+                         const sf::Vector2f& position,
+                         const float& width,
+                         const float& height,
+                         const std::string& icon,
+                         const unsigned int& numStates = 2,
+                         const unsigned int& initialState = 0,
+                         const bool& bHighlight = true,
+                         void (*activateFunc)(const unsigned int&, CVView*) = nullptr); // Sprite button
+
+    inline void setRotateAngle(const float& newAngle)
+    {
+        rotateAngle = newAngle;
+    }
+    inline void disableRotation()
+    {
+        rotateAngle = NAN;
+    }
+    inline void setRotateType(const unsigned char& newType)
+    {
+        rotateType = newType;
+    }
+    inline void setToggleFlip(const bool& x, const bool& y)
+    {
+        bToggleFlipX = x;
+        bToggleFlipY = y;
+    }
+
+    CVISION_API void setState(const unsigned int& state);
+    CVISION_API void toggle();
+    inline void setResponseEvent(const unsigned char& eventFlags)
+    {
+        responseEvent = eventFlags;
+    }
+
+    CVISION_API void setColor(const sf::Color& newColor, const unsigned int& state = 0);
+    CVISION_API void setFadeIn(const bool& state, const uint8_t& targetAlpha = 255, const uint8_t& rate = 0);
+    CVISION_API void setFadeOnClick(const bool& state, const uint8_t& targetAlpha = 255, const uint8_t& rate = 0);
+    CVISION_API void setStateTexture(const unsigned int& state, const std::string& texture);
+
+    CVISION_API void setSize(const sf::Vector2f& newSize) override;
+
+    template<typename FUNC> void setActivationFunction(FUNC func)
+    {
+        activateFunc = func;    // Allow for custom activation functions by CVView
+    }
+
+    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos) override;
+    CVISION_API bool draw(sf::RenderTarget* target) override;
+
 protected:
 
-    bool bFadeInHover,
-        bFadeInToggle,
-        bToggleFlipX,
-        bToggleFlipY;
+    bool bFadeInHover;
+    bool bFadeInToggle;
+    bool bToggleFlipX;
+    bool bToggleFlipY;
 
     float rotateAngle;          //   Angle to rotate through on trigger
-    unsigned char rotateType,   //  Items to rotate on trigger
-                    responseEvent;  // Event to trigger
+
+    unsigned char rotateType;     //  Items to rotate on trigger
+    unsigned char responseEvent;  // Event to trigger
 
 
     uint8_t baseAlpha;          // Alpha to revert to during trigger switch if applicable
@@ -72,44 +136,6 @@ protected:
 
     std::vector<const sf::Texture*> stateTextures; // Cycle of textures for button sprite to trigger through
     std::vector<sf::Color> stateColors;             // Colors to cycle through
-
-public:
-
-    inline void setRotateAngle(const float& newAngle){ rotateAngle = newAngle; }
-    inline void disableRotation(){ rotateAngle = NAN; }
-    inline void setRotateType(const unsigned char& newType){ rotateType = newType; }
-    inline void setToggleFlip(const bool& x, const bool& y){
-        bToggleFlipX = x;
-        bToggleFlipY = y;
-    }
-
-    CVISION_API void setState(const unsigned int& state);
-    CVISION_API void toggle();
-    inline void setResponseEvent(const unsigned char& eventFlags){
-        responseEvent = eventFlags;
-    }
-
-    CVISION_API void setColor(const sf::Color& newColor, const unsigned int& state = 0);
-    CVISION_API void setFadeIn(const bool& state, const uint8_t& targetAlpha = 255, const uint8_t& rate = 0);
-    CVISION_API void setFadeOnClick(const bool& state, const uint8_t& targetAlpha = 255, const uint8_t& rate = 0);
-
-    CVISION_API void setSize(const sf::Vector2f& newSize) override;
-
-    template<typename FUNC> void setActivationFunction(FUNC func){ activateFunc = func; } // Allow for custom activation functions by CVView
-
-    CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos) override;
-    CVISION_API bool draw(sf::RenderTarget* target) override;
-
-    CVISION_API CVButton(CVView* View, const sf::Vector2f& position, float width, float height,
-                const TextEntry& textInfo, const std::string& icon = "",
-                sf::Color fillColor = sf::Color(168, 168, 168),
-                sf::Color borderColor = sf::Color(102,102,102),
-                float borderWidth = 2.0f); // Standard box button
-    CVISION_API CVButton(CVView* View, const sf::Vector2f& position, const float& width,
-             const float& height, const std::string& icon, const unsigned int& numStates = 2,
-             const unsigned int& initialState = 0,
-             const bool& bHighlight = true,
-             void (*activateFunc)(const unsigned int&, CVView*) = nullptr); // Sprite button
 
 };
 

@@ -98,6 +98,8 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
     jumpTarget(nullptr)
 {
 
+    using std::round;
+
     this->textInfo = textInfo;
     addTextEntry(textInfo);
     setTextTemplate(textInfo);
@@ -108,7 +110,7 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
 
     xPadding = bounds.height < bounds.width ? bounds.height/2 : bounds.width/2;
 
-    displayText.back().setPosition(bounds.left + xPadding, bounds.top + xPadding);
+    displayText.back().setPosition(round(bounds.left + xPadding), round(bounds.top + xPadding));
 
     float cursorOrigin = 0.0f;
 
@@ -116,57 +118,57 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
     {
     case ALIGN_RIGHT:
     {
-        displayText.back().move(bounds.width - xPadding - textBounds.width - borderWidth, 0.0f);
+        displayText.back().move(round(bounds.width - xPadding - textBounds.width - borderWidth), 0.0f);
         break;
     }
     case ALIGN_RIGHT_MIDLINE:
     {
-        displayText.back().setPosition(bounds.left + bounds.width/2 - textBounds.width/2 - xPadding,
-                                       bounds.top +
+        displayText.back().setPosition(round(bounds.left + bounds.width/2 - textBounds.width/2 - xPadding),
+                                       round(bounds.top +
                                       bounds.height/2 -
-                                      getTextCenterOffsetY(displayText.back()));
+                                      getTextCenterOffsetY(displayText.back())));
         break;
     }
     case ALIGN_CENTER:
     {
-        displayText.back().setPosition(bounds.left + bounds.width/2 - textBounds.width/2, displayText.back().getPosition().y);
+        displayText.back().setPosition(round(bounds.left + bounds.width/2 - textBounds.width/2), round(displayText.back().getPosition().y));
         break;
     }
     case ALIGN_CENTER_MIDLINE:
     {
-        displayText.back().setPosition(bounds.left + bounds.width/2 - textBounds.width/2,
-                                       bounds.top +
+        displayText.back().setPosition(round(bounds.left + bounds.width/2 - textBounds.width/2),
+                                       round(bounds.top +
                                       bounds.height/2 -
-                                      getTextCenterOffsetY(displayText.back()));
+                                      getTextCenterOffsetY(displayText.back())));
         break;
     }
     case ALIGN_CENTER_BOTTOM:
     {
-        displayText.back().setPosition(bounds.left + bounds.width/2 - textBounds.width/2,
-                                       displayText.back().getPosition().y);
+        displayText.back().setPosition(round(bounds.left + bounds.width/2 - textBounds.width/2),
+                                       round(displayText.back().getPosition().y));
         break;
     }
     case ALIGN_VERTICAL_INVERTED:
     {
 
-        panel.front().setOrigin(bounds.width/2, bounds.height/2);
+        panel.front().setOrigin(round(bounds.width/2), round(bounds.height/2));
         panel.front().setRotation(-90);
-        panel.front().setPosition(position);
+        panel.front().setPosition(cvis::round(position));
         bounds = panel.front().getGlobalBounds();
-        setOrigin(sf::Vector2f(bounds.width, bounds.height/2));
+        setOrigin(sf::Vector2f(round(bounds.width), round(bounds.height/2)));
 
-        displayText.back().setOrigin(textBounds.width/2, textBounds.height/2);
-        displayText.back().setPosition(panel.front().getPosition());
+        displayText.back().setOrigin(round(textBounds.width/2), round(textBounds.height/2));
+        displayText.back().setPosition(cvis::round(panel.front().getPosition()));
         displayText.back().setRotation(-90);
 
         break;
     }
     case ALIGN_LEFT_MIDLINE:
     {
-        displayText.back().setPosition(bounds.left + xPadding,
-                                      bounds.top +
+        displayText.back().setPosition(round(bounds.left + xPadding),
+                                      round(bounds.top +
                                       bounds.height/2 -
-                                      getTextCenterOffsetY(displayText.back()));
+                                      getTextCenterOffsetY(displayText.back())));
         break;
     }
     default:  // Left-aligned
@@ -175,10 +177,10 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
     }
     }
 
-    cursorOrigin = cursor.getSize().y/2;
+    cursorOrigin = round(cursor.getSize().y/2);
     textBounds = displayText.back().getGlobalBounds();
     cursor.setSize(sf::Vector2f(2.0f,
-                                displayText.back().getFont()->getGlyph(65, textInfo.fontSize, false, 0).bounds.height*2));
+                                round(displayText.back().getFont()->getGlyph(65, textInfo.fontSize, false, 0).bounds.height*2)));
 
     sf::Vector2f cursorInitPos(displayText.back().getPosition());
 
@@ -209,7 +211,7 @@ CVTypeBox::CVTypeBox(CVView* View, const sf::Vector2f& position, const float wid
                             getTextCenterOffsetY(displayText.back())/2;
     }
 
-    cursor.setPosition(cursorInitPos);
+    cursor.setPosition(cvis::round(cursorInitPos));
 
     if((borderColor != fillColor) && (borderColor != sf::Color::Transparent)) cursor.setFillColor(borderColor);
     else cursor.setFillColor(textInfo.textColor);
@@ -299,6 +301,11 @@ void CVTypeBox::setTypeString(wstring newString)
 
 }
 
+void CVTypeBox::clearTypeString()
+{
+    setTypeString("");
+}
+
 std::string CVTypeBox::getTypeString() const
 {
     return UTF16_to_UTF8(typeString);
@@ -350,6 +357,14 @@ bool CVTypeBox::cursor_at_word_end() const
                 isCharType(typeString[cursorPos], DELIM_BASIC)) return true;
     }
     return false;
+}
+
+void CVTypeBox::move(const sf::Vector2f& distance)
+{
+    CVTextBox::move(distance);
+    cursor.move(round(distance));
+    initBounds.left += std::round(distance.x);
+    initBounds.top += std::round(distance.y);
 }
 
 void CVTypeBox::setColor(const sf::Color& newColor)
@@ -1874,7 +1889,7 @@ void CVTextLog::move(const sf::Vector2f& distance)
     {
         item->move(distance);
     }
-    scroll_bar->move(distance);
+    scroll_bar->move(round(distance));
 }
 
 void CVTextLog::setPosition(const sf::Vector2f& position)

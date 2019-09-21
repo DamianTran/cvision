@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -44,19 +44,24 @@
 #include "cvision/primitives.hpp"
 #include "cvision/algorithm.hpp"
 
-namespace cvis{
+namespace cvis
+{
 
 rounded_rectangle::rounded_rectangle(const sf::Vector2f& size,
                                      const float& rounding_radius,
                                      const sf::Color& fill_color,
                                      const unsigned int& arc_point_count):
-                                         pointCount(0),
-                                         arcPointCount(arc_point_count),
-                                         radius(rounding_radius),
-                                         rounded_corner(4,
-                                                        (rounding_radius &&
-                                                         (arc_point_count > 2))){
-
+    pointCount(0),
+    arcPointCount(arc_point_count),
+    radius(rounding_radius),
+    rounded_corner(4,
+                   (rounding_radius &&
+                    (arc_point_count > 2))),
+    fTruePos(0.0f, 0.0f),
+    iDrawPos(0, 0),
+    fTrueSize(0.0f, 0.0f),
+    iDrawSize(0, 0)
+{
     trace(size, rounding_radius, arc_point_count);
     setFillColor(fill_color);
 }
@@ -66,83 +71,106 @@ rounded_rectangle::rounded_rectangle():
     arcPointCount(10),
     points(4, sf::Vector2f(0,0)),
     radius(0.0f),
-    rounded_corner(4, false){
+    rounded_corner(4, false)
+{
 
 }
 
 void rounded_rectangle::trace(const sf::Vector2f& size,
-               const float& radius,
-               const unsigned int& arc_point_count){
+                              const float& radius,
+                              const unsigned int& arc_point_count)
+{
 
     points.clear();
 
+    fTrueSize = size;
+    sf::Vector2f roundedSize = round(size);
+    iDrawSize = sf::Vector2i(roundedSize);
+
     this->radius = radius;
 
-    if(!radius || (arc_point_count < 2)){
+    if(!radius || (arc_point_count < 2))
+    {
         arcPointCount = 1;
         pointCount = 4;
         points.emplace_back(0.0f,0.0f);
-        points.emplace_back(size.x, 0.0f);
-        points.emplace_back(size.x, size.y);
-        points.emplace_back(0.0f, size.y);
+        points.emplace_back(roundedSize.x, 0.0f);
+        points.emplace_back(roundedSize.x, roundedSize.y);
+        points.emplace_back(0.0f, roundedSize.y);
     }
-    else{
+    else
+    {
 
         arcPointCount = arc_point_count;
         pointCount = 0;
-        for(auto state : rounded_corner){
+        for(auto state : rounded_corner)
+        {
             if(state) pointCount += arc_point_count;
             else ++pointCount;
         }
 
         float adj_radius = radius;
-        if((size.x < size.y) && (adj_radius > size.x/2)){
-            adj_radius = size.x/2;
+        if((roundedSize.x < roundedSize.y) && (adj_radius > roundedSize.x/2))
+        {
+            adj_radius = roundedSize.x/2;
         }
-        else if(adj_radius > size.y/2){
-            adj_radius = size.y/2;
+        else if(adj_radius > roundedSize.y/2)
+        {
+            adj_radius = roundedSize.y/2;
         }
 
         double i = 0.0, apc = arc_point_count;
 
-        if(topLeftRounded()){
-            for(; i < apc; ++i){
+        if(topLeftRounded())
+        {
+            for(; i < apc; ++i)
+            {
                 points.emplace_back(radial_position(sf::Vector2f(adj_radius, adj_radius),
                                                     adj_radius, PI + PI/2*i/(arc_point_count-1)));
             }
         }
-        else{
+        else
+        {
             points.emplace_back(sf::Vector2f(0.0f,0.0f));
         }
 
-        if(topRightRounded()){
-            for(i = 0.0; i < apc; ++i){
-                points.emplace_back(radial_position(sf::Vector2f(size.x - adj_radius, adj_radius),
+        if(topRightRounded())
+        {
+            for(i = 0.0; i < apc; ++i)
+            {
+                points.emplace_back(radial_position(sf::Vector2f(roundedSize.x - adj_radius, adj_radius),
                                                     adj_radius, PI/2*i/(arc_point_count-1) - PI/2));
             }
         }
-        else{
-            points.emplace_back(sf::Vector2f(size.x,0.0f));
+        else
+        {
+            points.emplace_back(sf::Vector2f(roundedSize.x,0.0f));
         }
 
-        if(bottomRightRounded()){
-            for(i = 0.0; i < apc; ++i){
-                points.emplace_back(radial_position(sf::Vector2f(size.x - adj_radius, size.y - adj_radius),
+        if(bottomRightRounded())
+        {
+            for(i = 0.0; i < apc; ++i)
+            {
+                points.emplace_back(radial_position(sf::Vector2f(roundedSize.x - adj_radius, roundedSize.y - adj_radius),
                                                     adj_radius, PI/2*i/(arc_point_count-1)));
             }
         }
-        else{
-            points.emplace_back(sf::Vector2f(size.x,size.y));
+        else
+        {
+            points.emplace_back(sf::Vector2f(roundedSize.x,roundedSize.y));
         }
 
-        if(bottomLeftRounded()){
-            for(i = 0.0; i < apc; ++i){
-                points.emplace_back(radial_position(sf::Vector2f(adj_radius, size.y - adj_radius),
+        if(bottomLeftRounded())
+        {
+            for(i = 0.0; i < apc; ++i)
+            {
+                points.emplace_back(radial_position(sf::Vector2f(adj_radius, roundedSize.y - adj_radius),
                                                     adj_radius, PI/2*i/(arc_point_count-1) - PI*3/2));
             }
         }
-        else{
-            points.emplace_back(sf::Vector2f(0.0f,size.y));
+        else
+        {
+            points.emplace_back(sf::Vector2f(0.0f,roundedSize.y));
         }
     }
 
@@ -150,75 +178,103 @@ void rounded_rectangle::trace(const sf::Vector2f& size,
 
 }
 
-size_t rounded_rectangle::getPointCount() const{
+size_t rounded_rectangle::getPointCount() const
+{
     return pointCount;
 }
 
-bool rounded_rectangle::cornerIsRounded(const unsigned int& corner_idx) const{
+bool rounded_rectangle::cornerIsRounded(const unsigned int& corner_idx) const
+{
     if(corner_idx > 3) throw std::out_of_range("Index larger than possible corners");
     return rounded_corner[corner_idx];
 }
 
-bool rounded_rectangle::topLeftRounded() const{
+bool rounded_rectangle::topLeftRounded() const
+{
     return rounded_corner[0];
 }
-bool rounded_rectangle::topRightRounded() const{
+bool rounded_rectangle::topRightRounded() const
+{
     return rounded_corner[1];
 }
-bool rounded_rectangle::bottomRightRounded() const{
+bool rounded_rectangle::bottomRightRounded() const
+{
     return rounded_corner[2];
 }
-bool rounded_rectangle::bottomLeftRounded() const{
+bool rounded_rectangle::bottomLeftRounded() const
+{
     return rounded_corner[3];
 }
 
 void rounded_rectangle::setCornerRounding(const unsigned int& corner_idx,
-                                          const bool& state){
+        const bool& state)
+{
     if(corner_idx > 3) throw std::out_of_range("Index larger than possible corners");
     rounded_corner[corner_idx] = state;
 }
 
-void rounded_rectangle::setTopLeftRounded(const bool& state){
+void rounded_rectangle::setTopLeftRounded(const bool& state)
+{
     rounded_corner[0] = state;
     trace(getSize(), radius, arcPointCount);
 }
-void rounded_rectangle::setTopRightRounded(const bool& state){
+void rounded_rectangle::setTopRightRounded(const bool& state)
+{
     rounded_corner[1] = state;
     trace(getSize(), radius, arcPointCount);
 }
-void rounded_rectangle::setBottomRightRounded(const bool& state){
+void rounded_rectangle::setBottomRightRounded(const bool& state)
+{
     rounded_corner[2] = state;
     trace(getSize(), radius, arcPointCount);
 }
-void rounded_rectangle::setBottomLeftRounded(const bool& state){
+void rounded_rectangle::setBottomLeftRounded(const bool& state)
+{
     rounded_corner[3] = state;
     trace(getSize(), radius, arcPointCount);
 }
 
-void rounded_rectangle::setAllRoundState(const bool& state){
-    for(size_t i = 0; i < rounded_corner.size(); ++i){
+void rounded_rectangle::setAllRoundState(const bool& state)
+{
+    for(size_t i = 0; i < rounded_corner.size(); ++i)
+    {
         rounded_corner[i] = state;
     }
     trace(getSize(), radius, arcPointCount);
 }
 
 void rounded_rectangle::setRounding(const float& newRadius, const unsigned int& newPC,
-                                    const std::vector<bool>& states){
+                                    const std::vector<bool>& states)
+{
     rounded_corner = states;
     trace(getSize(), newRadius, newPC);
 }
 
-sf::Vector2f rounded_rectangle::getPoint(size_t index) const{
+sf::Vector2f rounded_rectangle::getPoint(size_t index) const
+{
     return points[index];
 }
 
-sf::Vector2f rounded_rectangle::getSize() const{
+sf::Vector2f rounded_rectangle::getSize() const
+{
     return sf::Vector2f(getLocalBounds().width - 2*getOutlineThickness(),
                         getLocalBounds().height - 2*getOutlineThickness());
 }
 
-void rounded_rectangle::setSize(const sf::Vector2f& newSize){
+void rounded_rectangle::setSize(const sf::Vector2f& newSize)
+{
     trace(newSize, radius, arcPointCount);
+}
+
+void rounded_rectangle::move(const sf::Vector2f& distance) noexcept
+{
+    fTruePos += distance;
+    sf::Vector2i newDrawPos(std::round(fTruePos.x),
+                            std::round(fTruePos.y));
+
+    sf::Shape::move(sf::Vector2f(newDrawPos - iDrawPos));
+
+    iDrawPos = newDrawPos;
 }
 
 }

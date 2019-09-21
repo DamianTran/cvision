@@ -49,9 +49,19 @@ using namespace std;
 namespace cvis
 {
 
-CVViewPanel::CVViewPanel(CVView* parentView, string panelTag, sf::Color backgroundColor,
-                         const sf::Vector2f& size, bool fitToWindow, const sf::Vector2f& position):
-    CVTextBox(parentView, position, parentView->getWidth(), parentView->getHeight(), backgroundColor, backgroundColor, 0.0f),
+CVViewPanel::CVViewPanel(CVView* parentView,
+                         const string& panelTag,
+                         const sf::Color& backgroundColor,
+                         const sf::Vector2f& size,
+                         const bool& fitToWindow,
+                         const sf::Vector2f& position):
+    CVTextBox(parentView,
+              position,
+              size.x,
+              size.y,
+              backgroundColor,
+              backgroundColor,
+              0.0f),
     bFitWindow(fitToWindow),
     bTransduceFade(false),
     bTransduceFocus(false),
@@ -61,10 +71,12 @@ CVViewPanel::CVViewPanel(CVView* parentView, string panelTag, sf::Color backgrou
     bFadeMembersOnly(false),
     bReverseDrawOrder(false)
 {
-
     IDtag = panelTag;
 
-    if(!isnan(size.x) && !isnan(size.y)) setSize(size);
+    if(!isnan(size.x) && !isnan(size.y))
+    {
+        setSize(size);
+    }
     else
     {
         setSize(parentView->getSize());
@@ -84,20 +96,13 @@ void CVViewPanel::updateBounds()
     if(numPanels() > 0)
     {
         bounds = viewPanelElements.front()->getBounds();
-        sf::FloatRect panelBounds;
         for(size_t i = 1; i < viewPanelElements.size(); ++i)
         {
-            panelBounds = viewPanelElements[i]->getBounds();
-            if(panelBounds.left < bounds.left) bounds.left = panelBounds.left;
-            if(panelBounds.top < bounds.top) bounds.top = panelBounds.top;
-            if(panelBounds.left + panelBounds.width > bounds.left + bounds.width)
-                bounds.width = panelBounds.left + panelBounds.width - bounds.left;
-            if(panelBounds.top + panelBounds.height > bounds.top + bounds.height)
-                bounds.height = panelBounds.top + panelBounds.height - bounds.top;
+            expandBounds(bounds, viewPanelElements[i]->getBounds());
         }
 
         panel.front().setSize(sf::Vector2f(bounds.width, bounds.height));
-        panel.front().setPosition(bounds.left, bounds.top);
+        panel.front().setPosition(sf::Vector2f(bounds.left, bounds.top));
     }
     else
     {
@@ -110,14 +115,20 @@ void CVViewPanel::updateBounds()
 void CVViewPanel::updatePanels(CVEvent& event, const sf::Vector2f& mousePos)
 {
 
-    for(int i = viewPanelElements.size() - 1; (i >= 0) && !viewPanelElements.empty(); --i){
+    for(int i = viewPanelElements.size() - 1; (i >= 0) && !viewPanelElements.empty(); --i)
+    {
         if(viewPanelElements[i]->shouldDelete())
         {
             removePanelElement(i);
         }
-        else{
-            if(bOutOfBoundsUpdate || View->contains(*viewPanelElements[i])){
-                viewPanelElements[i]->update(event, mousePos);
+        else
+        {
+            if(bOutOfBoundsUpdate || View->contains(*viewPanelElements[i]))
+            {
+                if(!bClipBounds || panel.front().getGlobalBounds().intersects(viewPanelElements[i]->getBounds()))
+                {
+                    viewPanelElements[i]->update(event, mousePos);
+                }
             }
         }
     }
@@ -188,7 +199,10 @@ bool CVViewPanel::update(CVEvent& event, const sf::Vector2f& mousePos)
         bFade = false;
     }
 
-    if(!CVTextBox::update(event, mousePos)) return false;
+    if(!CVTextBox::update(event, mousePos))
+    {
+        return false;
+    }
 
     if(bExpand)
     {
@@ -285,18 +299,20 @@ void CVViewPanel::setPosition(const sf::Vector2f& position)
 
 void CVViewPanel::setSize(const sf::Vector2f& newSize)
 {
-    float scaleFactorX = getSize().x/newSize.x,
-          scaleFactorY = getSize().y/newSize.y;
+    float scaleFactorX = getSize().x/newSize.x;
+    float scaleFactorY = getSize().y/newSize.y;
+
     for(auto& item : viewPanelElements)
     {
         sf::Vector2f dist = item->getPosition() - getPosition(),
-                     scaleDist = dist;
+                            scaleDist = dist;
         scaleDist.x *= scaleFactorX;
         scaleDist.y *= scaleFactorY;
         item->move(-(scaleDist - dist));
 //        item->setSize(item->getSize().x*scaleDist.x,
 //                      item->getSize().y*scaleDist.y);
     }
+
     CVBox::setSize(newSize);
 }
 
@@ -305,6 +321,10 @@ void CVViewPanel::setPanelSize(const sf::Vector2f& newSize)
 
     bounds.width = newSize.x;
     bounds.height = newSize.y;
+
+    fTrueSize = newSize;
+    iDrawSize.x = std::round(newSize.x);
+    iDrawSize.y = std::round(newSize.y);
 
     panel.front().setSize(newSize);
 

@@ -179,8 +179,11 @@ public:
     CVISION_API void setText(const unsigned int& textIndex, const sf::String& newText);
     CVISION_API void setTextSize(const unsigned int& newSize);
 
-    CVISION_API void addTextEntry(const TextEntry& newText, float padding = 12.0f, bool regular = true);
-    CVISION_API void addTextEntry(const TextEntry& newText, const sf::Vector2f& position);
+    CVISION_API void addTextEntry(const TextEntry& newText,
+                                  const float& padding = 12.0f,
+                                  const bool& regular = true);
+    CVISION_API void addTextEntry(const TextEntry& newText,
+                                  const sf::Vector2f& position);
 
     inline const TextEntry& getTextInfo()
     {

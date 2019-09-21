@@ -65,27 +65,31 @@ void CVShape::setPosition(const sf::Vector2f& position)
 void CVShape::move(const sf::Vector2f& offset)
 {
 
+    if(bStatic)
+    {
+        return;
+    }
+
+    sf::Vector2i initPos = iDrawPos;
+
     CVElement::move(offset);
 
-    if(bStatic) return;
+    sf::Vector2f roundedOffset = sf::Vector2f(iDrawPos - initPos);
 
     if(bDropShadow)
     {
-        dropShadow.move(offset);
+        dropShadow.move(roundedOffset);
     }
 
     for(auto& sprite : spriteList)
     {
-        sprite.move(offset);
+        sprite.move(roundedOffset);
     }
 
     if(is_closable())
     {
         closeButton->move(offset);
     }
-
-    bounds.left += offset.x;
-    bounds.top += offset.y;
 
     shapeMask.move(offset);
     inactiveMask.move(offset);
@@ -98,8 +102,7 @@ void CVShape::setSize(const sf::Vector2f& newSize)
 //    bounds.top -= (newSize.y - getSize().y) * (getOrigin().y / bounds.height);
 //    origin.x = newSize.x / bounds.width;
 //    origin.y = newSize.y / bounds.height;
-    bounds.width = newSize.x;
-    bounds.height = newSize.y;
+    CVElement::setSize(newSize);
 }
 
 void CVShape::setMask(const sf::Texture* texture,

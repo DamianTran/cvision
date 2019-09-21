@@ -61,14 +61,16 @@ class CVEvent;
 
 class CVISION_API CVBox: public CVShape
 {
-protected:
-
-    std::vector<rounded_rectangle> panel;
-    std::vector<rounded_rectangle> mask;
-
-    bool bNoFill; // For proper fade handling
-
 public:
+
+    CVISION_API CVBox(CVView* View,
+                      const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f),
+                      const float& width = 0.0f,
+                      const float& height = 0.0f,
+                      const sf::Color& fillColor = sf::Color::Transparent,
+                      const sf::Color& borderColor = sf::Color::Transparent,
+                      const float& borderWidth = 0.0f);
+    ~CVBox() = default;
 
     void updateTriggers() { }
 
@@ -172,23 +174,17 @@ public:
     }
 
     void setFillTexture(sf::Texture* texture) override{ }
-    inline sf::Vector2f getSize() override
-    {
-        return sf::Vector2f(bounds.width, bounds.height);
-    }
 
     CVISION_API bool fadeComplete() const noexcept override;
 
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos) override;
 
-    CVISION_API CVBox(CVView* View,
-          sf::Vector2f position = sf::Vector2f(0.0f,0.0f),
-          float width = 0.0f,
-          float height = 0.0f,
-          sf::Color fillColor = sf::Color::Transparent,
-          sf::Color borderColor = sf::Color::Transparent,
-          float borderWidth = 0.0f);
-    ~CVBox() = default;
+protected:
+
+    std::vector<rounded_rectangle> panel;
+    std::vector<rounded_rectangle> mask;
+
+    bool bNoFill; // For proper fade handling
 
 };
 

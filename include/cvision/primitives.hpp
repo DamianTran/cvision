@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -58,20 +58,16 @@
 
 namespace cvis{
 
+/** @brief Multi-purpose primitive with 4 roundable edges. */
+
 class CVISION_API rounded_rectangle : public sf::Shape{
-private:
-
-    unsigned int pointCount, arcPointCount;
-    std::vector<sf::Vector2f> points;
-    float radius;
-
-    std::vector<bool> rounded_corner;
-
-    CVISION_API void trace(const sf::Vector2f& size,
-               const float& radius,
-               const unsigned int& apc);
-
 public:
+
+    CVISION_API rounded_rectangle(const sf::Vector2f& size,
+                      const float& rounding_radius = 0.0f,
+                      const sf::Color& fill_color = sf::Color::White,
+                      const unsigned int& arc_point_count = 10);
+    CVISION_API rounded_rectangle();
 
     virtual size_t getPointCount() const;
     virtual sf::Vector2f getPoint(size_t index) const;
@@ -87,6 +83,12 @@ public:
         setSize(sf::Vector2f(x, y));
     }
     CVISION_API sf::Vector2f getSize() const;
+
+    inline sf::Vector2f getPosition() const noexcept{ return fTruePos + getOrigin(); }
+    CVISION_API void move(const sf::Vector2f& distance) noexcept;
+    inline void move(const float& x, const float& y) noexcept{ move(sf::Vector2f(x, y)); }
+    inline void setPosition(const sf::Vector2f& newPos) noexcept{ move(newPos - getPosition()); }
+    inline void setPosition(const float& x, const float& y) noexcept{ setPosition(sf::Vector2f(x, y)); }
 
     inline const float& getRoundingRadius() const{
         return radius;
@@ -112,11 +114,25 @@ public:
 
     CVISION_API void setAllRoundState(const bool& state);
 
-    CVISION_API rounded_rectangle(const sf::Vector2f& size,
-                      const float& rounding_radius = 0.0f,
-                      const sf::Color& fill_color = sf::Color::White,
-                      const unsigned int& arc_point_count = 10);
-    CVISION_API rounded_rectangle();
+private:
+
+    unsigned int pointCount;
+    unsigned int arcPointCount;
+    std::vector<sf::Vector2f> points;
+    float radius;
+
+    sf::Vector2f fTruePos;
+    sf::Vector2i iDrawPos;
+
+    sf::Vector2f fTrueSize;
+    sf::Vector2i iDrawSize;
+
+    std::vector<bool> rounded_corner;
+
+    CVISION_API void trace(const sf::Vector2f& size,
+               const float& radius,
+               const unsigned int& apc);
+
 };
 
 }

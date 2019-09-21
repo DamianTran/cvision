@@ -418,10 +418,12 @@ float CVBox::getRotation(const unsigned char& flags) const
 }
 
 CVBox::CVBox(CVView* View,
-             sf::Vector2f position, float width, float height,
-             sf::Color fillColor,
-             sf::Color borderColor,
-             float borderWidth):
+             const sf::Vector2f& position,
+             const float& width,
+             const float& height,
+             const sf::Color& fillColor,
+             const sf::Color& borderColor,
+             const float& borderWidth):
     CVShape(View),
     bNoFill(false)
 {
@@ -431,21 +433,33 @@ CVBox::CVBox(CVView* View,
     colorTheme.emplace_back(fillColor);
     colorTheme.emplace_back(borderColor);
 
-    bounds = sf::FloatRect(position.x, position.y, width, height);
+    fTruePos = position;
+    iDrawPos.x = std::round(position.x);
+    iDrawPos.y = std::round(position.y);
+
+    fTrueSize.x = width;
+    fTrueSize.y = height;
+    iDrawSize.x = std::round(width);
+    iDrawSize.y = std::round(height);
+
+    bounds = sf::FloatRect(fTruePos.x,
+                           fTruePos.y,
+                           fTrueSize.x,
+                           fTrueSize.y);
 
     // Main panel
-    panel.emplace_back(sf::Vector2f(width, height));
-    panel.back().setPosition(position);
+    panel.emplace_back(sf::Vector2f(iDrawSize.x, iDrawSize.y));
+    panel.back().setPosition(round(fTruePos));
     panel.back().setFillColor(fillColor);
     panel.back().setOutlineThickness(borderWidth);
     panel.back().setOutlineColor(borderColor);
 
-    shapeMask.setSize(sf::Vector2f(width, height));
-    shapeMask.setPosition(position);
+    shapeMask.setSize(sf::Vector2f(iDrawSize.x, iDrawSize.y));
+    shapeMask.setPosition(round(fTruePos));
     shapeMask.setFillColor(sf::Color(255,255,255,0));
 
-    inactiveMask.setSize(sf::Vector2f(width, height));
-    inactiveMask.setPosition(position);
+    inactiveMask.setSize(sf::Vector2f(iDrawSize.x, iDrawSize.y));
+    inactiveMask.setPosition(round(fTruePos));
     inactiveMask.setFillColor(inactiveColor());
 }
 

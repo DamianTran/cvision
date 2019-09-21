@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -84,15 +84,24 @@ namespace cvis{
 class CVEvent;
 class CVView;
 
-class CVISION_API CVBasicViewPanel: public CVViewPanel{
+/** @brief Most basic inherited class of the abstract CVViewPanel.
+  *
+  * Allows for the drawing of a solid background panel, and
+  * the addition of drawable, updating sub-elements.
+  */
+
+class CVISION_API CVBasicViewPanel : public CVViewPanel{
 public:
 
     CVISION_API bool update(CVEvent& event, const sf::Vector2f& mousePos);
     CVISION_API bool draw(sf::RenderTarget* target);
 
-    CVISION_API CVBasicViewPanel(CVView* parentView, std::string panelTag = "", sf::Color backgroundColor = sf::Color::Transparent,
-                     const sf::Vector2f& size = sf::Vector2f(NAN, NAN), bool bFitToWindow = true,
-                     const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
+    CVISION_API CVBasicViewPanel(CVView* parentView,
+                                 const std::string& panelTag = "",
+                                 const sf::Color& backgroundColor = sf::Color::Transparent,
+                                 const sf::Vector2f& size = sf::Vector2f(NAN, NAN),
+                                 const bool& bFitToWindow = true,
+                                 const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
 };
 
 

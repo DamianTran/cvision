@@ -896,6 +896,18 @@ void CVView::stopAnim(sf::Transformable* element)
     }
 }
 
+void CVView::sendTrigger(CVElement * target, const string& signal)
+{
+    if(target)
+    {
+        target->receive_trigger(signal);
+    }
+    else
+    {
+        cout << "Warning (CVision): invalid trigger target" << '\n';
+    }
+}
+
 bool CVView::update(CVEvent& event, const sf::Vector2f& mousePos)
 {
     if(bClosed || (viewPort == nullptr) || !viewPort->isOpen()) return false;

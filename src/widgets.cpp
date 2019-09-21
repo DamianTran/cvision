@@ -427,13 +427,14 @@ bool CVScrollBar::scroll(const float& delta)
     }
     else
     {
-        scrollPos += delta;
+        scrollPos += std::round(delta);
     }
 
     return true;
 }
 
-void CVScrollBar::setAnchorPoints(const sf::Vector2f& anchorBegin, const sf::Vector2f& anchorEnd)
+void CVScrollBar::setAnchorPoints(const sf::Vector2f& anchorBegin,
+                                  const sf::Vector2f& anchorEnd)
 {
     this->anchorBegin = anchorBegin;
     this->anchorEnd = anchorEnd;
@@ -571,10 +572,23 @@ void CVScrollBar::setScrollOffset(const float& newOffset)
                   CV_OBJ_ANIM_SLIDE, true);
 }
 
-CVProgressBar::CVProgressBar(CVView* View, sf::Vector2f position, float width, float height,
-                             TextEntry textInfo, sf::Color fillColor, sf::Color progressColor,
-                             sf::Color borderColor, float borderWidth):
-    CVTextBox(View, position, width, height, textInfo, fillColor, borderColor, borderWidth),
+CVProgressBar::CVProgressBar(CVView* View,
+                             const sf::Vector2f& position,
+                             const float& width,
+                             const float& height,
+                             const TextEntry& textInfo,
+                             const sf::Color& fillColor,
+                             const sf::Color& progressColor,
+                             const sf::Color& borderColor,
+                             const float& borderWidth):
+    CVTextBox(View,
+              position,
+              width,
+              height,
+              textInfo,
+              fillColor,
+              borderColor,
+              borderWidth),
     progress(0.0f),
     animSpeed(5.0f),
     progressColor(colorTheme.front())

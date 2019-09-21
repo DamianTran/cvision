@@ -517,6 +517,7 @@ public:
     CVISION_API void setBackgroundString(const std::string& newString);
     CVISION_API void setTypeString(const std::string& newString);
     CVISION_API void setTypeString(std::wstring newString);
+    CVISION_API void clearTypeString();
 
     CVISION_API std::string getTypeString() const;
     inline std::string getDisplayString() const
@@ -547,13 +548,7 @@ public:
     CVISION_API bool cursor_at_word_end() const;
     CVISION_API bool cursor_at_word_begin() const;
 
-    inline void move(const sf::Vector2f& distance)
-    {
-        CVTextBox::move(distance);
-        cursor.move(distance);
-        initBounds.left += distance.x;
-        initBounds.top += distance.y;
-    }
+    CVISION_API void move(const sf::Vector2f& distance);
     inline void move(const float& x, const float& y)
     {
         move(sf::Vector2f(x, y));

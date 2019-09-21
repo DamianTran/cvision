@@ -111,6 +111,7 @@ CVDropDownBox::CVDropDownBox(CVView * View,
 
     dropDownDialog->setRounding(rounding, 12, dialogRoundingStates);
     dropDownDialog->setClearOnKeyboardEntry(false);
+    dropDownDialog->setHighlightableStatus(false);
 
     dropDownBtn = new CVButton(View,
                                 sf::Vector2f(position.x + fDialogWidth + outlineThickness,
@@ -187,7 +188,19 @@ void CVDropDownBox::addMenuItem(const std::string& newEntry)
     newMenuItem->setHighlightColor(highlightColor);
 
     dropDownMenu->addPanelElement(newMenuItem, newEntry);
+    selection_list.emplace_back(newEntry);
 
+}
+
+void CVDropDownBox::setList(const vector<string>& list_elements) noexcept
+{
+    dropDownMenu->clear();
+    selection_list.clear();
+
+    for(auto& element : list_elements)
+    {
+        addMenuItem(element);
+    }
 }
 
 string CVDropDownBox::getSelected() const

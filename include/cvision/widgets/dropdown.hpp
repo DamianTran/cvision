@@ -86,6 +86,7 @@ public:
 
     inline const std::vector<std::string>& getMenu() const noexcept{ return selection_list; }
     CVISION_API void addMenuItem(const std::string& newEntry);
+    CVISION_API void setList(const std::vector<std::string>& list_elements) noexcept;
 
     CVISION_API std::string getSelected() const;
     CVISION_API void setSelected(const std::string& value);

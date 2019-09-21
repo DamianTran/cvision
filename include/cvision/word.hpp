@@ -22,10 +22,10 @@
 //
 // LEGAL:
 //
-// Modification and redistribution of CVision is freely 
-// permissible under any circumstances.  Attribution to the 
+// Modification and redistribution of CVision is freely
+// permissible under any circumstances.  Attribution to the
 // Author ("Damian Tran") is appreciated but not necessary.
-// 
+//
 // CVision is an open source library that is provided to you
 // (the "User") AS IS, with no implied or explicit
 // warranties.  By using CVision, you acknowledge and agree
@@ -94,6 +94,7 @@ public:
     CVISION_API std::string getText() const;
     CVISION_API void setText(const std::vector<std::string>& newText);
     CVISION_API void setText(const unsigned int& index, const std::string& newText);
+    CVISION_API void clearText();
     inline size_t numTextElements() const noexcept{ return typeElements.size(); }
 
     CVISION_API void setTextSize(const unsigned int& newSize);

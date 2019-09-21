@@ -55,15 +55,24 @@ namespace cvis
 
 class CVEvent;
 
-class CVISION_API CVViewPanel: public CVTextBox
+/** @brief Abstract parent for common view panel class
+  *
+  * Holder for sub-elements and panels: facilitates
+  * concerted behaviour between all encompassed
+  * CVElement members.  Transduces draw and update signals
+  * to all child members.
+  */
+
+class CVISION_API CVViewPanel : public CVTextBox
 {
 public:
 
-    CVISION_API CVViewPanel(CVView* parentView, std::string panelTag = "",
-                sf::Color backgroundColor = sf::Color::Transparent,
-                const sf::Vector2f& size = sf::Vector2f(NAN, NAN),
-                bool fitToWindow = true,
-                const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
+    CVISION_API CVViewPanel(CVView* parentView,
+                            const std::string& panelTag = "",
+                            const sf::Color& backgroundColor = sf::Color::Transparent,
+                            const sf::Vector2f& size = sf::Vector2f(NAN, NAN),
+                            const bool& fitToWindow = true,
+                            const sf::Vector2f& position = sf::Vector2f(0.0f,0.0f));
 
     inline const std::vector<CVElement*>& getElements() const
     {
@@ -130,7 +139,7 @@ public:
     CVISION_API void setPanelSize(const sf::Vector2f& newSize);
     inline void setPanelSize(const float& x, const float& y)
     {
-        setSize(sf::Vector2f(x, y));
+        setPanelSize(sf::Vector2f(x, y));
     }
 
     CVISION_API virtual void fitElements(const bool& fitX = true,
@@ -169,7 +178,7 @@ protected:
     bool                        bFadeMembersOnly;
     bool                        bReverseDrawOrder;     // Reverse the panel draw order
 
-    sf::Sprite*                 dragShadow;     // If drag-and-drop, a sprite for the item shadow
+    sf::Sprite*                 dragShadow;            // If drag-and-drop, a sprite for the item shadow
 
     CVISION_API virtual void updateBounds() override;
     CVISION_API void updatePanels(CVEvent& event, const sf::Vector2f& mousePos);

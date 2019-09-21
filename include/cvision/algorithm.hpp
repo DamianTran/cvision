@@ -178,6 +178,18 @@ template<typename T> std::ostream& operator<<(std::ostream& output, const sf::Re
 // Vector2 arithmetic and logical operators
 
 template<typename T>
+sf::Vector2<T> round(const sf::Vector2<T>& v2)
+{
+    return sf::Vector2<T>(std::round(v2.x), std::round(v2.y));
+}
+
+template<typename T>
+sf::Vector2<T> Vector2Rounded(const T& x, const T& y)
+{
+    return sf::Vector2<T>(std::round(x), std::round(y));
+}
+
+template<typename T>
 bool operator<(const sf::Vector2<T>& first, const sf::Vector2<T>& second){
     return(first.x*first.y < second.x*second.y);
 }
@@ -199,10 +211,10 @@ bool operator>=(const sf::Vector2<T>& first, const sf::Vector2<T>& second){
 
 template<typename T> bool contains(const sf::Rect<T>& inner, const sf::Rect<T>& outer){
     return(
-        (inner.left > outer.left) &&
-        (inner.top > outer.top) &&
-        (inner.left + inner.width < outer.left + outer.width) &&
-        (inner.top + inner.height < outer.top + outer.height));
+        (inner.left >= outer.left) &&
+        (inner.top >= outer.top) &&
+        (inner.left + inner.width <= outer.left + outer.width) &&
+        (inner.top + inner.height <= outer.top + outer.height));
 }
 
 CVISION_API void alignText(std::vector<sf::Text>& textItems, std::vector<sf::Vector2f> coords);
