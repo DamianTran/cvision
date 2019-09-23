@@ -77,6 +77,12 @@ namespace cvis
 class CVEvent;
 class CVView;
 
+/** @brief CVision text information class.
+  *
+  * Passed to any CVElement requiring text content.  Wraps
+  * related text arguments together and supplies relevant defaults.
+  */
+
 class CVISION_API TextEntry
 {
 public:
@@ -119,6 +125,12 @@ public:
 
 };
 
+/** @brief CVision text box.
+  *
+  * Inherits from CVBox, allows for the addition and automatic
+  * positioning of text within or around the box frame.
+  */
+
 class CVISION_API CVTextBox : public CVBox
 {
 public:
@@ -160,7 +172,9 @@ public:
     CVISION_API void setString(const std::wstring& newString);
 
     CVISION_API void fitText(const bool& fitX = true,
-                             const bool& fitY = true); // Fit the background panel to the text
+                             const bool& fitY = true,
+                             const sf::Vector2f& padding =
+                             sf::Vector2f(0.0f, 0.0f)); /**< @brief Fit the background panel to the text. */
 
     inline void setTextTemplate(const TextEntry& textInfo)
     {
@@ -251,9 +265,10 @@ protected:
 
 };
 
-/*
-    Plain text object inherits from CVTextBox in order to
-    maintain box-like traits (wrapping, boundaries, etc)
+/** @brief Plain text object.
+  *
+  * Inherits from CVTextBox in order to
+  * maintain bounded text traits (wrapping, boundaries, etc).
 */
 
 class CVISION_API CVText : public CVTextBox

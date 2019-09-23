@@ -223,8 +223,8 @@ EXPORTS
     _ZN4cvis11CVViewPanel7setSizeERKN2sf7Vector2IfEE @222
     _ZN4cvis11CVViewPanel8setFocusERKb @223
     _ZN4cvis11CVViewPanel9setExpandERKb @224
-    _ZN4cvis11CVViewPanelC1EPNS_6CVViewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEN2sf5ColorERKNS9_7Vector2IfEEbSE_ @225
-    _ZN4cvis11CVViewPanelC2EPNS_6CVViewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEN2sf5ColorERKNS9_7Vector2IfEEbSE_ @226
+    _ZN4cvis11CVViewPanelC1EPNS_6CVViewERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN2sf5ColorERKNSB_7Vector2IfEERKbSI_ @225
+    _ZN4cvis11CVViewPanelC2EPNS_6CVViewERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN2sf5ColorERKNSB_7Vector2IfEERKbSI_ @226
     _ZN4cvis11CVViewPanelD0Ev @227
     _ZN4cvis11CVViewPanelD1Ev @228
     _ZN4cvis11CVViewPanelD2Ev @229
@@ -360,8 +360,8 @@ EXPORTS
     _ZN4cvis13CVProgressBar16setProgressColorERKN2sf5ColorE @359
     _ZN4cvis13CVProgressBar6updateERNS_7CVEventERKN2sf7Vector2IfEE @360
     _ZN4cvis13CVProgressBar9alignTextEv @361
-    _ZN4cvis13CVProgressBarC1EPNS_6CVViewEN2sf7Vector2IfEEffNS_9TextEntryENS3_5ColorES7_S7_f @362
-    _ZN4cvis13CVProgressBarC2EPNS_6CVViewEN2sf7Vector2IfEEffNS_9TextEntryENS3_5ColorES7_S7_f @363
+    _ZN4cvis13CVProgressBarC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS_9TextEntryERKNS3_5ColorESF_SF_S9_ @362
+    _ZN4cvis13CVProgressBarC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS_9TextEntryERKNS3_5ColorESF_SF_S9_ @363
     _ZN4cvis13CVScatterPlot11RegLineInfo14getLinearModelERKSt6vectorIfSaIfEES6_ @364
     _ZN4cvis13CVScatterPlot6updateERNS_7CVEventERKN2sf7Vector2IfEE @365
     _ZN4cvis13CVScatterPlotC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS3_5ColorESC_SC_S9_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESK_SK_ @366
@@ -542,8 +542,8 @@ EXPORTS
     _ZN4cvis15copyToClipboardERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @541
     _ZN4cvis16CVBasicViewPanel4drawEPN2sf12RenderTargetE @542
     _ZN4cvis16CVBasicViewPanel6updateERNS_7CVEventERKN2sf7Vector2IfEE @543
-    _ZN4cvis16CVBasicViewPanelC1EPNS_6CVViewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEN2sf5ColorERKNS9_7Vector2IfEEbSE_ @544
-    _ZN4cvis16CVBasicViewPanelC2EPNS_6CVViewENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEN2sf5ColorERKNS9_7Vector2IfEEbSE_ @545
+    _ZN4cvis16CVBasicViewPanelC1EPNS_6CVViewERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN2sf5ColorERKNSB_7Vector2IfEERKbSI_ @544
+    _ZN4cvis16CVBasicViewPanelC2EPNS_6CVViewERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN2sf5ColorERKNSB_7Vector2IfEERKbSI_ @545
     _ZN4cvis16CVCalendarRecord10set_repeatERKN6hyperC9TimePointE @546
     _ZN4cvis16CVCalendarRecord11addReminderERKN6hyperC9TimePointE @547
     _ZN4cvis16CVCalendarRecord11setLocationERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @548
@@ -577,587 +577,591 @@ EXPORTS
     _ZN4cvis17rounded_rectangle18setTopRightRoundedERKb @576
     _ZN4cvis17rounded_rectangle20setBottomLeftRoundedERKb @577
     _ZN4cvis17rounded_rectangle21setBottomRightRoundedERKb @578
-    _ZN4cvis17rounded_rectangle5traceERKN2sf7Vector2IfEERKfRKj @579
-    _ZN4cvis17rounded_rectangle7setSizeERKN2sf7Vector2IfEE @580
-    _ZN4cvis17rounded_rectangleC1ERKN2sf7Vector2IfEERKfRKNS1_5ColorERKj @581
-    _ZN4cvis17rounded_rectangleC1Ev @582
-    _ZN4cvis17rounded_rectangleC2ERKN2sf7Vector2IfEERKfRKNS1_5ColorERKj @583
-    _ZN4cvis17rounded_rectangleC2Ev @584
-    _ZN4cvis18check_availabilityERNS_10CVScheduleERKN6hyperC9TimePointES5_ @585
-    _ZN4cvis5CVApp10mainUpdateEv @586
-    _ZN4cvis5CVApp11clearEventsEv @587
-    _ZN4cvis5CVApp7addViewEPNS_6CVViewERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @588
-    _ZN4cvis5CVApp8closeAllEv @589
-    _ZN4cvis5CVApp8getEventERNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @590
-    _ZN4cvis5CVApp8initViewEjjNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEj @591
-    _ZN4cvis5CVApp9closeViewERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @592
-    _ZN4cvis5CVApp9closeViewEj @593
-    _ZN4cvis5CVApp9pushEventERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @594
-    _ZN4cvis5CVAppC1EjffRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @595
-    _ZN4cvis5CVAppC2EjffRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @596
-    _ZN4cvis5CVAppD1Ev @597
-    _ZN4cvis5CVAppD2Ev @598
-    _ZN4cvis5CVBox10setTextureEPKN2sf7TextureERKNS1_4RectIiEE @599
-    _ZN4cvis5CVBox10setTextureERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN2sf4RectIiEE @600
-    _ZN4cvis5CVBox11setPositionERKN2sf7Vector2IfEE @601
-    _ZN4cvis5CVBox11setRotationERKfRKhRKN2sf7Vector2IfEE @602
-    _ZN4cvis5CVBox11setRoundingERKfRKjRKSt6vectorIbSaIbEE @603
-    _ZN4cvis5CVBox12setClearFillERKb @604
-    _ZN4cvis5CVBox12setFillColorERKN2sf5ColorE @605
-    _ZN4cvis5CVBox12updateBoundsEv @606
-    _ZN4cvis5CVBox14setSpriteColorERKN2sf5ColorE @607
-    _ZN4cvis5CVBox15setOutlineColorERKN2sf5ColorE @608
-    _ZN4cvis5CVBox19setOutlineThicknessERKf @609
-    _ZN4cvis5CVBox4drawEPN2sf12RenderTargetE @610
-    _ZN4cvis5CVBox4moveERKN2sf7Vector2IfEE @611
-    _ZN4cvis5CVBox6rotateERKfRKhRKN2sf7Vector2IfEE @612
-    _ZN4cvis5CVBox6updateERNS_7CVEventERKN2sf7Vector2IfEE @613
-    _ZN4cvis5CVBox7setSizeERKN2sf7Vector2IfEE @614
-    _ZN4cvis5CVBox8setColorERKN2sf5ColorE @615
-    _ZN4cvis5CVBox9highlightERKb @616
-    _ZN4cvis5CVBox9setExpandERKb @617
-    _ZN4cvis5CVBoxC1EPNS_6CVViewEN2sf7Vector2IfEEffNS3_5ColorES6_f @618
-    _ZN4cvis5CVBoxC2EPNS_6CVViewEN2sf7Vector2IfEEffNS3_5ColorES6_f @619
-    _ZN4cvis5sleepEf @620
-    _ZN4cvis6CVAnim10changePathERKSt6vectorINS_16CVAnimCheckpointESaIS2_EE @621
-    _ZN4cvis6CVAnim14addCheckpointsERKSt6vectorINS_16CVAnimCheckpointESaIS2_EEb @622
-    _ZN4cvis6CVAnim14nextCheckpointEv @623
-    _ZN4cvis6CVAnim16checkPassiveAnimEv @624
-    _ZN4cvis6CVAnim16resetPassiveAnimEv @625
-    _ZN4cvis6CVAnim23checkpointDistanceValidERKf @626
-    _ZN4cvis6CVAnim9animFrameERKf @627
-    _ZN4cvis6CVAnimC1EPN2sf13TransformableERKSt6vectorINS_16CVAnimCheckpointESaIS5_EE @628
-    _ZN4cvis6CVAnimC2EPN2sf13TransformableERKSt6vectorINS_16CVAnimCheckpointESaIS5_EE @629
-    _ZN4cvis6CVAnimD1Ev @630
-    _ZN4cvis6CVAnimD2Ev @631
-    _ZN4cvis6CVDataC1EPKvRKyRKhS6_RKN2sf8Keyboard3KeyE @632
-    _ZN4cvis6CVDataC1ERKS0_ @633
-    _ZN4cvis6CVDataC2EPKvRKyRKhS6_RKN2sf8Keyboard3KeyE @634
-    _ZN4cvis6CVDataC2ERKS0_ @635
-    _ZN4cvis6CVDataD1Ev @636
-    _ZN4cvis6CVDataD2Ev @637
-    _ZN4cvis6CVDataaSERKS0_ @638
-    _ZN4cvis6CVPlot10getPlotPosERKN2sf7Vector2IfEE @639
-    _ZN4cvis6CVPlot10getPlotPosERKfS2_ @640
-    _ZN4cvis6CVPlot10removeDataEjj @641
-    _ZN4cvis6CVPlot10removeDataEjjj @642
-    _ZN4cvis6CVPlot11addPlotTextERKNS_9TextEntryERKN2sf7Vector2IfEE @643
-    _ZN4cvis6CVPlot11getPlotXPosERKf @644
-    _ZN4cvis6CVPlot11getPlotYPosERKf @645
-    _ZN4cvis6CVPlot11getScalePosERKN2sf7Vector2IfEE @646
-    _ZN4cvis6CVPlot11setPositionERKN2sf7Vector2IfEE @647
-    _ZN4cvis6CVPlot12getScaleXPosERKf @648
-    _ZN4cvis6CVPlot12getScaleYPosERKf @649
-    _ZN4cvis6CVPlot12setAxisColorERKN2sf5ColorE @650
-    _ZN4cvis6CVPlot12updateBoundsEv @651
-    _ZN4cvis6CVPlot14select_indicesERKSt6vectorIjSaIjEE @652
-    _ZN4cvis6CVPlot16setAxisLineColorERKN2sf5ColorE @653
-    _ZN4cvis6CVPlot17get_verbal_x_axisEv @654
-    _ZN4cvis6CVPlot17setAxisLabelColorERKN2sf5ColorE @655
-    _ZN4cvis6CVPlot18get_numeric_x_axisEv @656
-    _ZN4cvis6CVPlot18get_numeric_y_axisEv @657
-    _ZN4cvis6CVPlot18removeDataOutliersEv @658
-    _ZN4cvis6CVPlot20setPlotSpriteTextureERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @659
-    _ZN4cvis6CVPlot4axis12setLineColorERKN2sf5ColorE @660
-    _ZN4cvis6CVPlot4axis13setLabelColorERKN2sf5ColorE @661
-    _ZN4cvis6CVPlot4axis16getNumericLabelsERKj @662
-    _ZN4cvis6CVPlot4axis18updateRenderLabelsEv @663
-    _ZN4cvis6CVPlot4axis6updateEv @664
-    _ZN4cvis6CVPlot4axisC1ERKfRKjPS0_RKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISD_EERKhS3_S3_RKN2sf5ColorERKNS_9TextEntryES3_ @665
-    _ZN4cvis6CVPlot4axisC2ERKfRKjPS0_RKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISD_EERKhS3_S3_RKN2sf5ColorERKNS_9TextEntryES3_ @666
-    _ZN4cvis6CVPlot4drawEPN2sf12RenderTargetE @667
-    _ZN4cvis6CVPlot4moveERKN2sf7Vector2IfEE @668
-    _ZN4cvis6CVPlot6updateERNS_7CVEventERKN2sf7Vector2IfEE @669
-    _ZN4cvis6CVPlot7Dataset12rm_dimensionERKj @670
-    _ZN4cvis6CVPlot7Dataset15getLabelledDataERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @671
-    _ZN4cvis6CVPlot7Dataset15getSubsetPointsEv @672
-    _ZN4cvis6CVPlot7Dataset17getLabelledPointsERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @673
-    _ZN4cvis6CVPlot7Dataset6updateEv @674
-    _ZN4cvis6CVPlot7DatasetC1ERKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS8_EERKS2_IS2_IfSaIfEESaISE_EERKS2_IS2_IjSaIjEESaISK_EERKS8_PS0_ @675
-    _ZN4cvis6CVPlot7DatasetC1ERKSt6vectorIS2_IfSaIfEESaIS4_EERKS2_INSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISE_EERKS2_IS2_IjSaIjEESaISK_EERKSE_PS0_ @676
-    _ZN4cvis6CVPlot7DatasetC1ERKSt6vectorIS2_IfSaIfEESaIS4_EERKS2_IjSaIjEERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKS2_ISI_SaISI_EEPS0_ @677
-    _ZN4cvis6CVPlot7DatasetC1ERKSt6vectorIfSaIfEES6_RKS2_IjSaIjEERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKS2_ISG_SaISG_EEPS0_ @678
-    _ZN4cvis6CVPlot7DatasetC2ERKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS8_EERKS2_IS2_IfSaIfEESaISE_EERKS2_IS2_IjSaIjEESaISK_EERKS8_PS0_ @679
-    _ZN4cvis6CVPlot7DatasetC2ERKSt6vectorIS2_IfSaIfEESaIS4_EERKS2_INSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISE_EERKS2_IS2_IjSaIjEESaISK_EERKSE_PS0_ @680
-    _ZN4cvis6CVPlot7DatasetC2ERKSt6vectorIS2_IfSaIfEESaIS4_EERKS2_IjSaIjEERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKS2_ISI_SaISI_EEPS0_ @681
-    _ZN4cvis6CVPlot7DatasetC2ERKSt6vectorIfSaIfEES6_RKS2_IjSaIjEERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKS2_ISG_SaISG_EEPS0_ @682
-    _ZN4cvis6CVPlot7addDataERKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS7_EERKS1_IS1_IfSaIfEESaISD_EERKS1_IS1_IjSaIjEESaISJ_EERKS7_SB_ @683
-    _ZN4cvis6CVPlot7addDataERKSt6vectorIS1_IfSaIfEESaIS3_EERKS1_INSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISD_EERKS1_IS1_IjSaIjEESaISJ_EERKSD_ @684
-    _ZN4cvis6CVPlot7addDataERKSt6vectorIS1_IfSaIfEESaIS3_EERKS1_IjSaIjEERKS1_IS1_INSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISH_EESaISJ_EERKSH_ @685
-    _ZN4cvis6CVPlot7addDataERKSt6vectorIfSaIfEES5_RKS1_IjSaIjEERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKS1_ISF_SaISF_EE @686
-    _ZN4cvis6CVPlot9clearDataEj @687
-    _ZN4cvis6CVPlot9clearDataEv @688
-    _ZN4cvis6CVPlot9dataPoint12setSelectionERKb @689
-    _ZN4cvis6CVPlot9dataPoint6updateEv @690
-    _ZN4cvis6CVPlot9dataPointC1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKfPNS0_7DatasetERKjbRKN2sf7Vector2IfEE @691
-    _ZN4cvis6CVPlot9dataPointC1ERKSt6vectorIfSaIfEEPNS0_7DatasetERKjRKS2_INSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISG_EEbRKN2sf7Vector2IfEE @692
-    _ZN4cvis6CVPlot9dataPointC1ERKfRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEPNS0_7DatasetERKjbRKN2sf7Vector2IfEE @693
-    _ZN4cvis6CVPlot9dataPointC1ERKfS3_PNS0_7DatasetERKjRKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISE_EEbRKN2sf7Vector2IfEE @694
-    _ZN4cvis6CVPlot9dataPointC2ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKfPNS0_7DatasetERKjbRKN2sf7Vector2IfEE @695
-    _ZN4cvis6CVPlot9dataPointC2ERKSt6vectorIfSaIfEEPNS0_7DatasetERKjRKS2_INSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISG_EEbRKN2sf7Vector2IfEE @696
-    _ZN4cvis6CVPlot9dataPointC2ERKfRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEPNS0_7DatasetERKjbRKN2sf7Vector2IfEE @697
-    _ZN4cvis6CVPlot9dataPointC2ERKfS3_PNS0_7DatasetERKjRKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISE_EEbRKN2sf7Vector2IfEE @698
-    _ZN4cvis6CVPlotC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS3_5ColorESC_SC_S9_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESK_ @699
-    _ZN4cvis6CVPlotC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS3_5ColorESC_SC_S9_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESK_ @700
-    _ZN4cvis6CVTextC1EPNS_6CVViewERKNS_9TextEntryERKN2sf7Vector2IfEESA_RKb @701
-    _ZN4cvis6CVTextC2EPNS_6CVViewERKNS_9TextEntryERKN2sf7Vector2IfEESA_RKb @702
-    _ZN4cvis6CVView10getTextureERN2sf7TextureE @703
-    _ZN4cvis6CVView10setVisibleEjb @704
-    _ZN4cvis6CVView11clearCursorEv @705
-    _ZN4cvis6CVView11clearShadowEv @706
-    _ZN4cvis6CVView11sendTriggerEPNS_9CVElementERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @707
-    _ZN4cvis6CVView11setDropableERKb @708
-    _ZN4cvis6CVView11setPositionERKN2sf7Vector2IiEE @709
-    _ZN4cvis6CVView12setTopMarginERKf @710
-    _ZN4cvis6CVView14activateWindowEv @711
-    _ZN4cvis6CVView14getElementByIdERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @712
-    _ZN4cvis6CVView14getTaggedPanelENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @713
-    _ZN4cvis6CVView14isolateVisibleEj @714
-    _ZN4cvis6CVView15setVisiblePanelENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @715
-    _ZN4cvis6CVView15setVisiblePanelEPNS_11CVViewPanelE @716
-    _ZN4cvis6CVView15setVisiblePanelEj @717
-    _ZN4cvis6CVView16handleViewEventsERNS_7CVEventE @718
-    _ZN4cvis6CVView17setScreenPositionEN2sf7Vector2IiEE @719
-    _ZN4cvis6CVView19setDefaultViewScaleERKfS2_ @720
-    _ZN4cvis6CVView4drawEPN2sf12RenderTargetE @721
-    _ZN4cvis6CVView4initEv @722
-    _ZN4cvis6CVView5closeEv @723
-    _ZN4cvis6CVView6updateERNS_7CVEventERKN2sf7Vector2IfEE @724
-    _ZN4cvis6CVView7getSizeEv @725
-    _ZN4cvis6CVView7restoreEv @726
-    _ZN4cvis6CVView8addPanelEPNS_11CVViewPanelENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @727
-    _ZN4cvis6CVView8containsERKNS_9CVElementE @728
-    _ZN4cvis6CVView8maximizeEv @729
-    _ZN4cvis6CVView8minimizeEv @730
-    _ZN4cvis6CVView8setStateEh @731
-    _ZN4cvis6CVView8stopAnimEPN2sf13TransformableE @732
-    _ZN4cvis6CVView9setCursorEPKN2sf7TextureERKNS1_7Vector2IfEERKNS1_5ColorES8_ @733
-    _ZN4cvis6CVView9setCursorERKN2sf6Cursor4TypeE @734
-    _ZN4cvis6CVView9setCursorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN2sf7Vector2IfEERKNS9_5ColorESD_ @735
-    _ZN4cvis6CVView9setShadowEPKN2sf7TextureERKNS1_7Vector2IfEERKhS8_ @736
-    _ZN4cvis6CVView9setShadowERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN2sf7Vector2IfEERKhSD_ @737
-    _ZN4cvis6CVView9setShadowERNS_9CVElementERKhRKf @738
-    _ZN4cvis6CVViewC1EjjNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEjPNS_5CVAppERKN2sf7Vector2IfEERKNS9_5ColorE @739
-    _ZN4cvis6CVViewC2EjjNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEjPNS_5CVAppERKN2sf7Vector2IfEERKNS9_5ColorE @740
-    _ZN4cvis6CVViewD0Ev @741
-    _ZN4cvis6CVViewD1Ev @742
-    _ZN4cvis6CVViewD2Ev @743
-    _ZN4cvis6CVViewixENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @744
-    _ZN4cvis7CVBrush10setVisibleERKb @745
-    _ZN4cvis7CVBrush11drawToImageERN2sf5ImageERKNS1_7Vector2IiEE @746
-    _ZN4cvis7CVBrush11drawToImageERN2sf5ImageERKSt6vectorINS1_7Vector2IiEESaIS6_EE @747
-    _ZN4cvis7CVBrush11drawToImageERN2sf5ImageERKSt6vectorIS4_IiSaIiEESaIS6_EE @748
-    _ZN4cvis7CVBrush11setPositionERKN2sf7Vector2IfEE @749
-    _ZN4cvis7CVBrush15setPrimaryColorERKN2sf5ColorE @750
-    _ZN4cvis7CVBrush17setSecondaryColorERKN2sf5ColorE @751
-    _ZN4cvis7CVBrush4drawEPN2sf12RenderTargetE @752
-    _ZN4cvis7CVBrush4moveERKN2sf7Vector2IfEE @753
-    _ZN4cvis7CVBrush5scaleERKN2sf7Vector2IfEE @754
-    _ZN4cvis7CVBrush5scaleERKf @755
-    _ZN4cvis7CVBrush7setIconEPKN2sf7TextureE @756
-    _ZN4cvis7CVBrush7setTypeERKNS0_11CVBrushTypeE @757
-    _ZN4cvis7CVBrush9clearIconEv @758
-    _ZN4cvis7CVBrush9setEffectERKNS0_13CVBrushEffectE @759
-    _ZN4cvis7CVBrushC1ERKN2sf5ColorERKfS6_S6_RKNS0_11CVBrushTypeERKNS0_13CVBrushEffectE @760
-    _ZN4cvis7CVBrushC2ERKN2sf5ColorERKfS6_S6_RKNS0_11CVBrushTypeERKNS0_13CVBrushEffectE @761
-    _ZN4cvis7CVEvent11releaseDataERKh @762
-    _ZN4cvis7CVEvent12captureFocusEv @763
-    _ZN4cvis7CVEvent12captureMouseEv @764
-    _ZN4cvis7CVEvent12keyIsPressedERKc @765
-    _ZN4cvis7CVEvent12releaseFocusEv @766
-    _ZN4cvis7CVEvent18moveCapturedShapesEv @767
-    _ZN4cvis7CVEvent5resetEv @768
-    _ZN4cvis7CVEvent8tossDataEv @769
-    _ZN4cvis7CVEvent9checkCondERKhRKN2sf8Keyboard3KeyE @770
-    _ZN4cvis7CVEvent9clearKeysEv @771
-    _ZN4cvis7CVEvent9focusFreeEv @772
-    _ZN4cvis7CVEventC1Ev @773
-    _ZN4cvis7CVEventC2Ev @774
-    _ZN4cvis7CVShape11setPositionERKN2sf7Vector2IfEE @775
-    _ZN4cvis7CVShape12setMaskAlphaERKh @776
-    _ZN4cvis7CVShape14setSpriteColorERKN2sf5ColorE @777
-    _ZN4cvis7CVShape4drawEPN2sf12RenderTargetE @778
-    _ZN4cvis7CVShape4moveERKN2sf7Vector2IfEE @779
-    _ZN4cvis7CVShape6updateERNS_7CVEventERKN2sf7Vector2IfEE @780
-    _ZN4cvis7CVShape7setMaskEPKN2sf7TextureERKNS1_5ColorE @781
-    _ZN4cvis7CVShape7setSizeERKN2sf7Vector2IfEE @782
-    _ZN4cvis7CVShape8hideMaskEv @783
-    _ZN4cvis7CVShape8showMaskEv @784
-    _ZN4cvis7CVShapeC1EPNS_6CVViewE @785
-    _ZN4cvis7CVShapeC2EPNS_6CVViewE @786
-    _ZN4cvis7sigFigsB5cxx11ERKf @787
-    _ZN4cvis7sigFigsERNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @788
-    _ZN4cvis8CVButton14setFadeOnClickERKbRKhS4_ @789
-    _ZN4cvis8CVButton15setStateTextureERKjRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @790
-    _ZN4cvis8CVButton4drawEPN2sf12RenderTargetE @791
-    _ZN4cvis8CVButton6toggleEv @792
-    _ZN4cvis8CVButton6updateERNS_7CVEventERKN2sf7Vector2IfEE @793
-    _ZN4cvis8CVButton7setSizeERKN2sf7Vector2IfEE @794
-    _ZN4cvis8CVButton8setColorERKN2sf5ColorERKj @795
-    _ZN4cvis8CVButton8setStateERKj @796
-    _ZN4cvis8CVButton9setFadeInERKbRKhS4_ @797
-    _ZN4cvis8CVButtonC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKjSJ_RKbPFvSJ_S2_E @798
-    _ZN4cvis8CVButtonC1EPNS_6CVViewERKN2sf7Vector2IfEEffRKNS_9TextEntryERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEENS3_5ColorESJ_f @799
-    _ZN4cvis8CVButtonC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKjSJ_RKbPFvSJ_S2_E @800
-    _ZN4cvis8CVButtonC2EPNS_6CVViewERKN2sf7Vector2IfEEffRKNS_9TextEntryERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEENS3_5ColorESJ_f @801
-    _ZN4cvis8modulateERN2sf5ImageERKNS0_5ColorE @802
-    _ZN4cvis8wrapTextERN2sf4TextERKNS0_4RectIfEERKf @803
-    _ZN4cvis9CVElement10getTextureERN2sf7TextureERKNS1_5ColorE @804
-    _ZN4cvis9CVElement10lastSpriteEv @805
-    _ZN4cvis9CVElement11firstSpriteEv @806
-    _ZN4cvis9CVElement11sendTriggerEPS0_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @807
-    _ZN4cvis9CVElement11setClosableERKbPS0_ @808
-    _ZN4cvis9CVElement12createShadowERKhRKf @809
-    _ZN4cvis9CVElement12removeShadowEv @810
-    _ZN4cvis9CVElement12sendTriggersEv @811
-    _ZN4cvis9CVElement12take_triggerERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @812
-    _ZN4cvis9CVElement12updateBoundsEv @813
-    _ZN4cvis9CVElement13removeSpritesERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @814
-    _ZN4cvis9CVElement13setDropShadowERKbRKiRKhRKN2sf7Vector2IfEESB_ @815
-    _ZN4cvis9CVElement13setElasticityERKf @816
-    _ZN4cvis9CVElement13setViewCursorEPKN2sf7TextureERKNS1_7Vector2IfEERKNS1_5ColorES8_ @817
-    _ZN4cvis9CVElement13setViewCursorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN2sf7Vector2IfEERKNS9_5ColorESD_ @818
-    _ZN4cvis9CVElement14getElementByIdERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @819
-    _ZN4cvis9CVElement14scale_velocityERKf @820
-    _ZN4cvis9CVElement14setSpriteScaleERKf @821
-    _ZN4cvis9CVElement15setDrawClippingERKb @822
-    _ZN4cvis9CVElement4drawEPN2sf12RenderTargetE @823
-    _ZN4cvis9CVElement4moveERKN2sf7Vector2IfEE @824
-    _ZN4cvis9CVElement4pushERKfS2_S2_ @825
-    _ZN4cvis9CVElement4stopEv @826
-    _ZN4cvis9CVElement5speedEv @827
-    _ZN4cvis9CVElement6updateERNS_7CVEventERKN2sf7Vector2IfEE @828
-    _ZN4cvis9CVElement7move_toERKN2sf7Vector2IfEERKfS7_ @829
-    _ZN4cvis9CVElement7setFadeERKhRKiS2_ @830
-    _ZN4cvis9CVElement8setStateERKh @831
-    _ZN4cvis9CVElement9addSpriteEPKN2sf7TextureERKNS1_7Vector2IfEES8_RKNS1_5ColorERKNS1_4RectIiEE @832
-    _ZN4cvis9CVElement9anim_moveERKN2sf7Vector2IfEERKfS7_ @833
-    _ZN4cvis9CVElement9getSpriteERKj @834
-    _ZN4cvis9CVElement9highlightERKb @835
-    _ZN4cvis9CVElement9saveImageERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @836
-    _ZN4cvis9CVElement9setExpandERKb @837
-    _ZN4cvis9CVElementC1EPNS_6CVViewEbbbb @838
-    _ZN4cvis9CVElementC1Ev @839
-    _ZN4cvis9CVElementC2EPNS_6CVViewEbbbb @840
-    _ZN4cvis9CVElementC2Ev @841
-    _ZN4cvis9CVElementD0Ev @842
-    _ZN4cvis9CVElementD1Ev @843
-    _ZN4cvis9CVElementD2Ev @844
-    _ZN4cvis9CVTextBox11setFontSizeERKj @845
-    _ZN4cvis9CVTextBox11setPositionERKN2sf7Vector2IfEE @846
-    _ZN4cvis9CVTextBox11setTextSizeERKj @847
-    _ZN4cvis9CVTextBox11setTextWrapERKb @848
-    _ZN4cvis9CVTextBox12addTextEntryERKNS_9TextEntryERKN2sf7Vector2IfEE @849
-    _ZN4cvis9CVTextBox12addTextEntryERKNS_9TextEntryEfb @850
-    _ZN4cvis9CVTextBox12setTextColorERKN2sf5ColorE @851
-    _ZN4cvis9CVTextBox12updateBoundsEv @852
-    _ZN4cvis9CVTextBox14setTextPaddingERKf @853
-    _ZN4cvis9CVTextBox16setTextAlignmentERKh @854
-    _ZN4cvis9CVTextBox4drawEPN2sf12RenderTargetE @855
-    _ZN4cvis9CVTextBox4moveERKN2sf7Vector2IfEE @856
-    _ZN4cvis9CVTextBox6updateERNS_7CVEventERKN2sf7Vector2IfEE @857
-    _ZN4cvis9CVTextBox7fitTextERKbS2_ @858
-    _ZN4cvis9CVTextBox7setFontERKN2sf4FontE @859
-    _ZN4cvis9CVTextBox7setFontERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @860
-    _ZN4cvis9CVTextBox7setSizeERKN2sf7Vector2IfEE @861
-    _ZN4cvis9CVTextBox7setTextERKjPKc @862
-    _ZN4cvis9CVTextBox7setTextERKjPKw @863
-    _ZN4cvis9CVTextBox7setTextERKjRKN2sf6StringE @864
-    _ZN4cvis9CVTextBox7setTextERKjRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @865
-    _ZN4cvis9CVTextBox8wrapTextEv @866
-    _ZN4cvis9CVTextBox9alignTextEv @867
-    _ZN4cvis9CVTextBox9setExpandERKb @868
-    _ZN4cvis9CVTextBox9setStringERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @869
-    _ZN4cvis9CVTextBox9setStringERKNSt7__cxx1112basic_stringIwSt11char_traitsIwESaIwEEE @870
-    _ZN4cvis9CVTextBoxC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS3_5ColorESC_S9_ @871
-    _ZN4cvis9CVTextBoxC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS_9TextEntryERKNS3_5ColorESF_S9_ @872
-    _ZN4cvis9CVTextBoxC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS3_5ColorESC_S9_ @873
-    _ZN4cvis9CVTextBoxC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS_9TextEntryERKNS3_5ColorESF_S9_ @874
-    _ZN4cvis9CVTextLog11addLogEntryERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEbf @875
-    _ZN4cvis9CVTextLog11setPositionERKN2sf7Vector2IfEE @876
-    _ZN4cvis9CVTextLog13editLastEntryERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEb @877
-    _ZN4cvis9CVTextLog14addToLastEntryERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEb @878
-    _ZN4cvis9CVTextLog18replaceLastMessageERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES8_b @879
-    _ZN4cvis9CVTextLog4drawEPN2sf12RenderTargetE @880
-    _ZN4cvis9CVTextLog4loadEv @881
-    _ZN4cvis9CVTextLog4moveERKN2sf7Vector2IfEE @882
-    _ZN4cvis9CVTextLog4saveEv @883
-    _ZN4cvis9CVTextLog6updateERNS_7CVEventERKN2sf7Vector2IfEE @884
-    _ZN4cvis9CVTextLog7setSizeERKN2sf7Vector2IfEE @885
-    _ZN4cvis9CVTextLog9shiftMsgsERKf @886
-    _ZN4cvis9CVTextLogC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS_9TextEntryERKNS3_5ColorESF_S9_RKhRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEPNS_9CVTypeBoxE @887
-    _ZN4cvis9CVTextLogC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS_9TextEntryERKNS3_5ColorESF_S9_RKhRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEPNS_9CVTypeBoxE @888
-    _ZN4cvis9CVTextLogD0Ev @889
-    _ZN4cvis9CVTextLogD1Ev @890
-    _ZN4cvis9CVTextLogD2Ev @891
-    _ZN4cvis9CVTypeBox11enterStringEv @892
-    _ZN4cvis9CVTypeBox12setAlignmentERKh @893
-    _ZN4cvis9CVTypeBox12setFillColorERKN2sf5ColorE @894
-    _ZN4cvis9CVTypeBox13setTypeStringENSt7__cxx1112basic_stringIwSt11char_traitsIwESaIwEEE @895
-    _ZN4cvis9CVTypeBox13setTypeStringERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @896
-    _ZN4cvis9CVTypeBox15clearTypeStringEv @897
-    _ZN4cvis9CVTypeBox15make_suggestionERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @898
-    _ZN4cvis9CVTypeBox16clear_suggestionEv @899
-    _ZN4cvis9CVTypeBox19setBackgroundStringERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @900
-    _ZN4cvis9CVTypeBox4drawEPN2sf12RenderTargetE @901
-    _ZN4cvis9CVTypeBox6updateERNS_7CVEventERKN2sf7Vector2IfEE @902
-    _ZN4cvis9CVTypeBox7setSizeERKN2sf7Vector2IfEE @903
-    _ZN4cvis9CVTypeBox7setSizeERKfS2_ @904
-    _ZN4cvis9CVTypeBox8setColorERKN2sf5ColorE @905
-    _ZN4cvis9CVTypeBoxC1EPNS_6CVViewERKN2sf7Vector2IfEEffRKNS_9TextEntryERKNS3_5ColorESD_fRKhSF_SF_RKf @906
-    _ZN4cvis9CVTypeBoxC2EPNS_6CVViewERKN2sf7Vector2IfEEffRKNS_9TextEntryERKNS3_5ColorESD_fRKhSF_SF_RKf @907
-    _ZN4cvis9CVTypeBoxD0Ev @908
-    _ZN4cvis9CVTypeBoxD1Ev @909
-    _ZN4cvis9CVTypeBoxD2Ev @910
-    _ZN4cvis9addRecordERNS_10CVScheduleERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN6hyperC9TimePointESD_RKNSA_10time_scaleERKN2sf5ColorE @911
-    _ZN4cvis9alignTextERSt6vectorIN2sf4TextESaIS2_EES0_INS1_7Vector2IfEESaIS7_EE @912
-    _ZN4cvis9get_angleERKN2sf7Vector2IfEES4_ @913
-    _ZN4cviseqERKNS_12CVCaptureRefES2_ @914
-    _ZN4cvislsERSoRKNS_16CVCalendarRecordE @915
-    _ZN4cvislsERSoRKNS_6CVPlotE @916
-    _ZN4cvislsERSoRKNS_7CVEventE @917
-    _ZNK4cvis10CVCheckBox15getCurrentStateEv @918
-    _ZNK4cvis10CVMapPanel10zoneExistsERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @919
-    _ZNK4cvis10CVMapPanel13pointSelectedEv @920
-    _ZNK4cvis10CVMapPanel14coordsToGlobalERKN2sf7Vector2IiEE @921
-    _ZNK4cvis10CVMapPanel14globalToCoordsERKN2sf7Vector2IfEE @922
-    _ZNK4cvis10CVMapPanel15basePanelBoundsEv @923
-    _ZNK4cvis10CVMapPanel15sectionSelectedEv @924
-    _ZNK4cvis10CVMapPanel15selected_boundsEv @925
-    _ZNK4cvis10CVMapPanel8getTitleB5cxx11Ev @926
-    _ZNK4cvis10CVMapPanel8numZonesEv @927
-    _ZNK4cvis10CVMapPanel9baseColorEv @928
-    _ZNK4cvis10CVSchedule10checkMatchERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @929
-    _ZNK4cvis10CVSchedule10getTimeTagB5cxx11ERKN6hyperC9TimePointE @930
-    _ZNK4cvis10CVSchedule11getLocationERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @931
-    _ZNK4cvis10CVSchedule12checkOverlapERKNS_16CVCalendarRecordE @932
-    _ZNK4cvis10CVSchedule12checkOverlapERKS0_ @933
-    _ZNK4cvis10CVSchedule13checkLocationERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @934
-    _ZNK4cvis10CVSchedule15getLocationItemERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @935
-    _ZNK4cvis10CVSchedule4saveERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @936
-    _ZNK4cvis10CVSchedule8getColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @937
-    _ZNK4cvis10ColorTheme10getInitialERKN2sf5ColorE @938
-    _ZNK4cvis10ColorTheme10getInitialERKj @939
-    _ZNK4cvis11CVGridPanel15getGridPositionERKN2sf7Vector2IiEE @940
-    _ZNK4cvis11CVGridPanel15getGridPositionERKy @941
-    _ZNK4cvis11CVListPanel12getSelectionB5cxx11Ev @942
-    _ZNK4cvis11CVListPanel15TextEntryExistsERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @943
-    _ZNK4cvis11CVNodePanel14lastInteractedB5cxx11Ev @944
-    _ZNK4cvis11CVSliderBar15positionToValueERKN2sf7Vector2IfEE @945
-    _ZNK4cvis11CVSliderBar15valueToPositionERKf @946
-    _ZNK4cvis11CVSliderBar8getTitleB5cxx11Ev @947
-    _ZNK4cvis11CVTypePanel20getTextElementBoundsERKj @948
-    _ZNK4cvis11CVTypePanel22getTextElementPositionERKj @949
-    _ZNK4cvis11CVTypePanel7getTextB5cxx11Ev @950
-    _ZNK4cvis11CVTypePanel7getTextERSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS7_EE @951
-    _ZNK4cvis11CVViewPanel12fadeCompleteEv @952
-    _ZNK4cvis12CVDropTarget10mouse_dragEv @953
-    _ZNK4cvis12ImageManager11taggedImageERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @954
-    _ZNK4cvis12ImageManager13taggedTextureERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @955
-    _ZNK4cvis12ImageManager14getTextureNameB5cxx11EPKN2sf7TextureE @956
-    _ZNK4cvis13CVButtonPanel15getGridPositionERKN2sf7Vector2IiEE @957
-    _ZNK4cvis13CVButtonPanel16checkInteractionEv @958
-    _ZNK4cvis13CVButtonPanel17buttonsShareGroupEPKNS_8CVButtonES3_ @959
-    _ZNK4cvis13CVButtonPanel20buttonBelongsToGroupERKN2sf7Vector2IiEE @960
-    _ZNK4cvis13CVButtonPanel20getSelectedFromGroupERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @961
-    _ZNK4cvis13CVButtonPanel9getButtonERKN2sf7Vector2IiEE @962
-    _ZNK4cvis13CVDropDownBox11getSelectedB5cxx11Ev @963
-    _ZNK4cvis13CVNetworkNode10checkGroupERNS_14CVNetworkGroupE @964
-    _ZNK4cvis13CVNetworkNode11checkGroupsERKS0_ @965
-    _ZNK4cvis13CVSketchPanel13CVSketchLayer12getImageSizeEv @966
-    _ZNK4cvis13CVSketchPanel13CVSketchLayer15getTextureImageERN2sf5ImageE @967
-    _ZNK4cvis13CVSketchPanel17viewToPixelCoordsERKN2sf7Vector2IfEE @968
-    _ZNK4cvis13CVSketchPanel7canDrawEv @969
-    _ZNK4cvis14CVNetworkGroup13checkKeyWordsERKS0_ @970
-    _ZNK4cvis14CVNetworkGroup13checkKeyWordsERKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS7_EE @971
-    _ZNK4cvis14CVNetworkGroup9checkNodeERNS_13CVNetworkNodeE @972
-    _ZNK4cvis14CVNetworkPanel10nodeExistsERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @973
-    _ZNK4cvis14CVNetworkPanel11getNodeTagsB5cxx11Ev @974
-    _ZNK4cvis14CVNetworkPanel12getEdgeColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @975
-    _ZNK4cvis14CVNetworkPanel12getNodeColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @976
-    _ZNK4cvis14CVNetworkPanel16convert_to_localERKN2sf7Vector2IfEE @977
-    _ZNK4cvis14CVNetworkPanel17convert_to_screenERKN2sf7Vector2IfEE @978
-    _ZNK4cvis14CVNetworkPanel18getTextLegendColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @979
-    _ZNK4cvis14CVNetworkPanel21getOutlineLegendColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @980
-    _ZNK4cvis15CVCalendarPanel4saveERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @981
-    _ZNK4cvis16CVCalendarRecord10diff_hoursEv @982
-    _ZNK4cvis16CVCalendarRecord10diff_yearsEv @983
-    _ZNK4cvis16CVCalendarRecord11diff_monthsEv @984
-    _ZNK4cvis16CVCalendarRecord11getDurationEv @985
-    _ZNK4cvis16CVCalendarRecord11getLocationB5cxx11Ev @986
-    _ZNK4cvis16CVCalendarRecord11median_daysEv @987
-    _ZNK4cvis16CVCalendarRecord12diff_minutesEv @988
-    _ZNK4cvis16CVCalendarRecord12diff_secondsEv @989
-    _ZNK4cvis16CVCalendarRecord12is_repeatingEv @990
-    _ZNK4cvis16CVCalendarRecord12median_hoursEv @991
-    _ZNK4cvis16CVCalendarRecord12median_yearsEv @992
-    _ZNK4cvis16CVCalendarRecord13check_overlapERKN6hyperC9TimePointE @993
-    _ZNK4cvis16CVCalendarRecord13check_overlapERKS0_ @994
-    _ZNK4cvis16CVCalendarRecord13getRepeatTagsB5cxx11Ev @995
-    _ZNK4cvis16CVCalendarRecord13median_monthsEv @996
-    _ZNK4cvis16CVCalendarRecord14getDurationStrB5cxx11Ev @997
-    _ZNK4cvis16CVCalendarRecord14median_minutesEv @998
-    _ZNK4cvis16CVCalendarRecord14median_secondsEv @999
-    _ZNK4cvis16CVCalendarRecord16repeat_frequencyEv @1000
-    _ZNK4cvis16CVCalendarRecord3endEv @1001
-    _ZNK4cvis16CVCalendarRecord3tagB5cxx11Ev @1002
-    _ZNK4cvis16CVCalendarRecord4saveEP6_iobuf @1003
-    _ZNK4cvis16CVCalendarRecord5colorEv @1004
-    _ZNK4cvis16CVCalendarRecord5startEv @1005
-    _ZNK4cvis16CVCalendarRecord8durationEv @1006
-    _ZNK4cvis16CVCalendarRecord8getScaleEv @1007
-    _ZNK4cvis16CVCalendarRecord9diff_daysEv @1008
-    _ZNK4cvis17CVDataViewerPanel10saveToFileERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1009
-    _ZNK4cvis17CVDataViewerPanel7getDataB5cxx11ERKiS2_ @1010
-    _ZNK4cvis17CVDataViewerPanel7rowSizeERKi @1011
-    _ZNK4cvis17rounded_rectangle13getPointCountEv @1012
-    _ZNK4cvis17rounded_rectangle14topLeftRoundedEv @1013
-    _ZNK4cvis17rounded_rectangle15cornerIsRoundedERKj @1014
-    _ZNK4cvis17rounded_rectangle15topRightRoundedEv @1015
-    _ZNK4cvis17rounded_rectangle17bottomLeftRoundedEv @1016
-    _ZNK4cvis17rounded_rectangle18bottomRightRoundedEv @1017
-    _ZNK4cvis17rounded_rectangle7getSizeEv @1018
-    _ZNK4cvis17rounded_rectangle8getPointEy @1019
-    _ZNK4cvis5CVApp11getTypeFontERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1020
-    _ZNK4cvis5CVBox11getRotationERKh @1021
-    _ZNK4cvis5CVBox12fadeCompleteEv @1022
-    _ZNK4cvis5CVBox12getFillColorEv @1023
-    _ZNK4cvis5CVBox15getOutlineColorEv @1024
-    _ZNK4cvis5CVBox17getRoundingRadiusEv @1025
-    _ZNK4cvis5CVBox21getRoundingPointCountEv @1026
-    _ZNK4cvis5CVBox8getColorEv @1027
-    _ZNK4cvis6CVPlot4axis16getLabelPositionERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1028
-    _ZNK4cvis6CVPlot7Dataset13getSubsetDataERKj @1029
-    _ZNK4cvis6CVPlot7Dataset4sizeEv @1030
-    _ZNK4cvis6CVPlot7Dataset8getScaleERKj @1031
-    _ZNK4cvis6CVView10appTextureERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1032
-    _ZNK4cvis6CVView11renderWidthEv @1033
-    _ZNK4cvis6CVView12getViewScaleEv @1034
-    _ZNK4cvis6CVView12renderHeightEv @1035
-    _ZNK4cvis6CVView17getTitleBarHeightEv @1036
-    _ZNK4cvis6CVView7appFontERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1037
-    _ZNK4cvis6CVView8appColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1038
-    _ZNK4cvis6CVView8appImageERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1039
-    _ZNK4cvis6CVView9getBoundsEv @1040
-    _ZNK4cvis6CVView9getHeightEv @1041
-    _ZNK4cvis7CVBrush11getPositionEv @1042
-    _ZNK4cvis7CVBrush12getDrawScaleEv @1043
-    _ZNK4cvis7CVBrush13getDimensionsEv @1044
-    _ZNK4cvis7CVEvent10rightClickERKf @1045
-    _ZNK4cvis7CVEvent13mouseVelocityEv @1046
-    _ZNK4cvis7CVEvent14mouseMoveAngleEv @1047
-    _ZNK4cvis7CVEvent17leftClickReleasedERKf @1048
-    _ZNK4cvis7CVEvent18rightClickReleasedERKf @1049
-    _ZNK4cvis7CVEvent9leftClickERKf @1050
-    _ZNK4cvis9CVElement10appTextureERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1051
-    _ZNK4cvis9CVElement10has_spriteERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1052
-    _ZNK4cvis9CVElement12fadeCompleteEv @1053
-    _ZNK4cvis9CVElement14getDefaultFontB5cxx11Ev @1054
-    _ZNK4cvis9CVElement7appFontERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1055
-    _ZNK4cvis9CVElement7mainAppEv @1056
-    _ZNK4cvis9CVElement8appColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1057
-    _ZNK4cvis9CVElement8appImageERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1058
-    _ZNK4cvis9CVElement9viewScaleEv @1059
-    _ZNK4cvis9CVTextBox12fadeCompleteEv @1060
-    _ZNK4cvis9CVTextBox12getTextColorEv @1061
-    _ZNK4cvis9CVTextBox13getTextBoundsEv @1062
-    _ZNK4cvis9CVTextBox7getTextB5cxx11Ev @1063
-    _ZNK4cvis9CVTextBox8sendDataERNS_7CVEventE @1064
-    _ZNK4cvis9CVTextLog13scrollOffsetYEv @1065
-    _ZNK4cvis9CVTextLog14getReadableLogB5cxx11Ev @1066
-    _ZNK4cvis9CVTextLog14getUserLogTextB5cxx11ERKjb @1067
-    _ZNK4cvis9CVTextLog15getOtherLogTextB5cxx11ERKjb @1068
-    _ZNK4cvis9CVTypeBox11can_suggestEv @1069
-    _ZNK4cvis9CVTypeBox13getTypeStringB5cxx11Ev @1070
-    _ZNK4cvis9CVTypeBox16string_at_cursorB5cxx11Ev @1071
-    _ZNK4cvis9CVTypeBox18cursor_at_word_endEv @1072
-    _ZNK4cvis9CVTypeBox20cursor_at_word_beginEv @1073
-    _ZNK4cvis9CVTypeBox22cursor_string_positionEv @1074
-    _ZTIN4cvis10CVCheckBoxE @1075 DATA
-    _ZTIN4cvis10CVHeatPlotE @1076 DATA
-    _ZTIN4cvis10CVLinePlotE @1077 DATA
-    _ZTIN4cvis10CVMapPanelE @1078 DATA
-    _ZTIN4cvis11CVGridPanelE @1079 DATA
-    _ZTIN4cvis11CVListPanelE @1080 DATA
-    _ZTIN4cvis11CVNodePanelE @1081 DATA
-    _ZTIN4cvis11CVPlotPanelE @1082 DATA
-    _ZTIN4cvis11CVScrollBarE @1083 DATA
-    _ZTIN4cvis11CVSliderBarE @1084 DATA
-    _ZTIN4cvis11CVTypePanelE @1085 DATA
-    _ZTIN4cvis11CVViewPanelE @1086 DATA
-    _ZTIN4cvis12CVConsoleLogE @1087 DATA
-    _ZTIN4cvis12CVDropTargetE @1088 DATA
-    _ZTIN4cvis12CVTablePanelE @1089 DATA
-    _ZTIN4cvis12CVTextLogMsgE @1090 DATA
-    _ZTIN4cvis13CVButtonPanelE @1091 DATA
-    _ZTIN4cvis13CVDropDownBoxE @1092 DATA
-    _ZTIN4cvis13CVProgressBarE @1093 DATA
-    _ZTIN4cvis13CVScatterPlotE @1094 DATA
-    _ZTIN4cvis13CVSketchPanel13CVSketchLayerE @1095 DATA
-    _ZTIN4cvis13CVSketchPanelE @1096 DATA
-    _ZTIN4cvis13CVSwitchPanelE @1097 DATA
-    _ZTIN4cvis13CVTogglePanelE @1098 DATA
-    _ZTIN4cvis14CVCategoryPlotE @1099 DATA
-    _ZTIN4cvis14CVNetworkGroupE @1100 DATA
-    _ZTIN4cvis14CVNetworkPanelE @1101 DATA
-    _ZTIN4cvis15CVAssemblyPanelE @1102 DATA
-    _ZTIN4cvis15CVCalendarPanelE @1103 DATA
-    _ZTIN4cvis16CVBasicViewPanelE @1104 DATA
-    _ZTIN4cvis17CVDataViewerPanelE @1105 DATA
-    _ZTIN4cvis17rounded_rectangleE @1106 DATA
-    _ZTIN4cvis5CVAppE @1107 DATA
-    _ZTIN4cvis5CVBoxE @1108 DATA
-    _ZTIN4cvis6CVPlotE @1109 DATA
-    _ZTIN4cvis6CVTextE @1110 DATA
-    _ZTIN4cvis6CVViewE @1111 DATA
-    _ZTIN4cvis7CVShapeE @1112 DATA
-    _ZTIN4cvis8CVButtonE @1113 DATA
-    _ZTIN4cvis9CVElementE @1114 DATA
-    _ZTIN4cvis9CVTextBoxE @1115 DATA
-    _ZTIN4cvis9CVTextLogE @1116 DATA
-    _ZTVN4cvis10CVCheckBoxE @1117 DATA
-    _ZTVN4cvis10CVHeatPlotE @1118 DATA
-    _ZTVN4cvis10CVLinePlotE @1119 DATA
-    _ZTVN4cvis10CVMapPanelE @1120 DATA
-    _ZTVN4cvis11CVGridPanelE @1121 DATA
-    _ZTVN4cvis11CVListPanelE @1122 DATA
-    _ZTVN4cvis11CVNodePanelE @1123 DATA
-    _ZTVN4cvis11CVPlotPanelE @1124 DATA
-    _ZTVN4cvis11CVScrollBarE @1125 DATA
-    _ZTVN4cvis11CVSliderBarE @1126 DATA
-    _ZTVN4cvis11CVTypePanelE @1127 DATA
-    _ZTVN4cvis11CVViewPanelE @1128 DATA
-    _ZTVN4cvis12CVConsoleLogE @1129 DATA
-    _ZTVN4cvis12CVDropTargetE @1130 DATA
-    _ZTVN4cvis12CVTablePanelE @1131 DATA
-    _ZTVN4cvis12CVTextLogMsgE @1132 DATA
-    _ZTVN4cvis13CVButtonPanelE @1133 DATA
-    _ZTVN4cvis13CVDropDownBoxE @1134 DATA
-    _ZTVN4cvis13CVProgressBarE @1135 DATA
-    _ZTVN4cvis13CVScatterPlotE @1136 DATA
-    _ZTVN4cvis13CVSketchPanel13CVSketchLayerE @1137 DATA
-    _ZTVN4cvis13CVSketchPanelE @1138 DATA
-    _ZTVN4cvis13CVSwitchPanelE @1139 DATA
-    _ZTVN4cvis13CVTogglePanelE @1140 DATA
-    _ZTVN4cvis14CVCategoryPlotE @1141 DATA
-    _ZTVN4cvis14CVNetworkGroupE @1142 DATA
-    _ZTVN4cvis14CVNetworkPanelE @1143 DATA
-    _ZTVN4cvis15CVAssemblyPanelE @1144 DATA
-    _ZTVN4cvis15CVCalendarPanelE @1145 DATA
-    _ZTVN4cvis16CVBasicViewPanelE @1146 DATA
-    _ZTVN4cvis17CVDataViewerPanelE @1147 DATA
-    _ZTVN4cvis17rounded_rectangleE @1148 DATA
-    _ZTVN4cvis5CVAppE @1149 DATA
-    _ZTVN4cvis5CVBoxE @1150 DATA
-    _ZTVN4cvis6CVPlotE @1151 DATA
-    _ZTVN4cvis6CVTextE @1152 DATA
-    _ZTVN4cvis6CVViewE @1153 DATA
-    _ZTVN4cvis7CVShapeE @1154 DATA
-    _ZTVN4cvis8CVButtonE @1155 DATA
-    _ZTVN4cvis9CVElementE @1156 DATA
-    _ZTVN4cvis9CVTextBoxE @1157 DATA
-    _ZTVN4cvis9CVTextLogE @1158 DATA
-    _ZThn8_N4cvis13CVSketchPanel13CVSketchLayerD0Ev @1159
-    _ZThn8_N4cvis13CVSketchPanel13CVSketchLayerD1Ev @1160
-    _ZThn8_N4cvis17rounded_rectangleD0Ev @1161
-    _ZThn8_N4cvis17rounded_rectangleD1Ev @1162
+    _ZN4cvis17rounded_rectangle4moveERKN2sf7Vector2IfEE @579
+    _ZN4cvis17rounded_rectangle5traceERKN2sf7Vector2IfEERKfRKj @580
+    _ZN4cvis17rounded_rectangle7setSizeERKN2sf7Vector2IfEE @581
+    _ZN4cvis17rounded_rectangleC1ERKN2sf7Vector2IfEERKfRKNS1_5ColorERKj @582
+    _ZN4cvis17rounded_rectangleC1Ev @583
+    _ZN4cvis17rounded_rectangleC2ERKN2sf7Vector2IfEERKfRKNS1_5ColorERKj @584
+    _ZN4cvis17rounded_rectangleC2Ev @585
+    _ZN4cvis18check_availabilityERNS_10CVScheduleERKN6hyperC9TimePointES5_ @586
+    _ZN4cvis5CVApp10mainUpdateEv @587
+    _ZN4cvis5CVApp11clearEventsEv @588
+    _ZN4cvis5CVApp7addViewEPNS_6CVViewERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @589
+    _ZN4cvis5CVApp8closeAllEv @590
+    _ZN4cvis5CVApp8getEventERNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @591
+    _ZN4cvis5CVApp8initViewEjjNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEj @592
+    _ZN4cvis5CVApp9closeViewERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @593
+    _ZN4cvis5CVApp9closeViewEj @594
+    _ZN4cvis5CVApp9pushEventERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @595
+    _ZN4cvis5CVAppC1EjffRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @596
+    _ZN4cvis5CVAppC2EjffRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @597
+    _ZN4cvis5CVAppD1Ev @598
+    _ZN4cvis5CVAppD2Ev @599
+    _ZN4cvis5CVBox10setTextureEPKN2sf7TextureERKNS1_4RectIiEE @600
+    _ZN4cvis5CVBox10setTextureERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN2sf4RectIiEE @601
+    _ZN4cvis5CVBox11setPositionERKN2sf7Vector2IfEE @602
+    _ZN4cvis5CVBox11setRotationERKfRKhRKN2sf7Vector2IfEE @603
+    _ZN4cvis5CVBox11setRoundingERKfRKjRKSt6vectorIbSaIbEE @604
+    _ZN4cvis5CVBox12setClearFillERKb @605
+    _ZN4cvis5CVBox12setFillColorERKN2sf5ColorE @606
+    _ZN4cvis5CVBox12updateBoundsEv @607
+    _ZN4cvis5CVBox14setSpriteColorERKN2sf5ColorE @608
+    _ZN4cvis5CVBox15setOutlineColorERKN2sf5ColorE @609
+    _ZN4cvis5CVBox19setOutlineThicknessERKf @610
+    _ZN4cvis5CVBox4drawEPN2sf12RenderTargetE @611
+    _ZN4cvis5CVBox4moveERKN2sf7Vector2IfEE @612
+    _ZN4cvis5CVBox6rotateERKfRKhRKN2sf7Vector2IfEE @613
+    _ZN4cvis5CVBox6updateERNS_7CVEventERKN2sf7Vector2IfEE @614
+    _ZN4cvis5CVBox7setSizeERKN2sf7Vector2IfEE @615
+    _ZN4cvis5CVBox8setColorERKN2sf5ColorE @616
+    _ZN4cvis5CVBox9highlightERKb @617
+    _ZN4cvis5CVBox9setExpandERKb @618
+    _ZN4cvis5CVBoxC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS3_5ColorESC_S9_ @619
+    _ZN4cvis5CVBoxC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS3_5ColorESC_S9_ @620
+    _ZN4cvis5sleepEf @621
+    _ZN4cvis6CVAnim10changePathERKSt6vectorINS_16CVAnimCheckpointESaIS2_EE @622
+    _ZN4cvis6CVAnim14addCheckpointsERKSt6vectorINS_16CVAnimCheckpointESaIS2_EERKb @623
+    _ZN4cvis6CVAnim14nextCheckpointEv @624
+    _ZN4cvis6CVAnim16checkPassiveAnimEv @625
+    _ZN4cvis6CVAnim16resetPassiveAnimEv @626
+    _ZN4cvis6CVAnim23checkpointDistanceValidERKf @627
+    _ZN4cvis6CVAnim9animFrameERKf @628
+    _ZN4cvis6CVAnimC1EPN2sf13TransformableERKSt6vectorINS_16CVAnimCheckpointESaIS5_EE @629
+    _ZN4cvis6CVAnimC2EPN2sf13TransformableERKSt6vectorINS_16CVAnimCheckpointESaIS5_EE @630
+    _ZN4cvis6CVAnimD1Ev @631
+    _ZN4cvis6CVAnimD2Ev @632
+    _ZN4cvis6CVDataC1EPKvRKyRKhS6_RKN2sf8Keyboard3KeyE @633
+    _ZN4cvis6CVDataC1ERKS0_ @634
+    _ZN4cvis6CVDataC2EPKvRKyRKhS6_RKN2sf8Keyboard3KeyE @635
+    _ZN4cvis6CVDataC2ERKS0_ @636
+    _ZN4cvis6CVDataD1Ev @637
+    _ZN4cvis6CVDataD2Ev @638
+    _ZN4cvis6CVDataaSERKS0_ @639
+    _ZN4cvis6CVPlot10getPlotPosERKN2sf7Vector2IfEE @640
+    _ZN4cvis6CVPlot10getPlotPosERKfS2_ @641
+    _ZN4cvis6CVPlot10removeDataEjj @642
+    _ZN4cvis6CVPlot10removeDataEjjj @643
+    _ZN4cvis6CVPlot11addPlotTextERKNS_9TextEntryERKN2sf7Vector2IfEE @644
+    _ZN4cvis6CVPlot11getPlotXPosERKf @645
+    _ZN4cvis6CVPlot11getPlotYPosERKf @646
+    _ZN4cvis6CVPlot11getScalePosERKN2sf7Vector2IfEE @647
+    _ZN4cvis6CVPlot11setPositionERKN2sf7Vector2IfEE @648
+    _ZN4cvis6CVPlot12getScaleXPosERKf @649
+    _ZN4cvis6CVPlot12getScaleYPosERKf @650
+    _ZN4cvis6CVPlot12setAxisColorERKN2sf5ColorE @651
+    _ZN4cvis6CVPlot12updateBoundsEv @652
+    _ZN4cvis6CVPlot14select_indicesERKSt6vectorIjSaIjEE @653
+    _ZN4cvis6CVPlot16setAxisLineColorERKN2sf5ColorE @654
+    _ZN4cvis6CVPlot17get_verbal_x_axisEv @655
+    _ZN4cvis6CVPlot17setAxisLabelColorERKN2sf5ColorE @656
+    _ZN4cvis6CVPlot18get_numeric_x_axisEv @657
+    _ZN4cvis6CVPlot18get_numeric_y_axisEv @658
+    _ZN4cvis6CVPlot18removeDataOutliersEv @659
+    _ZN4cvis6CVPlot20setPlotSpriteTextureERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @660
+    _ZN4cvis6CVPlot4axis12setLineColorERKN2sf5ColorE @661
+    _ZN4cvis6CVPlot4axis13setLabelColorERKN2sf5ColorE @662
+    _ZN4cvis6CVPlot4axis16getNumericLabelsERKj @663
+    _ZN4cvis6CVPlot4axis18updateRenderLabelsEv @664
+    _ZN4cvis6CVPlot4axis6updateEv @665
+    _ZN4cvis6CVPlot4axisC1ERKfRKjPS0_RKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISD_EERKhS3_S3_RKN2sf5ColorERKNS_9TextEntryES3_ @666
+    _ZN4cvis6CVPlot4axisC2ERKfRKjPS0_RKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISD_EERKhS3_S3_RKN2sf5ColorERKNS_9TextEntryES3_ @667
+    _ZN4cvis6CVPlot4drawEPN2sf12RenderTargetE @668
+    _ZN4cvis6CVPlot4moveERKN2sf7Vector2IfEE @669
+    _ZN4cvis6CVPlot6updateERNS_7CVEventERKN2sf7Vector2IfEE @670
+    _ZN4cvis6CVPlot7Dataset12rm_dimensionERKj @671
+    _ZN4cvis6CVPlot7Dataset15getLabelledDataERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @672
+    _ZN4cvis6CVPlot7Dataset15getSubsetPointsEv @673
+    _ZN4cvis6CVPlot7Dataset17getLabelledPointsERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @674
+    _ZN4cvis6CVPlot7Dataset6updateEv @675
+    _ZN4cvis6CVPlot7DatasetC1ERKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS8_EERKS2_IS2_IfSaIfEESaISE_EERKS2_IS2_IjSaIjEESaISK_EERKS8_PS0_ @676
+    _ZN4cvis6CVPlot7DatasetC1ERKSt6vectorIS2_IfSaIfEESaIS4_EERKS2_INSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISE_EERKS2_IS2_IjSaIjEESaISK_EERKSE_PS0_ @677
+    _ZN4cvis6CVPlot7DatasetC1ERKSt6vectorIS2_IfSaIfEESaIS4_EERKS2_IjSaIjEERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKS2_ISI_SaISI_EEPS0_ @678
+    _ZN4cvis6CVPlot7DatasetC1ERKSt6vectorIfSaIfEES6_RKS2_IjSaIjEERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKS2_ISG_SaISG_EEPS0_ @679
+    _ZN4cvis6CVPlot7DatasetC2ERKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS8_EERKS2_IS2_IfSaIfEESaISE_EERKS2_IS2_IjSaIjEESaISK_EERKS8_PS0_ @680
+    _ZN4cvis6CVPlot7DatasetC2ERKSt6vectorIS2_IfSaIfEESaIS4_EERKS2_INSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISE_EERKS2_IS2_IjSaIjEESaISK_EERKSE_PS0_ @681
+    _ZN4cvis6CVPlot7DatasetC2ERKSt6vectorIS2_IfSaIfEESaIS4_EERKS2_IjSaIjEERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKS2_ISI_SaISI_EEPS0_ @682
+    _ZN4cvis6CVPlot7DatasetC2ERKSt6vectorIfSaIfEES6_RKS2_IjSaIjEERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKS2_ISG_SaISG_EEPS0_ @683
+    _ZN4cvis6CVPlot7addDataERKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS7_EERKS1_IS1_IfSaIfEESaISD_EERKS1_IS1_IjSaIjEESaISJ_EERKS7_SB_ @684
+    _ZN4cvis6CVPlot7addDataERKSt6vectorIS1_IfSaIfEESaIS3_EERKS1_INSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISD_EERKS1_IS1_IjSaIjEESaISJ_EERKSD_ @685
+    _ZN4cvis6CVPlot7addDataERKSt6vectorIS1_IfSaIfEESaIS3_EERKS1_IjSaIjEERKS1_IS1_INSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISH_EESaISJ_EERKSH_ @686
+    _ZN4cvis6CVPlot7addDataERKSt6vectorIfSaIfEES5_RKS1_IjSaIjEERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKS1_ISF_SaISF_EE @687
+    _ZN4cvis6CVPlot9clearDataEj @688
+    _ZN4cvis6CVPlot9clearDataEv @689
+    _ZN4cvis6CVPlot9dataPoint12setSelectionERKb @690
+    _ZN4cvis6CVPlot9dataPoint6updateEv @691
+    _ZN4cvis6CVPlot9dataPointC1ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKfPNS0_7DatasetERKjbRKN2sf7Vector2IfEE @692
+    _ZN4cvis6CVPlot9dataPointC1ERKSt6vectorIfSaIfEEPNS0_7DatasetERKjRKS2_INSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISG_EEbRKN2sf7Vector2IfEE @693
+    _ZN4cvis6CVPlot9dataPointC1ERKfRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEPNS0_7DatasetERKjbRKN2sf7Vector2IfEE @694
+    _ZN4cvis6CVPlot9dataPointC1ERKfS3_PNS0_7DatasetERKjRKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISE_EEbRKN2sf7Vector2IfEE @695
+    _ZN4cvis6CVPlot9dataPointC2ERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKfPNS0_7DatasetERKjbRKN2sf7Vector2IfEE @696
+    _ZN4cvis6CVPlot9dataPointC2ERKSt6vectorIfSaIfEEPNS0_7DatasetERKjRKS2_INSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISG_EEbRKN2sf7Vector2IfEE @697
+    _ZN4cvis6CVPlot9dataPointC2ERKfRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEPNS0_7DatasetERKjbRKN2sf7Vector2IfEE @698
+    _ZN4cvis6CVPlot9dataPointC2ERKfS3_PNS0_7DatasetERKjRKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaISE_EEbRKN2sf7Vector2IfEE @699
+    _ZN4cvis6CVPlotC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS3_5ColorESC_SC_S9_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESK_ @700
+    _ZN4cvis6CVPlotC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS3_5ColorESC_SC_S9_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESK_ @701
+    _ZN4cvis6CVTextC1EPNS_6CVViewERKNS_9TextEntryERKN2sf7Vector2IfEESA_RKb @702
+    _ZN4cvis6CVTextC2EPNS_6CVViewERKNS_9TextEntryERKN2sf7Vector2IfEESA_RKb @703
+    _ZN4cvis6CVView10getTextureERN2sf7TextureE @704
+    _ZN4cvis6CVView10setVisibleEjb @705
+    _ZN4cvis6CVView11clearCursorEv @706
+    _ZN4cvis6CVView11clearShadowEv @707
+    _ZN4cvis6CVView11sendTriggerEPNS_9CVElementERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @708
+    _ZN4cvis6CVView11setDropableERKb @709
+    _ZN4cvis6CVView11setPositionERKN2sf7Vector2IiEE @710
+    _ZN4cvis6CVView12setTopMarginERKf @711
+    _ZN4cvis6CVView14activateWindowEv @712
+    _ZN4cvis6CVView14getElementByIdERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @713
+    _ZN4cvis6CVView14getTaggedPanelENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @714
+    _ZN4cvis6CVView14isolateVisibleEj @715
+    _ZN4cvis6CVView15setVisiblePanelENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @716
+    _ZN4cvis6CVView15setVisiblePanelEPNS_11CVViewPanelE @717
+    _ZN4cvis6CVView15setVisiblePanelEj @718
+    _ZN4cvis6CVView16handleViewEventsERNS_7CVEventE @719
+    _ZN4cvis6CVView17setScreenPositionEN2sf7Vector2IiEE @720
+    _ZN4cvis6CVView19setDefaultViewScaleERKfS2_ @721
+    _ZN4cvis6CVView4drawEPN2sf12RenderTargetE @722
+    _ZN4cvis6CVView4initEv @723
+    _ZN4cvis6CVView5closeEv @724
+    _ZN4cvis6CVView6updateERNS_7CVEventERKN2sf7Vector2IfEE @725
+    _ZN4cvis6CVView7getSizeEv @726
+    _ZN4cvis6CVView7restoreEv @727
+    _ZN4cvis6CVView8addPanelEPNS_11CVViewPanelENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKj @728
+    _ZN4cvis6CVView8containsERKNS_9CVElementE @729
+    _ZN4cvis6CVView8maximizeEv @730
+    _ZN4cvis6CVView8minimizeEv @731
+    _ZN4cvis6CVView8setStateEh @732
+    _ZN4cvis6CVView8stopAnimEPN2sf13TransformableE @733
+    _ZN4cvis6CVView9setCursorEPKN2sf7TextureERKNS1_7Vector2IfEERKNS1_5ColorES8_ @734
+    _ZN4cvis6CVView9setCursorERKN2sf6Cursor4TypeE @735
+    _ZN4cvis6CVView9setCursorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN2sf7Vector2IfEERKNS9_5ColorESD_ @736
+    _ZN4cvis6CVView9setShadowEPKN2sf7TextureERKNS1_7Vector2IfEERKhS8_ @737
+    _ZN4cvis6CVView9setShadowERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN2sf7Vector2IfEERKhSD_ @738
+    _ZN4cvis6CVView9setShadowERNS_9CVElementERKhRKf @739
+    _ZN4cvis6CVViewC1EjjNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEjPNS_5CVAppERKN2sf7Vector2IfEERKNS9_5ColorE @740
+    _ZN4cvis6CVViewC2EjjNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEjPNS_5CVAppERKN2sf7Vector2IfEERKNS9_5ColorE @741
+    _ZN4cvis6CVViewD0Ev @742
+    _ZN4cvis6CVViewD1Ev @743
+    _ZN4cvis6CVViewD2Ev @744
+    _ZN4cvis6CVViewixENSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @745
+    _ZN4cvis7CVBrush10setVisibleERKb @746
+    _ZN4cvis7CVBrush11drawToImageERN2sf5ImageERKNS1_7Vector2IiEE @747
+    _ZN4cvis7CVBrush11drawToImageERN2sf5ImageERKSt6vectorINS1_7Vector2IiEESaIS6_EE @748
+    _ZN4cvis7CVBrush11drawToImageERN2sf5ImageERKSt6vectorIS4_IiSaIiEESaIS6_EE @749
+    _ZN4cvis7CVBrush11setPositionERKN2sf7Vector2IfEE @750
+    _ZN4cvis7CVBrush15setPrimaryColorERKN2sf5ColorE @751
+    _ZN4cvis7CVBrush17setSecondaryColorERKN2sf5ColorE @752
+    _ZN4cvis7CVBrush4drawEPN2sf12RenderTargetE @753
+    _ZN4cvis7CVBrush4moveERKN2sf7Vector2IfEE @754
+    _ZN4cvis7CVBrush5scaleERKN2sf7Vector2IfEE @755
+    _ZN4cvis7CVBrush5scaleERKf @756
+    _ZN4cvis7CVBrush7setIconEPKN2sf7TextureE @757
+    _ZN4cvis7CVBrush7setTypeERKNS0_11CVBrushTypeE @758
+    _ZN4cvis7CVBrush9clearIconEv @759
+    _ZN4cvis7CVBrush9setEffectERKNS0_13CVBrushEffectE @760
+    _ZN4cvis7CVBrushC1ERKN2sf5ColorERKfS6_S6_RKNS0_11CVBrushTypeERKNS0_13CVBrushEffectE @761
+    _ZN4cvis7CVBrushC2ERKN2sf5ColorERKfS6_S6_RKNS0_11CVBrushTypeERKNS0_13CVBrushEffectE @762
+    _ZN4cvis7CVEvent11releaseDataERKh @763
+    _ZN4cvis7CVEvent12captureFocusEv @764
+    _ZN4cvis7CVEvent12captureMouseEv @765
+    _ZN4cvis7CVEvent12keyIsPressedERKc @766
+    _ZN4cvis7CVEvent12releaseFocusEv @767
+    _ZN4cvis7CVEvent18moveCapturedShapesEv @768
+    _ZN4cvis7CVEvent5resetEv @769
+    _ZN4cvis7CVEvent8tossDataEv @770
+    _ZN4cvis7CVEvent9checkCondERKhRKN2sf8Keyboard3KeyE @771
+    _ZN4cvis7CVEvent9clearKeysEv @772
+    _ZN4cvis7CVEvent9focusFreeEv @773
+    _ZN4cvis7CVEventC1Ev @774
+    _ZN4cvis7CVEventC2Ev @775
+    _ZN4cvis7CVShape11setPositionERKN2sf7Vector2IfEE @776
+    _ZN4cvis7CVShape12setMaskAlphaERKh @777
+    _ZN4cvis7CVShape14setSpriteColorERKN2sf5ColorE @778
+    _ZN4cvis7CVShape4drawEPN2sf12RenderTargetE @779
+    _ZN4cvis7CVShape4moveERKN2sf7Vector2IfEE @780
+    _ZN4cvis7CVShape6updateERNS_7CVEventERKN2sf7Vector2IfEE @781
+    _ZN4cvis7CVShape7setMaskEPKN2sf7TextureERKNS1_5ColorE @782
+    _ZN4cvis7CVShape7setSizeERKN2sf7Vector2IfEE @783
+    _ZN4cvis7CVShape8hideMaskEv @784
+    _ZN4cvis7CVShape8showMaskEv @785
+    _ZN4cvis7CVShapeC1EPNS_6CVViewE @786
+    _ZN4cvis7CVShapeC2EPNS_6CVViewE @787
+    _ZN4cvis7sigFigsB5cxx11ERKf @788
+    _ZN4cvis7sigFigsERNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @789
+    _ZN4cvis8CVButton14setFadeOnClickERKbRKhS4_ @790
+    _ZN4cvis8CVButton15setStateTextureERKjRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @791
+    _ZN4cvis8CVButton4drawEPN2sf12RenderTargetE @792
+    _ZN4cvis8CVButton6toggleEv @793
+    _ZN4cvis8CVButton6updateERNS_7CVEventERKN2sf7Vector2IfEE @794
+    _ZN4cvis8CVButton7setSizeERKN2sf7Vector2IfEE @795
+    _ZN4cvis8CVButton8setColorERKN2sf5ColorERKj @796
+    _ZN4cvis8CVButton8setStateERKj @797
+    _ZN4cvis8CVButton9setFadeInERKbRKhS4_ @798
+    _ZN4cvis8CVButtonC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS_9TextEntryERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKNS3_5ColorESN_S9_ @799
+    _ZN4cvis8CVButtonC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKjSJ_RKbPFvSJ_S2_E @800
+    _ZN4cvis8CVButtonC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS_9TextEntryERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKNS3_5ColorESN_S9_ @801
+    _ZN4cvis8CVButtonC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKjSJ_RKbPFvSJ_S2_E @802
+    _ZN4cvis8modulateERN2sf5ImageERKNS0_5ColorE @803
+    _ZN4cvis8wrapTextERN2sf4TextERKNS0_4RectIfEERKf @804
+    _ZN4cvis9CVElement10getTextureERN2sf7TextureERKNS1_5ColorE @805
+    _ZN4cvis9CVElement10lastSpriteEv @806
+    _ZN4cvis9CVElement11firstSpriteEv @807
+    _ZN4cvis9CVElement11sendTriggerEPS0_RKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @808
+    _ZN4cvis9CVElement11setClosableERKbPS0_ @809
+    _ZN4cvis9CVElement12createShadowERKhRKf @810
+    _ZN4cvis9CVElement12removeShadowEv @811
+    _ZN4cvis9CVElement12sendTriggersEv @812
+    _ZN4cvis9CVElement12take_triggerERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @813
+    _ZN4cvis9CVElement12updateBoundsEv @814
+    _ZN4cvis9CVElement13removeSpritesERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @815
+    _ZN4cvis9CVElement13setDropShadowERKbRKiRKhRKN2sf7Vector2IfEESB_ @816
+    _ZN4cvis9CVElement13setElasticityERKf @817
+    _ZN4cvis9CVElement13setViewCursorEPKN2sf7TextureERKNS1_7Vector2IfEERKNS1_5ColorES8_ @818
+    _ZN4cvis9CVElement13setViewCursorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN2sf7Vector2IfEERKNS9_5ColorESD_ @819
+    _ZN4cvis9CVElement14getElementByIdERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @820
+    _ZN4cvis9CVElement14scale_velocityERKf @821
+    _ZN4cvis9CVElement14setSpriteScaleERKf @822
+    _ZN4cvis9CVElement15setDrawClippingERKb @823
+    _ZN4cvis9CVElement4drawEPN2sf12RenderTargetE @824
+    _ZN4cvis9CVElement4moveERKN2sf7Vector2IfEE @825
+    _ZN4cvis9CVElement4pushERKfS2_S2_ @826
+    _ZN4cvis9CVElement4stopEv @827
+    _ZN4cvis9CVElement5speedEv @828
+    _ZN4cvis9CVElement6updateERNS_7CVEventERKN2sf7Vector2IfEE @829
+    _ZN4cvis9CVElement7move_toERKN2sf7Vector2IfEERKfS7_ @830
+    _ZN4cvis9CVElement7setFadeERKhRKiS2_ @831
+    _ZN4cvis9CVElement7setSizeERKN2sf7Vector2IfEE @832
+    _ZN4cvis9CVElement8setStateERKh @833
+    _ZN4cvis9CVElement9addSpriteEPKN2sf7TextureERKNS1_7Vector2IfEES8_RKNS1_5ColorERKNS1_4RectIiEE @834
+    _ZN4cvis9CVElement9anim_moveERKN2sf7Vector2IfEERKfS7_ @835
+    _ZN4cvis9CVElement9getSpriteERKj @836
+    _ZN4cvis9CVElement9highlightERKb @837
+    _ZN4cvis9CVElement9saveImageERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @838
+    _ZN4cvis9CVElement9setExpandERKb @839
+    _ZN4cvis9CVElementC1EPNS_6CVViewEbbbb @840
+    _ZN4cvis9CVElementC1Ev @841
+    _ZN4cvis9CVElementC2EPNS_6CVViewEbbbb @842
+    _ZN4cvis9CVElementC2Ev @843
+    _ZN4cvis9CVElementD0Ev @844
+    _ZN4cvis9CVElementD1Ev @845
+    _ZN4cvis9CVElementD2Ev @846
+    _ZN4cvis9CVTextBox11setFontSizeERKj @847
+    _ZN4cvis9CVTextBox11setPositionERKN2sf7Vector2IfEE @848
+    _ZN4cvis9CVTextBox11setTextSizeERKj @849
+    _ZN4cvis9CVTextBox11setTextWrapERKb @850
+    _ZN4cvis9CVTextBox12addTextEntryERKNS_9TextEntryERKN2sf7Vector2IfEE @851
+    _ZN4cvis9CVTextBox12addTextEntryERKNS_9TextEntryERKfRKb @852
+    _ZN4cvis9CVTextBox12setTextColorERKN2sf5ColorE @853
+    _ZN4cvis9CVTextBox12updateBoundsEv @854
+    _ZN4cvis9CVTextBox14setTextPaddingERKf @855
+    _ZN4cvis9CVTextBox16setTextAlignmentERKh @856
+    _ZN4cvis9CVTextBox4drawEPN2sf12RenderTargetE @857
+    _ZN4cvis9CVTextBox4moveERKN2sf7Vector2IfEE @858
+    _ZN4cvis9CVTextBox6updateERNS_7CVEventERKN2sf7Vector2IfEE @859
+    _ZN4cvis9CVTextBox7fitTextERKbS2_RKN2sf7Vector2IfEE @860
+    _ZN4cvis9CVTextBox7setFontERKN2sf4FontE @861
+    _ZN4cvis9CVTextBox7setFontERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @862
+    _ZN4cvis9CVTextBox7setSizeERKN2sf7Vector2IfEE @863
+    _ZN4cvis9CVTextBox7setTextERKjPKc @864
+    _ZN4cvis9CVTextBox7setTextERKjPKw @865
+    _ZN4cvis9CVTextBox7setTextERKjRKN2sf6StringE @866
+    _ZN4cvis9CVTextBox7setTextERKjRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @867
+    _ZN4cvis9CVTextBox8wrapTextEv @868
+    _ZN4cvis9CVTextBox9alignTextEv @869
+    _ZN4cvis9CVTextBox9setExpandERKb @870
+    _ZN4cvis9CVTextBox9setStringERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @871
+    _ZN4cvis9CVTextBox9setStringERKNSt7__cxx1112basic_stringIwSt11char_traitsIwESaIwEEE @872
+    _ZN4cvis9CVTextBoxC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS3_5ColorESC_S9_ @873
+    _ZN4cvis9CVTextBoxC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS_9TextEntryERKNS3_5ColorESF_S9_ @874
+    _ZN4cvis9CVTextBoxC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS3_5ColorESC_S9_ @875
+    _ZN4cvis9CVTextBoxC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS_9TextEntryERKNS3_5ColorESF_S9_ @876
+    _ZN4cvis9CVTextLog11addLogEntryERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEbf @877
+    _ZN4cvis9CVTextLog11setPositionERKN2sf7Vector2IfEE @878
+    _ZN4cvis9CVTextLog13editLastEntryERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEb @879
+    _ZN4cvis9CVTextLog14addToLastEntryERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEb @880
+    _ZN4cvis9CVTextLog18replaceLastMessageERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEES8_b @881
+    _ZN4cvis9CVTextLog4drawEPN2sf12RenderTargetE @882
+    _ZN4cvis9CVTextLog4loadEv @883
+    _ZN4cvis9CVTextLog4moveERKN2sf7Vector2IfEE @884
+    _ZN4cvis9CVTextLog4saveEv @885
+    _ZN4cvis9CVTextLog6updateERNS_7CVEventERKN2sf7Vector2IfEE @886
+    _ZN4cvis9CVTextLog7setSizeERKN2sf7Vector2IfEE @887
+    _ZN4cvis9CVTextLog9shiftMsgsERKf @888
+    _ZN4cvis9CVTextLogC1EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS_9TextEntryERKNS3_5ColorESF_S9_RKhRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEPNS_9CVTypeBoxE @889
+    _ZN4cvis9CVTextLogC2EPNS_6CVViewERKN2sf7Vector2IfEERKfS9_RKNS_9TextEntryERKNS3_5ColorESF_S9_RKhRKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEEPNS_9CVTypeBoxE @890
+    _ZN4cvis9CVTextLogD0Ev @891
+    _ZN4cvis9CVTextLogD1Ev @892
+    _ZN4cvis9CVTextLogD2Ev @893
+    _ZN4cvis9CVTypeBox11enterStringEv @894
+    _ZN4cvis9CVTypeBox12setAlignmentERKh @895
+    _ZN4cvis9CVTypeBox12setFillColorERKN2sf5ColorE @896
+    _ZN4cvis9CVTypeBox13setTypeStringENSt7__cxx1112basic_stringIwSt11char_traitsIwESaIwEEE @897
+    _ZN4cvis9CVTypeBox13setTypeStringERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @898
+    _ZN4cvis9CVTypeBox15clearTypeStringEv @899
+    _ZN4cvis9CVTypeBox15make_suggestionERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @900
+    _ZN4cvis9CVTypeBox16clear_suggestionEv @901
+    _ZN4cvis9CVTypeBox19setBackgroundStringERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @902
+    _ZN4cvis9CVTypeBox4drawEPN2sf12RenderTargetE @903
+    _ZN4cvis9CVTypeBox4moveERKN2sf7Vector2IfEE @904
+    _ZN4cvis9CVTypeBox6updateERNS_7CVEventERKN2sf7Vector2IfEE @905
+    _ZN4cvis9CVTypeBox7setSizeERKN2sf7Vector2IfEE @906
+    _ZN4cvis9CVTypeBox7setSizeERKfS2_ @907
+    _ZN4cvis9CVTypeBox8setColorERKN2sf5ColorE @908
+    _ZN4cvis9CVTypeBoxC1EPNS_6CVViewERKN2sf7Vector2IfEEffRKNS_9TextEntryERKNS3_5ColorESD_fRKhSF_SF_RKf @909
+    _ZN4cvis9CVTypeBoxC2EPNS_6CVViewERKN2sf7Vector2IfEEffRKNS_9TextEntryERKNS3_5ColorESD_fRKhSF_SF_RKf @910
+    _ZN4cvis9CVTypeBoxD0Ev @911
+    _ZN4cvis9CVTypeBoxD1Ev @912
+    _ZN4cvis9CVTypeBoxD2Ev @913
+    _ZN4cvis9addRecordERNS_10CVScheduleERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEERKN6hyperC9TimePointESD_RKNSA_10time_scaleERKN2sf5ColorE @914
+    _ZN4cvis9alignTextERSt6vectorIN2sf4TextESaIS2_EES0_INS1_7Vector2IfEESaIS7_EE @915
+    _ZN4cvis9get_angleERKN2sf7Vector2IfEES4_ @916
+    _ZN4cviseqERKNS_12CVCaptureRefES2_ @917
+    _ZN4cvislsERSoRKNS_16CVCalendarRecordE @918
+    _ZN4cvislsERSoRKNS_6CVPlotE @919
+    _ZN4cvislsERSoRKNS_7CVEventE @920
+    _ZNK4cvis10CVCheckBox15getCurrentStateEv @921
+    _ZNK4cvis10CVMapPanel10zoneExistsERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @922
+    _ZNK4cvis10CVMapPanel13pointSelectedEv @923
+    _ZNK4cvis10CVMapPanel14coordsToGlobalERKN2sf7Vector2IiEE @924
+    _ZNK4cvis10CVMapPanel14globalToCoordsERKN2sf7Vector2IfEE @925
+    _ZNK4cvis10CVMapPanel15basePanelBoundsEv @926
+    _ZNK4cvis10CVMapPanel15sectionSelectedEv @927
+    _ZNK4cvis10CVMapPanel15selected_boundsEv @928
+    _ZNK4cvis10CVMapPanel8getTitleB5cxx11Ev @929
+    _ZNK4cvis10CVMapPanel8numZonesEv @930
+    _ZNK4cvis10CVMapPanel9baseColorEv @931
+    _ZNK4cvis10CVSchedule10checkMatchERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @932
+    _ZNK4cvis10CVSchedule10getTimeTagB5cxx11ERKN6hyperC9TimePointE @933
+    _ZNK4cvis10CVSchedule11getLocationERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @934
+    _ZNK4cvis10CVSchedule12checkOverlapERKNS_16CVCalendarRecordE @935
+    _ZNK4cvis10CVSchedule12checkOverlapERKS0_ @936
+    _ZNK4cvis10CVSchedule13checkLocationERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @937
+    _ZNK4cvis10CVSchedule15getLocationItemERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @938
+    _ZNK4cvis10CVSchedule4saveERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @939
+    _ZNK4cvis10CVSchedule8getColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @940
+    _ZNK4cvis10ColorTheme10getInitialERKN2sf5ColorE @941
+    _ZNK4cvis10ColorTheme10getInitialERKj @942
+    _ZNK4cvis11CVGridPanel15getGridPositionERKN2sf7Vector2IiEE @943
+    _ZNK4cvis11CVGridPanel15getGridPositionERKy @944
+    _ZNK4cvis11CVListPanel12getSelectionB5cxx11Ev @945
+    _ZNK4cvis11CVListPanel15TextEntryExistsERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @946
+    _ZNK4cvis11CVNodePanel14lastInteractedB5cxx11Ev @947
+    _ZNK4cvis11CVSliderBar15positionToValueERKN2sf7Vector2IfEE @948
+    _ZNK4cvis11CVSliderBar15valueToPositionERKf @949
+    _ZNK4cvis11CVSliderBar8getTitleB5cxx11Ev @950
+    _ZNK4cvis11CVTypePanel20getTextElementBoundsERKj @951
+    _ZNK4cvis11CVTypePanel22getTextElementPositionERKj @952
+    _ZNK4cvis11CVTypePanel7getTextB5cxx11Ev @953
+    _ZNK4cvis11CVTypePanel7getTextERSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS7_EE @954
+    _ZNK4cvis11CVViewPanel12fadeCompleteEv @955
+    _ZNK4cvis12CVDropTarget10mouse_dragEv @956
+    _ZNK4cvis12ImageManager11taggedImageERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @957
+    _ZNK4cvis12ImageManager13taggedTextureERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @958
+    _ZNK4cvis12ImageManager14getTextureNameB5cxx11EPKN2sf7TextureE @959
+    _ZNK4cvis13CVButtonPanel15getGridPositionERKN2sf7Vector2IiEE @960
+    _ZNK4cvis13CVButtonPanel16checkInteractionEv @961
+    _ZNK4cvis13CVButtonPanel17buttonsShareGroupEPKNS_8CVButtonES3_ @962
+    _ZNK4cvis13CVButtonPanel20buttonBelongsToGroupERKN2sf7Vector2IiEE @963
+    _ZNK4cvis13CVButtonPanel20getSelectedFromGroupERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @964
+    _ZNK4cvis13CVButtonPanel9getButtonERKN2sf7Vector2IiEE @965
+    _ZNK4cvis13CVDropDownBox11getSelectedB5cxx11Ev @966
+    _ZNK4cvis13CVNetworkNode10checkGroupERNS_14CVNetworkGroupE @967
+    _ZNK4cvis13CVNetworkNode11checkGroupsERKS0_ @968
+    _ZNK4cvis13CVSketchPanel13CVSketchLayer12getImageSizeEv @969
+    _ZNK4cvis13CVSketchPanel13CVSketchLayer15getTextureImageERN2sf5ImageE @970
+    _ZNK4cvis13CVSketchPanel17viewToPixelCoordsERKN2sf7Vector2IfEE @971
+    _ZNK4cvis13CVSketchPanel7canDrawEv @972
+    _ZNK4cvis14CVNetworkGroup13checkKeyWordsERKS0_ @973
+    _ZNK4cvis14CVNetworkGroup13checkKeyWordsERKSt6vectorINSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEESaIS7_EE @974
+    _ZNK4cvis14CVNetworkGroup9checkNodeERNS_13CVNetworkNodeE @975
+    _ZNK4cvis14CVNetworkPanel10nodeExistsERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @976
+    _ZNK4cvis14CVNetworkPanel11getNodeTagsB5cxx11Ev @977
+    _ZNK4cvis14CVNetworkPanel12getEdgeColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @978
+    _ZNK4cvis14CVNetworkPanel12getNodeColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @979
+    _ZNK4cvis14CVNetworkPanel16convert_to_localERKN2sf7Vector2IfEE @980
+    _ZNK4cvis14CVNetworkPanel17convert_to_screenERKN2sf7Vector2IfEE @981
+    _ZNK4cvis14CVNetworkPanel18getTextLegendColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @982
+    _ZNK4cvis14CVNetworkPanel21getOutlineLegendColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @983
+    _ZNK4cvis15CVCalendarPanel4saveERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @984
+    _ZNK4cvis16CVCalendarRecord10diff_hoursEv @985
+    _ZNK4cvis16CVCalendarRecord10diff_yearsEv @986
+    _ZNK4cvis16CVCalendarRecord11diff_monthsEv @987
+    _ZNK4cvis16CVCalendarRecord11getDurationEv @988
+    _ZNK4cvis16CVCalendarRecord11getLocationB5cxx11Ev @989
+    _ZNK4cvis16CVCalendarRecord11median_daysEv @990
+    _ZNK4cvis16CVCalendarRecord12diff_minutesEv @991
+    _ZNK4cvis16CVCalendarRecord12diff_secondsEv @992
+    _ZNK4cvis16CVCalendarRecord12is_repeatingEv @993
+    _ZNK4cvis16CVCalendarRecord12median_hoursEv @994
+    _ZNK4cvis16CVCalendarRecord12median_yearsEv @995
+    _ZNK4cvis16CVCalendarRecord13check_overlapERKN6hyperC9TimePointE @996
+    _ZNK4cvis16CVCalendarRecord13check_overlapERKS0_ @997
+    _ZNK4cvis16CVCalendarRecord13getRepeatTagsB5cxx11Ev @998
+    _ZNK4cvis16CVCalendarRecord13median_monthsEv @999
+    _ZNK4cvis16CVCalendarRecord14getDurationStrB5cxx11Ev @1000
+    _ZNK4cvis16CVCalendarRecord14median_minutesEv @1001
+    _ZNK4cvis16CVCalendarRecord14median_secondsEv @1002
+    _ZNK4cvis16CVCalendarRecord16repeat_frequencyEv @1003
+    _ZNK4cvis16CVCalendarRecord3endEv @1004
+    _ZNK4cvis16CVCalendarRecord3tagB5cxx11Ev @1005
+    _ZNK4cvis16CVCalendarRecord4saveEP6_iobuf @1006
+    _ZNK4cvis16CVCalendarRecord5colorEv @1007
+    _ZNK4cvis16CVCalendarRecord5startEv @1008
+    _ZNK4cvis16CVCalendarRecord8durationEv @1009
+    _ZNK4cvis16CVCalendarRecord8getScaleEv @1010
+    _ZNK4cvis16CVCalendarRecord9diff_daysEv @1011
+    _ZNK4cvis17CVDataViewerPanel10saveToFileERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1012
+    _ZNK4cvis17CVDataViewerPanel7getDataB5cxx11ERKiS2_ @1013
+    _ZNK4cvis17CVDataViewerPanel7rowSizeERKi @1014
+    _ZNK4cvis17rounded_rectangle13getPointCountEv @1015
+    _ZNK4cvis17rounded_rectangle14topLeftRoundedEv @1016
+    _ZNK4cvis17rounded_rectangle15cornerIsRoundedERKj @1017
+    _ZNK4cvis17rounded_rectangle15topRightRoundedEv @1018
+    _ZNK4cvis17rounded_rectangle17bottomLeftRoundedEv @1019
+    _ZNK4cvis17rounded_rectangle18bottomRightRoundedEv @1020
+    _ZNK4cvis17rounded_rectangle7getSizeEv @1021
+    _ZNK4cvis17rounded_rectangle8getPointEy @1022
+    _ZNK4cvis5CVApp11getTypeFontERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1023
+    _ZNK4cvis5CVBox11getRotationERKh @1024
+    _ZNK4cvis5CVBox12fadeCompleteEv @1025
+    _ZNK4cvis5CVBox12getFillColorEv @1026
+    _ZNK4cvis5CVBox15getOutlineColorEv @1027
+    _ZNK4cvis5CVBox17getRoundingRadiusEv @1028
+    _ZNK4cvis5CVBox21getRoundingPointCountEv @1029
+    _ZNK4cvis5CVBox8getColorEv @1030
+    _ZNK4cvis6CVPlot4axis16getLabelPositionERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1031
+    _ZNK4cvis6CVPlot7Dataset13getSubsetDataERKj @1032
+    _ZNK4cvis6CVPlot7Dataset4sizeEv @1033
+    _ZNK4cvis6CVPlot7Dataset8getScaleERKj @1034
+    _ZNK4cvis6CVView10appTextureERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1035
+    _ZNK4cvis6CVView11renderWidthEv @1036
+    _ZNK4cvis6CVView12getViewScaleEv @1037
+    _ZNK4cvis6CVView12renderHeightEv @1038
+    _ZNK4cvis6CVView17getTitleBarHeightEv @1039
+    _ZNK4cvis6CVView7appFontERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1040
+    _ZNK4cvis6CVView8appColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1041
+    _ZNK4cvis6CVView8appImageERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1042
+    _ZNK4cvis6CVView9getBoundsEv @1043
+    _ZNK4cvis6CVView9getHeightEv @1044
+    _ZNK4cvis7CVBrush11getPositionEv @1045
+    _ZNK4cvis7CVBrush12getDrawScaleEv @1046
+    _ZNK4cvis7CVBrush13getDimensionsEv @1047
+    _ZNK4cvis7CVEvent10rightClickERKf @1048
+    _ZNK4cvis7CVEvent13mouseVelocityEv @1049
+    _ZNK4cvis7CVEvent14mouseMoveAngleEv @1050
+    _ZNK4cvis7CVEvent17leftClickReleasedERKf @1051
+    _ZNK4cvis7CVEvent18rightClickReleasedERKf @1052
+    _ZNK4cvis7CVEvent9leftClickERKf @1053
+    _ZNK4cvis9CVElement10appTextureERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1054
+    _ZNK4cvis9CVElement10has_spriteERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1055
+    _ZNK4cvis9CVElement11getPositionEv @1056
+    _ZNK4cvis9CVElement12fadeCompleteEv @1057
+    _ZNK4cvis9CVElement14getDefaultFontB5cxx11Ev @1058
+    _ZNK4cvis9CVElement7appFontERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1059
+    _ZNK4cvis9CVElement7mainAppEv @1060
+    _ZNK4cvis9CVElement8appColorERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1061
+    _ZNK4cvis9CVElement8appImageERKNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEE @1062
+    _ZNK4cvis9CVElement9viewScaleEv @1063
+    _ZNK4cvis9CVTextBox12fadeCompleteEv @1064
+    _ZNK4cvis9CVTextBox12getTextColorEv @1065
+    _ZNK4cvis9CVTextBox13getTextBoundsEv @1066
+    _ZNK4cvis9CVTextBox7getTextB5cxx11Ev @1067
+    _ZNK4cvis9CVTextBox8sendDataERNS_7CVEventE @1068
+    _ZNK4cvis9CVTextLog13scrollOffsetYEv @1069
+    _ZNK4cvis9CVTextLog14getReadableLogB5cxx11Ev @1070
+    _ZNK4cvis9CVTextLog14getUserLogTextB5cxx11ERKjb @1071
+    _ZNK4cvis9CVTextLog15getOtherLogTextB5cxx11ERKjb @1072
+    _ZNK4cvis9CVTypeBox11can_suggestEv @1073
+    _ZNK4cvis9CVTypeBox13getTypeStringB5cxx11Ev @1074
+    _ZNK4cvis9CVTypeBox16string_at_cursorB5cxx11Ev @1075
+    _ZNK4cvis9CVTypeBox18cursor_at_word_endEv @1076
+    _ZNK4cvis9CVTypeBox20cursor_at_word_beginEv @1077
+    _ZNK4cvis9CVTypeBox22cursor_string_positionEv @1078
+    _ZTIN4cvis10CVCheckBoxE @1079 DATA
+    _ZTIN4cvis10CVHeatPlotE @1080 DATA
+    _ZTIN4cvis10CVLinePlotE @1081 DATA
+    _ZTIN4cvis10CVMapPanelE @1082 DATA
+    _ZTIN4cvis11CVGridPanelE @1083 DATA
+    _ZTIN4cvis11CVListPanelE @1084 DATA
+    _ZTIN4cvis11CVNodePanelE @1085 DATA
+    _ZTIN4cvis11CVPlotPanelE @1086 DATA
+    _ZTIN4cvis11CVScrollBarE @1087 DATA
+    _ZTIN4cvis11CVSliderBarE @1088 DATA
+    _ZTIN4cvis11CVTypePanelE @1089 DATA
+    _ZTIN4cvis11CVViewPanelE @1090 DATA
+    _ZTIN4cvis12CVConsoleLogE @1091 DATA
+    _ZTIN4cvis12CVDropTargetE @1092 DATA
+    _ZTIN4cvis12CVTablePanelE @1093 DATA
+    _ZTIN4cvis12CVTextLogMsgE @1094 DATA
+    _ZTIN4cvis13CVButtonPanelE @1095 DATA
+    _ZTIN4cvis13CVDropDownBoxE @1096 DATA
+    _ZTIN4cvis13CVProgressBarE @1097 DATA
+    _ZTIN4cvis13CVScatterPlotE @1098 DATA
+    _ZTIN4cvis13CVSketchPanel13CVSketchLayerE @1099 DATA
+    _ZTIN4cvis13CVSketchPanelE @1100 DATA
+    _ZTIN4cvis13CVSwitchPanelE @1101 DATA
+    _ZTIN4cvis13CVTogglePanelE @1102 DATA
+    _ZTIN4cvis14CVCategoryPlotE @1103 DATA
+    _ZTIN4cvis14CVNetworkGroupE @1104 DATA
+    _ZTIN4cvis14CVNetworkPanelE @1105 DATA
+    _ZTIN4cvis15CVAssemblyPanelE @1106 DATA
+    _ZTIN4cvis15CVCalendarPanelE @1107 DATA
+    _ZTIN4cvis16CVBasicViewPanelE @1108 DATA
+    _ZTIN4cvis17CVDataViewerPanelE @1109 DATA
+    _ZTIN4cvis17rounded_rectangleE @1110 DATA
+    _ZTIN4cvis5CVAppE @1111 DATA
+    _ZTIN4cvis5CVBoxE @1112 DATA
+    _ZTIN4cvis6CVPlotE @1113 DATA
+    _ZTIN4cvis6CVTextE @1114 DATA
+    _ZTIN4cvis6CVViewE @1115 DATA
+    _ZTIN4cvis7CVShapeE @1116 DATA
+    _ZTIN4cvis8CVButtonE @1117 DATA
+    _ZTIN4cvis9CVElementE @1118 DATA
+    _ZTIN4cvis9CVTextBoxE @1119 DATA
+    _ZTIN4cvis9CVTextLogE @1120 DATA
+    _ZTVN4cvis10CVCheckBoxE @1121 DATA
+    _ZTVN4cvis10CVHeatPlotE @1122 DATA
+    _ZTVN4cvis10CVLinePlotE @1123 DATA
+    _ZTVN4cvis10CVMapPanelE @1124 DATA
+    _ZTVN4cvis11CVGridPanelE @1125 DATA
+    _ZTVN4cvis11CVListPanelE @1126 DATA
+    _ZTVN4cvis11CVNodePanelE @1127 DATA
+    _ZTVN4cvis11CVPlotPanelE @1128 DATA
+    _ZTVN4cvis11CVScrollBarE @1129 DATA
+    _ZTVN4cvis11CVSliderBarE @1130 DATA
+    _ZTVN4cvis11CVTypePanelE @1131 DATA
+    _ZTVN4cvis11CVViewPanelE @1132 DATA
+    _ZTVN4cvis12CVConsoleLogE @1133 DATA
+    _ZTVN4cvis12CVDropTargetE @1134 DATA
+    _ZTVN4cvis12CVTablePanelE @1135 DATA
+    _ZTVN4cvis12CVTextLogMsgE @1136 DATA
+    _ZTVN4cvis13CVButtonPanelE @1137 DATA
+    _ZTVN4cvis13CVDropDownBoxE @1138 DATA
+    _ZTVN4cvis13CVProgressBarE @1139 DATA
+    _ZTVN4cvis13CVScatterPlotE @1140 DATA
+    _ZTVN4cvis13CVSketchPanel13CVSketchLayerE @1141 DATA
+    _ZTVN4cvis13CVSketchPanelE @1142 DATA
+    _ZTVN4cvis13CVSwitchPanelE @1143 DATA
+    _ZTVN4cvis13CVTogglePanelE @1144 DATA
+    _ZTVN4cvis14CVCategoryPlotE @1145 DATA
+    _ZTVN4cvis14CVNetworkGroupE @1146 DATA
+    _ZTVN4cvis14CVNetworkPanelE @1147 DATA
+    _ZTVN4cvis15CVAssemblyPanelE @1148 DATA
+    _ZTVN4cvis15CVCalendarPanelE @1149 DATA
+    _ZTVN4cvis16CVBasicViewPanelE @1150 DATA
+    _ZTVN4cvis17CVDataViewerPanelE @1151 DATA
+    _ZTVN4cvis17rounded_rectangleE @1152 DATA
+    _ZTVN4cvis5CVAppE @1153 DATA
+    _ZTVN4cvis5CVBoxE @1154 DATA
+    _ZTVN4cvis6CVPlotE @1155 DATA
+    _ZTVN4cvis6CVTextE @1156 DATA
+    _ZTVN4cvis6CVViewE @1157 DATA
+    _ZTVN4cvis7CVShapeE @1158 DATA
+    _ZTVN4cvis8CVButtonE @1159 DATA
+    _ZTVN4cvis9CVElementE @1160 DATA
+    _ZTVN4cvis9CVTextBoxE @1161 DATA
+    _ZTVN4cvis9CVTextLogE @1162 DATA
+    _ZThn8_N4cvis13CVSketchPanel13CVSketchLayerD0Ev @1163
+    _ZThn8_N4cvis13CVSketchPanel13CVSketchLayerD1Ev @1164
+    _ZThn8_N4cvis17rounded_rectangleD0Ev @1165
+    _ZThn8_N4cvis17rounded_rectangleD1Ev @1166

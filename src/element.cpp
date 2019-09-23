@@ -1008,7 +1008,8 @@ void CVElement::addSprite(const sf::Texture* texture,
                           const sf::IntRect& subRect)
 {
 
-    if(!texture) return;
+    if(!texture ||
+       ((isnan(size.x) && isnan(size.y)))) return;
 
     if(spriteList.empty())
     {
@@ -1019,9 +1020,24 @@ void CVElement::addSprite(const sf::Texture* texture,
     spriteList.back().setTexture(*texture, true);
     sf::Vector2u texSize = texture->getSize();
 
-    spriteList.back().setScale(
-        size.x/texSize.x,
-        size.y/texSize.y);
+    if(isnan(size.x))
+    {
+        spriteList.back().setScale(
+            size.y/texSize.y,
+            size.y/texSize.y);
+    }
+    else if(isnan(size.y))
+    {
+        spriteList.back().setScale(
+            size.x/texSize.x,
+            size.x/texSize.x);
+    }
+    else{
+        spriteList.back().setScale(
+            size.x/texSize.x,
+            size.y/texSize.y);
+    }
+
 
     if(subRect.width && subRect.height)
     {
@@ -1078,6 +1094,44 @@ sf::Sprite& CVElement::getSprite(const unsigned int& index)
     if(spriteList.empty()) throw invalid_argument("No sprites in sprite list to index");
     if(index > spriteList.size()) throw out_of_range("Index out of range of sprite list");
     return spriteList[index];
+}
+
+void CVElement::setSpriteSize(const size_t& index,
+                              const sf::Vector2f& newSize,
+                              const bool& maintainRatio)
+{
+    if(index > spriteList.size())
+    {
+        throw std::out_of_range("CVElement::setSpriteSize(): index out of range of sprite array");
+    }
+
+    sf::Sprite& sprite = spriteList[index];
+
+    sf::Vector2f currentScale = sprite.getScale();
+    sf::Vector2f currentSize(sprite.getGlobalBounds().width,
+                             sprite.getGlobalBounds().height);
+    sf::Vector2f fullSize = currentSize / currentScale;
+    sf::Vector2f originRatio = sprite.getOrigin() / fullSize;
+
+    sprite.setOrigin(newSize * originRatio);
+
+    if(maintainRatio)
+    {
+        if(newSize.x < newSize.y)
+        {
+            float newRatio = newSize.x/fullSize.x;
+            sprite.setScale(sf::Vector2f(newRatio, newRatio));
+        }
+        else
+        {
+            float newRatio = newSize.y/fullSize.y;
+            sprite.setScale(sf::Vector2f(newRatio, newRatio));
+        }
+    }
+    else
+    {
+        sprite.setScale(newSize/fullSize);
+    }
 }
 
 }

@@ -366,7 +366,8 @@ void CVTextBox::setString(const wstring& newString)
 }
 
 void CVTextBox::fitText(const bool& fitX,
-                        const bool& fitY)
+                        const bool& fitY,
+                        const sf::Vector2f& padding)
 {
     if(displayText.empty())
     {
@@ -382,13 +383,13 @@ void CVTextBox::fitText(const bool& fitX,
 
         if(fitX)
         {
-            newPosition.x = textBounds.left;
-            newSize.x = textBounds.width;
+            newPosition.x = textBounds.left - padding.x;
+            newSize.x = textBounds.width + 2*padding.x;
         }
         if(fitY)
         {
-            newPosition.y = textBounds.top;
-            newSize.y = textBounds.height;
+            newPosition.y = textBounds.top - padding.y;
+            newSize.y = textBounds.height + 2*padding.y;
         }
 
         CVBox::setPosition(newPosition);

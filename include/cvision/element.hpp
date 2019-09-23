@@ -505,6 +505,10 @@ public:
         if(spriteList.size() > 0) spriteList.erase(spriteList.begin());
     }
 
+    CVISION_API void setSpriteSize(const size_t& index,
+                                   const sf::Vector2f& newSize,
+                                   const bool& maintainRatio = false);
+
     virtual void setFillTexture(sf::Texture* texture) = 0;
     inline sf::Color baseFillColor() const
     {
